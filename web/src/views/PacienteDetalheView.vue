@@ -3,6 +3,8 @@ import { onMounted, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { api, mensagemDeErro } from '../api/client'
 import type { Paciente } from '../api/tipos'
+import PainelAntropometria from '../components/PainelAntropometria.vue'
+import PainelEnergetica from '../components/PainelEnergetica.vue'
 
 const rota = useRoute()
 const paciente = ref<Paciente | null>(null)
@@ -12,6 +14,9 @@ const sucesso = ref('')
 
 const metas = reactive({ glicemiaMinAlvo: null as number | null, glicemiaMaxAlvo: null as number | null })
 const salvandoMetas = ref(false)
+
+/** Sobe a cada medição nova, para o painel do VET saber que a base mudou. */
+const versaoAntropometria = ref(0)
 
 async function carregar() {
   carregando.value = true
@@ -110,8 +115,19 @@ const formatarData = (iso: string) => new Date(iso).toLocaleDateString('pt-BR', 
       </section>
     </div>
 
+    <div class="colunas secao">
+      <PainelAntropometria
+        :paciente-id="paciente.id"
+        @registrado="versaoAntropometria++"
+      />
+      <PainelEnergetica
+        :paciente-id="paciente.id"
+        :recarregar="versaoAntropometria"
+      />
+    </div>
+
     <p class="proximos">
-      Registros glicêmicos, antropometria e plano alimentar entram nas próximas etapas.
+      Registros glicêmicos e plano alimentar entram nas próximas etapas.
     </p>
   </template>
 </template>
@@ -130,5 +146,6 @@ dl { display: grid; grid-template-columns: 128px 1fr; gap: var(--xs) var(--md); 
 dt { color: var(--text-muted); font-size: 14px; }
 dd { margin: 0; }
 
+.secao { margin-top: var(--md); }
 .proximos { margin-top: var(--lg); font-size: 14px; color: var(--text-muted); }
 </style>

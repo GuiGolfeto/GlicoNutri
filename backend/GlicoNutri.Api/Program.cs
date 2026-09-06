@@ -27,6 +27,9 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IEmailService, EmailServiceLog>();
 builder.Services.AddScoped<INutricionistaService, NutricionistaService>();
 builder.Services.AddScoped<IPacienteService, PacienteService>();
+builder.Services.AddScoped<IAcessoPacienteService, AcessoPacienteService>();
+builder.Services.AddScoped<IAntropometriaService, AntropometriaService>();
+builder.Services.AddScoped<INecessidadeEnergeticaService, NecessidadeEnergeticaService>();
 
 // ── Autenticação: o JwtMiddleware do C4 ─────────────────────────────────────
 var jwt = builder.Configuration.GetSection(JwtOptions.Secao).Get<JwtOptions>()

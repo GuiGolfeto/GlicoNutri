@@ -45,8 +45,8 @@ aparecem as senhas provisórias geradas nos cadastros.
 - [x] UC002 — Cadastrar paciente
 - [x] UC003 — Cadastrar nutricionista
 - [ ] UC009 — Banco de alimentos e importação TACO
-- [ ] UC008 — Registro antropométrico
-- [ ] UC006 — Cálculo de necessidade energética
+- [x] UC008 — Registro antropométrico
+- [x] UC006 — Cálculo de necessidade energética
 - [ ] UC007 — Elaborar plano alimentar
 - [ ] UC005 / UC011 — Histórico glicêmico e dashboard
 - [ ] UC010 — Alertas · RF09 — Repositório educativo

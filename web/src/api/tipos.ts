@@ -78,3 +78,68 @@ export interface CriarPaciente {
   observacoesClinicas?: string | null
   nutricionistaId?: number | null
 }
+
+// ── UC008 — Dados antropométricos ───────────────────────────────────────────
+
+export interface ComparativoMedida {
+  anterior: number | null
+  atual: number
+  delta: number | null
+  deltaPercentual: number | null
+}
+
+export interface RegistroAntropometrico {
+  id: number
+  pacienteId: number
+  peso: number
+  /** Em centímetros, como o UC008 coleta. */
+  altura: number
+  circunferenciaAbdominal: number | null
+  circunferenciaCintura: number | null
+  circunferenciaQuadril: number | null
+  circunferenciaBraco: number | null
+  rcq: number | null
+  imc: number | null
+  classificacaoImc: string | null
+  dataHora: string
+  comparativoPeso: ComparativoMedida | null
+  comparativoImc: ComparativoMedida | null
+}
+
+export interface CriarRegistroAntropometrico {
+  peso: number | null
+  altura: number | null
+  circunferenciaAbdominal?: number | null
+  circunferenciaCintura?: number | null
+  circunferenciaQuadril?: number | null
+  circunferenciaBraco?: number | null
+  dataHora?: string | null
+}
+
+// ── UC006 — Necessidade energética ──────────────────────────────────────────
+
+export interface NecessidadeEnergetica {
+  id: number | null
+  pacienteId: number
+  formula: string
+  nivelAtividade: string
+  fatorAtividade: number
+  /** Nulo no histórico: o DER persiste apenas o VET. */
+  tmb: number | null
+  valorKcal: number
+  objetivo: string | null
+  dataCalculo: string
+  pesoUtilizado: number | null
+  alturaUtilizada: number | null
+  idadeUtilizada: number | null
+  sexoUtilizado: string | null
+  dataMedicaoUtilizada: string | null
+  vetAnterior: number | null
+  variacaoPercentual: number | null
+}
+
+export interface CalcularVet {
+  formulaId: number | null
+  nivelAtividadeId: number | null
+  objetivo?: string | null
+}
