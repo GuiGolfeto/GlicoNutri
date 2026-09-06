@@ -259,6 +259,11 @@ public class GlicoNutriDbContext(DbContextOptions<GlicoNutriDbContext> options) 
             e.ToTable("alertas");
             e.Property(x => x.DiasSemana).HasMaxLength(20);
 
+            // O conversor de snake_case produziria "horario1"; o DER V2.0 nomeia
+            // estas duas colunas com o separador antes do dígito.
+            e.Property(x => x.Horario1).HasColumnName("horario_1");
+            e.Property(x => x.Horario2).HasColumnName("horario_2");
+
             e.HasOne(x => x.Paciente).WithMany(x => x.Alertas)
              .HasForeignKey(x => x.PacienteId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne(x => x.Tipo).WithMany()
