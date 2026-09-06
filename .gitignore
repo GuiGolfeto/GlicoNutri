@@ -1,0 +1,20 @@
+# .NET
+bin/
+obj/
+*.user
+appsettings.Development.json
+appsettings.Local.json
+
+# Node / Vue
+node_modules/
+dist/
+.vite/
+*.local
+
+# Ambiente
+.env
+.env.*
+!.env.example
+
+# macOS
+.DS_Store
