@@ -84,4 +84,6 @@ dotnet user-secrets set "Email:Remetente" "nao-responda@adj.org.br"
 - [x] UC012 — Registrar emoção e correlação com glicemia
 - [x] UC010 — Alertas e expiração automática
 - [x] RF09 — Repositório educativo e receitas
+- [x] Relatórios clínicos em PDF
+- [ ] Front-end web (telas dos casos de uso clínicos)
 - [ ] Aplicativo mobile

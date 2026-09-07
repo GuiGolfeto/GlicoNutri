@@ -60,6 +60,7 @@ builder.Services.AddScoped<IRegistroEmocionalService, RegistroEmocionalService>(
 builder.Services.AddScoped<IAlertaService, AlertaService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IRepositorioEducativoService, RepositorioEducativoService>();
+builder.Services.AddScoped<IRelatorioService, RelatorioService>();
 
 // ── Autenticação: o JwtMiddleware do C4 ─────────────────────────────────────
 var jwt = builder.Configuration.GetSection(JwtOptions.Secao).Get<JwtOptions>()
