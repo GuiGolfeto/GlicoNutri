@@ -73,6 +73,6 @@ aparecem as senhas provisórias geradas nos cadastros.
 - [x] UC005 — Histórico glicêmico
 - [ ] UC011 — Dashboard do nutricionista
 - [x] UC012 — Registrar emoção e correlação com glicemia
-- [ ] UC010 — Alertas
+- [x] UC010 — Alertas e expiração automática
 - [ ] RF09 — Repositório educativo
 - [ ] Aplicativo mobile
