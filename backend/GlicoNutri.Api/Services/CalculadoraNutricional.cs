@@ -88,6 +88,46 @@ public static class CalculadoraNutricional
         return idade;
     }
 
+    // ── Macronutrientes (UC007) ─────────────────────────────────────────────
+
+    /// <summary>Fatores de Atwater: quilocalorias por grama de cada macronutriente.</summary>
+    public const double KcalPorGramaCarboidrato = 4;
+    public const double KcalPorGramaProteina = 4;
+    public const double KcalPorGramaLipidio = 9;
+
+    /// <summary>
+    /// UC007 A2 — distribuição automática. As faixas do caso de uso são
+    /// carboidratos 50–60%, proteínas 15–20% e lipídios 25–30%; 55/20/25 fica
+    /// dentro das três e soma exatamente 100%, atendendo a RN15.
+    /// Valores de partida: o nutricionista ajusta pelo RF03.2.
+    /// </summary>
+    public const double PadraoCarboidratos = 55;
+    public const double PadraoProteinas = 20;
+    public const double PadraoLipidios = 25;
+
+    /// <summary>Tolerância na soma dos percentuais, para não brigar com ponto flutuante.</summary>
+    private const double ToleranciaSoma = 0.01;
+
+    /// <summary>RN15 — a soma dos percentuais deve ser exatamente 100%.</summary>
+    public static bool SomaCemPorCento(double carboidratos, double proteinas, double lipidios) =>
+        Math.Abs(carboidratos + proteinas + lipidios - 100) <= ToleranciaSoma;
+
+    /// <summary>Converte os percentuais em gramas/dia sobre o valor calórico total.</summary>
+    public static (double Carboidratos, double Proteinas, double Lipidios) MacrosEmGramas(
+        double vetKcal, double percentualCarboidratos, double percentualProteinas, double percentualLipidios) =>
+    (
+        Math.Round(vetKcal * percentualCarboidratos / 100 / KcalPorGramaCarboidrato, 1),
+        Math.Round(vetKcal * percentualProteinas / 100 / KcalPorGramaProteina, 1),
+        Math.Round(vetKcal * percentualLipidios / 100 / KcalPorGramaLipidio, 1)
+    );
+
+    /// <summary>
+    /// Contribuição de um item do plano. Os valores da base são por 100 g, e a
+    /// quantidade é registrada em gramas.
+    /// </summary>
+    public static double? PorPorcao(double? valorPor100g, double quantidadeGramas) =>
+        valorPor100g is { } v ? Math.Round(v * quantidadeGramas / 100, 2) : null;
+
     /// <summary>Variação percentual entre duas medidas, para os comparativos das telas.</summary>
     public static double? VariacaoPercentual(double? anterior, double atual) =>
         anterior is > 0 ? Math.Round((atual - anterior.Value) / anterior.Value * 100, 1) : null;

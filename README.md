@@ -68,7 +68,7 @@ aparecem as senhas provisórias geradas nos cadastros.
 - [x] UC009 — Banco de alimentos e importação TACO
 - [x] UC008 — Registro antropométrico
 - [x] UC006 — Cálculo de necessidade energética
-- [ ] UC007 — Elaborar plano alimentar
+- [x] UC007 — Elaborar plano alimentar
 - [ ] UC005 / UC011 — Histórico glicêmico e dashboard
 - [ ] UC010 — Alertas · RF09 — Repositório educativo
 - [ ] Aplicativo mobile
