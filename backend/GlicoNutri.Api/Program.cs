@@ -44,6 +44,7 @@ builder.Services.AddScoped<IAlimentoService, AlimentoService>();
 builder.Services.AddScoped<IImportadorTacoService, ImportadorTacoService>();
 builder.Services.AddScoped<IPlanoAlimentarService, PlanoAlimentarService>();
 builder.Services.AddScoped<IGlicemiaService, GlicemiaService>();
+builder.Services.AddScoped<IRegistroEmocionalService, RegistroEmocionalService>();
 
 // ── Autenticação: o JwtMiddleware do C4 ─────────────────────────────────────
 var jwt = builder.Configuration.GetSection(JwtOptions.Secao).Get<JwtOptions>()
