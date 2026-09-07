@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { mensagemDeErro } from '../api/client'
 import type { LoginFalha } from '../api/tipos'
+import { googleHabilitado, renderizarBotaoGoogle } from '../api/google'
 import { useAuthStore } from '../stores/auth'
 
 const auth = useAuthStore()
@@ -44,13 +45,37 @@ function iniciarContagem(segundos: number) {
 
 onUnmounted(() => clearInterval(cronometro))
 
+const caixaGoogle = ref<HTMLElement | null>(null)
+
+onMounted(async () => {
+  if (!googleHabilitado || !caixaGoogle.value) return
+  try {
+    await renderizarBotaoGoogle(caixaGoogle.value, entrarComGoogle)
+  } catch {
+    // O login por senha continua disponível; o botão apenas não aparece.
+  }
+})
+
+async function entrarComGoogle(idToken: string) {
+  erro.value = ''
+  enviando.value = true
+  try {
+    const dados = await auth.entrarComGoogle(idToken)
+    router.push({ name: dados.senhaProvisoria ? 'trocar-senha' : 'dashboard' })
+  } catch (e) {
+    erro.value = mensagemDeErro(e, 'Não foi possível entrar com o Google.')
+  } finally {
+    enviando.value = false
+  }
+}
+
 async function entrar() {
   erro.value = ''
   enviando.value = true
   try {
     const dados = await auth.entrar(email.value.trim(), senha.value)
     // RN03 — quem ainda usa a senha provisória vai direto para a troca.
-    router.push({ name: dados.senhaProvisoria ? 'trocar-senha' : 'pacientes' })
+    router.push({ name: dados.senhaProvisoria ? 'trocar-senha' : 'dashboard' })
   } catch (e) {
     const falha = (e as { response?: { data?: LoginFalha } }).response?.data
     erro.value = mensagemDeErro(e, 'Não foi possível entrar.')
@@ -90,6 +115,17 @@ async function entrar() {
       <button class="btn btn-primario largo" type="submit" :disabled="enviando || bloqueado">
         {{ enviando ? 'Entrando…' : 'Entrar' }}
       </button>
+
+      <RouterLink class="esqueci" :to="{ name: 'recuperar-senha' }">Esqueci minha senha</RouterLink>
+
+      <!-- RN01 — login federado, quando configurado neste ambiente -->
+      <template v-if="googleHabilitado">
+        <div class="separador"><span>ou</span></div>
+        <div ref="caixaGoogle" class="google" />
+        <p class="ajuda-google">
+          Só funciona para e-mails já cadastrados pelo administrador da ADJ.
+        </p>
+      </template>
     </form>
   </div>
 </template>
@@ -102,4 +138,15 @@ async function entrar() {
 .gota { color: var(--primary); font-size: 26px; }
 .subtitulo { margin: 4px 0 var(--lg); font-size: 14px; color: var(--text-secondary); }
 .largo { width: 100%; margin-top: var(--xs); }
+.esqueci { display: block; text-align: center; margin-top: var(--md); font-size: 14px; }
+
+.separador {
+  display: flex; align-items: center; gap: var(--sm);
+  margin: var(--lg) 0 var(--md); color: var(--text-muted); font-size: 13px;
+}
+.separador::before, .separador::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+.google { display: flex; justify-content: center; }
+.ajuda-google { font-size: 12px; color: var(--text-muted); text-align: center; margin: var(--xs) 0 0; }
 </style>

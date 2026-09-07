@@ -84,6 +84,9 @@ async function alternarSituacao(n: Nutricionista) {
             <span v-else class="selo selo-ok">Ativo</span>
           </td>
           <td class="acao">
+            <RouterLink class="btn btn-secundario" :to="{ name: 'nutricionista-editar', params: { id: n.id } }">
+              Editar
+            </RouterLink>
             <button class="btn" :class="n.ativo ? 'btn-perigo' : 'btn-secundario'" @click="alternarSituacao(n)">
               {{ n.ativo ? 'Desativar' : 'Reativar' }}
             </button>
@@ -103,5 +106,5 @@ async function alternarSituacao(n: Nutricionista) {
 .contador { font-size: 13px; color: var(--text-muted); }
 .email { display: block; font-size: 13px; color: var(--text-muted); }
 .acao { text-align: right; }
-.acao .btn { padding: 5px 12px; font-size: 13px; }
+.acao .btn { padding: 5px 12px; font-size: 13px; margin-left: 4px; }
 </style>

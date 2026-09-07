@@ -98,5 +98,5 @@ corrompe dado clinico: RN02, RN03, RN06, RN13, RN15, RN16, RN19 e RN33.
 - [x] UC010 — Alertas e expiração automática
 - [x] RF09 — Repositório educativo e receitas
 - [x] Relatórios clínicos em PDF
-- [ ] Front-end web (telas dos casos de uso clínicos)
+- [x] Front-end web
 - [ ] Aplicativo mobile

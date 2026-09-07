@@ -23,8 +23,15 @@ const iniciais = (nome: string) =>
       </div>
 
       <nav>
+        <p class="secao">Visão geral</p>
+        <RouterLink :to="{ name: 'dashboard' }">Dashboard</RouterLink>
+
         <p class="secao">Pacientes</p>
         <RouterLink :to="{ name: 'pacientes' }">Lista de Pacientes</RouterLink>
+
+        <p class="secao">Nutrição</p>
+        <RouterLink :to="{ name: 'alimentos' }">Banco de Alimentos</RouterLink>
+        <RouterLink :to="{ name: 'repositorio' }">Repositório Educativo</RouterLink>
 
         <!-- RN09 — só o Administrador gerencia nutricionistas. -->
         <template v-if="auth.ehAdministrador">

@@ -36,6 +36,13 @@ export const useAuthStore = defineStore('auth', () => {
     return data
   }
 
+  /** RN01 — troca o ID token do Google por uma credencial do próprio sistema. */
+  async function entrarComGoogle(idToken: string) {
+    const { data } = await api.post<LoginResponse>('/auth/login-google', { idToken })
+    guardar(data)
+    return data
+  }
+
   async function alterarSenha(senhaAtual: string, novaSenha: string) {
     await api.post('/auth/alterar-senha', { senhaAtual, novaSenha })
     // O token em mãos ainda carrega senha_provisoria=true; reautenticar com a
@@ -52,6 +59,6 @@ export const useAuthStore = defineStore('auth', () => {
 
   return {
     token, usuario, autenticado, perfil, precisaTrocarSenha,
-    ehNutricionista, ehAdministrador, entrar, alterarSenha, sair,
+    ehNutricionista, ehAdministrador, entrar, entrarComGoogle, alterarSenha, sair,
   }
 })
