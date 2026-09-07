@@ -55,6 +55,11 @@ public class GlicoNutriDbContext(DbContextOptions<GlicoNutriDbContext> options) 
 
     protected override void OnModelCreating(ModelBuilder b)
     {
+        // Busca de alimento sem sensibilidade a acento: um nutricionista digita
+        // "feijao" e precisa encontrar "Feijão". Sem isto, metade da tabela TACO
+        // fica inalcançável pela busca.
+        b.HasPostgresExtension("unaccent");
+
         ConfigurarIdentidade(b);
         ConfigurarNutricao(b);
         ConfigurarClinico(b);
