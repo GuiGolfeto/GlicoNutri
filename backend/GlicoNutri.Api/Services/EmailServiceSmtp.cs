@@ -69,6 +69,25 @@ public class EmailServiceSmtp : IEmailService
         return EnviarAsync(email, nome, "Redefinição de senha — GlicoNutri", corpo, ct);
     }
 
+    /// <summary>UC001 A5 — aviso de bloqueio por tentativas inválidas.</summary>
+    public Task EnviarContaBloqueadaAsync(
+        string email, string nome, DateTime bloqueadaAte, CancellationToken ct = default)
+    {
+        var ate = bloqueadaAte.ToLocalTime().ToString("dd/MM/yyyy 'às' HH:mm");
+
+        var corpo = $"""
+            <p>Olá, {Escapar(nome)}.</p>
+            <p>Sua conta no <strong>GlicoNutri</strong> foi bloqueada temporariamente
+            após cinco tentativas de acesso com senha incorreta.</p>
+            <p>O desbloqueio automático acontece em <strong>{ate}</strong>.</p>
+            <p>Se preferir voltar antes disso, redefina sua senha:
+            <a href="{_opcoes.UrlWeb}/login">recuperar acesso</a>.</p>
+            <p>Se não foi você quem tentou entrar, redefina a senha assim que puder.</p>
+            """;
+
+        return EnviarAsync(email, nome, "Sua conta foi bloqueada temporariamente — GlicoNutri", corpo, ct);
+    }
+
     private async Task EnviarAsync(
         string destino, string nomeDestino, string assunto, string corpoHtml, CancellationToken ct)
     {

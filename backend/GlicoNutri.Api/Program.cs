@@ -24,6 +24,11 @@ var conexao = builder.Configuration.GetConnectionString(nomeConexao)
 builder.Services.AddDbContext<GlicoNutriDbContext>(opt => opt.UseNpgsql(conexao));
 
 // ── Configuração ────────────────────────────────────────────────────────────
+// RN01 — autenticação federada com Google. Sem ClientId o recurso fica desligado
+// e a rota recusa, em vez de tentar validar contra uma audiência vazia.
+builder.Services.AddOptions<GoogleOptions>()
+    .Bind(builder.Configuration.GetSection(GoogleOptions.Secao));
+
 builder.Services.AddOptions<JwtOptions>()
     .Bind(builder.Configuration.GetSection(JwtOptions.Secao))
     .ValidateDataAnnotations()

@@ -71,7 +71,7 @@ dotnet user-secrets set "Email:Remetente" "nao-responda@adj.org.br"
 ## Estado
 
 - [x] Modelo de dados completo do DER V2.0 (30 tabelas, herança TPT)
-- [x] UC001 — Login e autenticação
+- [x] UC001 — Login e autenticação (senha, Google OAuth, renovação de token)
 - [x] UC002 — Cadastrar paciente
 - [x] UC003 — Cadastrar nutricionista
 - [x] UC009 — Banco de alimentos e importação TACO

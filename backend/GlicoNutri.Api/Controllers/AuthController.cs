@@ -41,6 +41,50 @@ public class AuthController(IAuthService auth) : ControllerBase
     }
 
     /// <summary>
+    /// RN01 — login federado com conta Google. O cliente envia o ID token obtido
+    /// no Google Identity Services; o acesso só é concedido se o e-mail
+    /// corresponder a um usuário previamente cadastrado e ativo.
+    /// </summary>
+    [HttpPost("login-google")]
+    [AllowAnonymous]
+    [ProducesResponseType<LoginResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<LoginFalhaResponse>(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> LoginGoogle(LoginGoogleRequest pedido, CancellationToken ct)
+    {
+        var resultado = await auth.LoginGoogleAsync(pedido, ct);
+        if (resultado.Sucesso) return Ok(resultado.Dados);
+
+        var segundos = resultado.BloqueadoAte is { } ate
+            ? (int?)Math.Max(0, Math.Ceiling((ate - DateTime.UtcNow).TotalSeconds))
+            : null;
+
+        var falha = new LoginFalhaResponse(
+            resultado.Mensagem!, resultado.Bloqueado, resultado.BloqueadoAte, segundos);
+
+        return resultado.Bloqueado
+            ? StatusCode(StatusCodes.Status423Locked, falha)
+            : Unauthorized(falha);
+    }
+
+    /// <summary>
+    /// RN03 do UC001 — renova o token de quem está em uso ativo, antes que a
+    /// validade de 24 horas expire e derrube a sessão no meio do atendimento.
+    /// </summary>
+    [HttpPost("renovar")]
+    [Authorize]
+    [ProducesResponseType<LoginResponse>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> Renovar(CancellationToken ct)
+    {
+        var usuarioId = User.ObterUsuarioId();
+        if (usuarioId is null) return Unauthorized();
+
+        var resultado = await auth.RenovarAsync(usuarioId.Value, ct);
+        return resultado.Sucesso
+            ? Ok(resultado.Dados)
+            : Unauthorized(new { mensagem = resultado.Mensagem });
+    }
+
+    /// <summary>
     /// Dispara o e-mail de redefinição de senha. Responde 202 mesmo quando o e-mail
     /// não existe, para não revelar quais contas estão cadastradas.
     /// </summary>

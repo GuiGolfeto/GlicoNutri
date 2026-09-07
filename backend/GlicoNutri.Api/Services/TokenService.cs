@@ -20,8 +20,8 @@ public class TokenService(IOptions<JwtOptions> opcoes, ISenhaService senhaServic
 {
     private readonly JwtOptions _opcoes = opcoes.Value;
 
-    /// <summary>Janela curta para o link de recuperação de senha.</summary>
-    private static readonly TimeSpan ValidadeRecuperacao = TimeSpan.FromHours(1);
+    /// <summary>UC001 A1 — o link de redefinição vale por 30 minutos.</summary>
+    private static readonly TimeSpan ValidadeRecuperacao = TimeSpan.FromMinutes(30);
 
     private SymmetricSecurityKey Chave =>
         new(Encoding.UTF8.GetBytes(_opcoes.SigningKey));

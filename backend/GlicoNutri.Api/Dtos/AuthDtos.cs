@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using GlicoNutri.Api.Security;
 
 namespace GlicoNutri.Api.Dtos;
 
@@ -30,12 +31,19 @@ public record LoginFalhaResponse(
     DateTime? BloqueadoAte,
     int? SegundosRestantes);
 
+/// <summary>
+/// RN01 — login federado com Google no sistema web. O cliente obtém o ID token
+/// pelo Google Identity Services e o envia aqui; a API valida a assinatura e só
+/// emite credencial se o e-mail corresponder a um usuário já cadastrado.
+/// </summary>
+public record LoginGoogleRequest([Required] string IdToken);
+
 public record RecuperarSenhaRequest([Required, EmailAddress] string Email);
 
 public record RedefinirSenhaRequest(
     [Required] string Token,
-    [Required, MinLength(8)] string NovaSenha);
+    [SenhaForte] string NovaSenha);
 
 public record AlterarSenhaRequest(
     [Required] string SenhaAtual,
-    [Required, MinLength(8)] string NovaSenha);
+    [SenhaForte] string NovaSenha);

@@ -4,6 +4,10 @@ public interface IEmailService
 {
     Task EnviarRecuperacaoSenhaAsync(string email, string nome, string token, CancellationToken ct = default);
     Task EnviarBoasVindasAsync(string email, string nome, string senhaProvisoria, CancellationToken ct = default);
+
+    /// <summary>UC001 A5 — o usuário é avisado quando a conta é bloqueada.</summary>
+    Task EnviarContaBloqueadaAsync(
+        string email, string nome, DateTime bloqueadaAte, CancellationToken ct = default);
 }
 
 /// <summary>
@@ -23,6 +27,14 @@ public class EmailServiceLog(ILogger<EmailServiceLog> log) : IEmailService
     {
         log.LogInformation("[E-MAIL] Boas-vindas a {Nome} <{Email}> — senha provisória: {Senha}",
             nome, email, senhaProvisoria);
+        return Task.CompletedTask;
+    }
+
+    public Task EnviarContaBloqueadaAsync(
+        string email, string nome, DateTime bloqueadaAte, CancellationToken ct = default)
+    {
+        log.LogWarning("[E-MAIL] Conta de {Nome} <{Email}> bloqueada até {Ate}.",
+            nome, email, bloqueadaAte);
         return Task.CompletedTask;
     }
 }

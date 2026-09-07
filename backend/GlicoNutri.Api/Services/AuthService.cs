@@ -2,6 +2,8 @@ using System.IdentityModel.Tokens.Jwt;
 using GlicoNutri.Api.Dtos;
 using GlicoNutri.Api.Repositories;
 using GlicoNutri.Api.Security;
+using Google.Apis.Auth;
+using Microsoft.Extensions.Options;
 
 namespace GlicoNutri.Api.Services;
 
@@ -17,6 +19,12 @@ public record ResultadoOperacao(bool Sucesso, string? Mensagem = null);
 public interface IAuthService
 {
     Task<ResultadoLogin> LoginAsync(LoginRequest pedido, CancellationToken ct = default);
+
+    /// <summary>RN01 — login federado com conta Google no sistema web.</summary>
+    Task<ResultadoLogin> LoginGoogleAsync(LoginGoogleRequest pedido, CancellationToken ct = default);
+
+    /// <summary>RN03 do UC001 — renova o token de quem está em uso ativo.</summary>
+    Task<ResultadoLogin> RenovarAsync(long usuarioId, CancellationToken ct = default);
     Task RecuperarSenhaAsync(RecuperarSenhaRequest pedido, CancellationToken ct = default);
     Task<ResultadoOperacao> RedefinirSenhaAsync(RedefinirSenhaRequest pedido, CancellationToken ct = default);
     Task<ResultadoOperacao> AlterarSenhaAsync(long usuarioId, AlterarSenhaRequest pedido, CancellationToken ct = default);
@@ -31,8 +39,11 @@ public class AuthService(
     ISenhaService senhas,
     ITokenService tokens,
     IEmailService emails,
+    IOptions<GoogleOptions> google,
     ILogger<AuthService> log) : IAuthService
 {
+    private readonly GoogleOptions _google = google.Value;
+
     /// <summary>RN02 — cinco tentativas inválidas consecutivas disparam o bloqueio.</summary>
     private const int TentativasAteBloqueio = 5;
 
@@ -92,6 +103,11 @@ public class AuthService(
                 log.LogWarning("Conta {UsuarioId} bloqueada até {Ate} (nível {Nivel}).",
                     usuario.Id, usuario.BloqueadoAte, usuario.NivelBloqueio);
 
+                // UC001 A5 — o usuário é avisado do bloqueio por e-mail. Ele pode
+                // não ter sido quem tentou entrar.
+                await emails.EnviarContaBloqueadaAsync(
+                    usuario.Email, usuario.Nome, usuario.BloqueadoAte.Value, ct);
+
                 return new ResultadoLogin(
                     false,
                     Mensagem: "Conta bloqueada após cinco tentativas inválidas.",
@@ -110,6 +126,88 @@ public class AuthService(
         usuario.UltimoAcesso = agora;
         await usuarios.SalvarAsync(ct);
 
+        return Autenticado(usuario);
+    }
+
+    /// <summary>
+    /// RN01 — autenticação federada. O login com Google não cria conta nem
+    /// dispensa o vínculo com um perfil ativo: quem não foi cadastrado pelo
+    /// Administrador recebe mensagem informativa e tem o acesso negado.
+    /// </summary>
+    public async Task<ResultadoLogin> LoginGoogleAsync(
+        LoginGoogleRequest pedido, CancellationToken ct = default)
+    {
+        if (!_google.EstaConfigurado)
+            return new ResultadoLogin(false, Mensagem: "Login com Google não está configurado neste ambiente.");
+
+        GoogleJsonWebSignature.Payload payload;
+        try
+        {
+            payload = await GoogleJsonWebSignature.ValidateAsync(pedido.IdToken,
+                new GoogleJsonWebSignature.ValidationSettings
+                {
+                    Audience = [_google.ClientId!],
+                });
+        }
+        catch (InvalidJwtException e)
+        {
+            log.LogWarning(e, "Token do Google recusado na validação.");
+            return new ResultadoLogin(false, Mensagem: "Não foi possível validar sua conta Google.");
+        }
+
+        // Uma conta Google sem e-mail verificado não prova identidade.
+        if (!payload.EmailVerified)
+            return new ResultadoLogin(false,
+                Mensagem: "A conta Google informada não tem o e-mail verificado.");
+
+        var email = payload.Email.Trim().ToLowerInvariant();
+        var usuario = await usuarios.BuscarPorEmailAsync(email, ct);
+
+        if (usuario is null)
+        {
+            log.LogInformation("Login Google negado: {Email} não corresponde a usuário ativo.", email);
+            return new ResultadoLogin(false, Mensagem:
+                "Este e-mail não está cadastrado no GlicoNutri. " +
+                "O acesso precisa ser criado por um administrador da ADJ.");
+        }
+
+        // O bloqueio da RN02 vale para qualquer forma de entrada: trocar de via
+        // de autenticação não pode ser o atalho para escapar dele.
+        if (usuario.BloqueadoAte is { } ate && ate > DateTime.UtcNow)
+        {
+            return new ResultadoLogin(false,
+                Mensagem: "Conta temporariamente bloqueada por tentativas inválidas.",
+                Bloqueado: true, BloqueadoAte: ate);
+        }
+
+        usuario.TentativasInvalidas = 0;
+        usuario.NivelBloqueio = 0;
+        usuario.BloqueadoAte = null;
+        usuario.UltimoAcesso = DateTime.UtcNow;
+        await usuarios.SalvarAsync(ct);
+
+        return Autenticado(usuario);
+    }
+
+    /// <summary>
+    /// RN03 do UC001 — o token é renovado em uso ativo. A renovação parte de uma
+    /// sessão já autenticada e ainda válida: nada é emitido para token expirado,
+    /// para conta desativada ou para quem ainda usa a senha provisória.
+    /// </summary>
+    public async Task<ResultadoLogin> RenovarAsync(long usuarioId, CancellationToken ct = default)
+    {
+        var usuario = await usuarios.BuscarPorIdAsync(usuarioId, ct);
+        if (usuario is null)
+            return new ResultadoLogin(false, Mensagem: "Sessão inválida.");
+
+        usuario.UltimoAcesso = DateTime.UtcNow;
+        await usuarios.SalvarAsync(ct);
+
+        return Autenticado(usuario);
+    }
+
+    private ResultadoLogin Autenticado(Models.Usuario usuario)
+    {
         var perfil = usuario.Perfil.Codigo;
         var (token, expiraEm) = tokens.GerarTokenAcesso(usuario, perfil);
 
