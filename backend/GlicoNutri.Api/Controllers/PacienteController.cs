@@ -67,6 +67,21 @@ public class PacienteController(IPacienteService servico) : ControllerBase
         return Ok(paciente);
     }
 
+    /// <summary>RF10.5 — edição dos dados cadastrais do paciente.</summary>
+    [HttpPut("{id:long}")]
+    public async Task<IActionResult> Atualizar(
+        long id, AtualizarPacienteRequest pedido, CancellationToken ct)
+    {
+        var paciente = await servico.BuscarAsync(id, ct);
+        if (paciente is null) return NotFound();
+
+        // RN33 — só o responsável e o administrador editam o paciente.
+        if (!EhAdministrador && paciente.NutricionistaId != User.ObterUsuarioId()) return Forbid();
+
+        var resultado = await servico.AtualizarAsync(id, pedido, ct);
+        return resultado.Sucesso ? Ok(resultado.Dados) : BadRequest(new { mensagem = resultado.Mensagem });
+    }
+
     /// <summary>RN20 — define a faixa glicêmica alvo individual do paciente.</summary>
     [HttpPut("{id:long}/metas-glicemicas")]
     public async Task<IActionResult> DefinirMetasGlicemicas(

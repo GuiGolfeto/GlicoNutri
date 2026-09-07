@@ -40,6 +40,15 @@ public class NutricionistaController(INutricionistaService servico) : Controller
         return nutricionista is null ? NotFound() : Ok(nutricionista);
     }
 
+    /// <summary>RF10.5 — edição dos dados do nutricionista.</summary>
+    [HttpPut("{id:long}")]
+    public async Task<IActionResult> Atualizar(
+        long id, AtualizarNutricionistaRequest pedido, CancellationToken ct)
+    {
+        var resultado = await servico.AtualizarAsync(id, pedido, ct);
+        return resultado.Sucesso ? Ok(resultado.Dados) : BadRequest(new { mensagem = resultado.Mensagem });
+    }
+
     /// <summary>RF10.5 — desativa sem excluir o histórico (RN05).</summary>
     [HttpDelete("{id:long}")]
     public async Task<IActionResult> Desativar(long id, CancellationToken ct)

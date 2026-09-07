@@ -34,7 +34,19 @@ builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddSingleton<ISenhaService, SenhaService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<IEmailService, EmailServiceLog>();
+// RF10.2 e RF10.3 — envio por SMTP quando a seção Email estiver configurada.
+// Sem credenciais, cai no registrador de log, e o desenvolvimento segue sem
+// depender de servidor de e-mail.
+builder.Services.AddOptions<EmailOptions>()
+    .Bind(builder.Configuration.GetSection(EmailOptions.Secao))
+    .ValidateDataAnnotations();
+
+var email = builder.Configuration.GetSection(EmailOptions.Secao).Get<EmailOptions>() ?? new EmailOptions();
+
+if (email.EstaConfigurado)
+    builder.Services.AddScoped<IEmailService, EmailServiceSmtp>();
+else
+    builder.Services.AddScoped<IEmailService, EmailServiceLog>();
 builder.Services.AddScoped<INutricionistaService, NutricionistaService>();
 builder.Services.AddScoped<IPacienteService, PacienteService>();
 builder.Services.AddScoped<IAcessoPacienteService, AcessoPacienteService>();

@@ -19,6 +19,10 @@ public interface IPacienteService
     Task<Resultado<PacienteResponse>> DefinirMetasGlicemicasAsync(
         long id, DefinirMetasGlicemicasRequest pedido, CancellationToken ct = default);
 
+    /// <summary>RF10.5 — edição dos dados cadastrais do paciente.</summary>
+    Task<Resultado<PacienteResponse>> AtualizarAsync(
+        long id, AtualizarPacienteRequest pedido, CancellationToken ct = default);
+
     Task<Resultado<bool>> DesativarAsync(long id, CancellationToken ct = default);
     Task<Resultado<bool>> ReativarAsync(long id, CancellationToken ct = default);
 }
@@ -195,6 +199,48 @@ public class PacienteService(
         // registros; o percentual no alvo tem de refletir um critério único.
         await glicemias.ReclassificarAsync(id, ct);
 
+        return Resultado<PacienteResponse>.Ok((await BuscarAsync(id, ct))!);
+    }
+
+    public async Task<Resultado<PacienteResponse>> AtualizarAsync(
+        long id, AtualizarPacienteRequest pedido, CancellationToken ct = default)
+    {
+        var paciente = await db.Pacientes.FirstOrDefaultAsync(p => p.Id == id, ct);
+        if (paciente is null) return Resultado<PacienteResponse>.Erro("Paciente não encontrado.");
+
+        if (!ValidadorCpf.EhValido(pedido.Cpf))
+            return Resultado<PacienteResponse>.Erro("CPF inválido.");
+
+        var cpf = ValidadorCpf.Normalizar(pedido.Cpf);
+        var email = pedido.Email.Trim().ToLowerInvariant();
+
+        if (await db.Usuarios.IgnoreQueryFilters()
+                .AnyAsync(u => u.Id != id && u.Email == email, ct))
+            return Resultado<PacienteResponse>.Erro(
+                "Já existe outro usuário cadastrado com este e-mail.");
+
+        if (await db.Pacientes.IgnoreQueryFilters()
+                .AnyAsync(p => p.Id != id && p.Cpf == cpf, ct))
+            return Resultado<PacienteResponse>.Erro(
+                "Já existe outro paciente cadastrado com este CPF.");
+
+        if (!await db.SexosBiologicos.AnyAsync(s => s.Id == pedido.SexoId && s.Ativo, ct))
+            return Resultado<PacienteResponse>.Erro("Sexo biológico inválido.");
+
+        if (!await db.TiposDiabetes.AnyAsync(t => t.Id == pedido.TipoDiabetesId && t.Ativo, ct))
+            return Resultado<PacienteResponse>.Erro("Tipo de diabetes inválido.");
+
+        paciente.Nome = pedido.Nome.Trim();
+        paciente.Email = email;
+        paciente.Cpf = cpf;
+        paciente.DataNascimento = pedido.DataNascimento;
+        paciente.SexoId = pedido.SexoId;
+        paciente.TipoDiabetesId = pedido.TipoDiabetesId;
+        paciente.Telefone = pedido.Telefone?.Trim();
+        paciente.MedicacaoEmUso = pedido.MedicacaoEmUso?.Trim();
+        paciente.ObservacoesClinicas = pedido.ObservacoesClinicas?.Trim();
+
+        await db.SaveChangesAsync(ct);
         return Resultado<PacienteResponse>.Ok((await BuscarAsync(id, ct))!);
     }
 

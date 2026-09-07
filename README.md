@@ -57,7 +57,16 @@ admin@gliconutri.local / GlicoNutri@2026
 ```
 
 Em desenvolvimento o envio de e-mail apenas registra no log da API — é onde
-aparecem as senhas provisórias geradas nos cadastros.
+aparecem as senhas provisórias geradas nos cadastros. Para enviar de verdade,
+preencha a seção `Email` (ver `.env.example`) no user-secrets:
+
+```bash
+dotnet user-secrets set "Email:Habilitado" "true"
+dotnet user-secrets set "Email:Host" "smtp.gmail.com"
+dotnet user-secrets set "Email:Usuario" "<conta>"
+dotnet user-secrets set "Email:Senha" "<senha de app>"
+dotnet user-secrets set "Email:Remetente" "nao-responda@adj.org.br"
+```
 
 ## Estado
 

@@ -17,6 +17,10 @@ public interface INutricionistaService
     Task<Resultado<NutricionistaResponse>> CriarAsync(CriarNutricionistaRequest pedido, CancellationToken ct = default);
     Task<IReadOnlyList<NutricionistaResponse>> ListarAsync(bool incluirInativos, CancellationToken ct = default);
     Task<NutricionistaResponse?> BuscarAsync(long id, CancellationToken ct = default);
+    /// <summary>RF10.5 — o Administrador edita os dados do nutricionista.</summary>
+    Task<Resultado<NutricionistaResponse>> AtualizarAsync(
+        long id, AtualizarNutricionistaRequest pedido, CancellationToken ct = default);
+
     Task<Resultado<bool>> DesativarAsync(long id, CancellationToken ct = default);
     Task<Resultado<bool>> ReativarAsync(long id, CancellationToken ct = default);
 }
@@ -96,6 +100,38 @@ public class NutricionistaService(
                 n.Ativo, n.SenhaProvisoria, n.DataCadastro,
                 n.Vinculos.Count(v => v.Ativo)))
             .FirstOrDefaultAsync(ct);
+
+    public async Task<Resultado<NutricionistaResponse>> AtualizarAsync(
+        long id, AtualizarNutricionistaRequest pedido, CancellationToken ct = default)
+    {
+        var nutricionista = await db.Nutricionistas.FirstOrDefaultAsync(n => n.Id == id, ct);
+        if (nutricionista is null)
+            return Resultado<NutricionistaResponse>.Erro("Nutricionista não encontrado.");
+
+        var email = pedido.Email.Trim().ToLowerInvariant();
+        var crn = pedido.Crn.Trim().ToUpperInvariant();
+
+        // RN06 e RN09 — e-mail e CRN seguem únicos após a edição. A checagem
+        // ignora o soft delete: conta desativada continua ocupando os dois.
+        if (await db.Usuarios.IgnoreQueryFilters()
+                .AnyAsync(u => u.Id != id && u.Email == email, ct))
+            return Resultado<NutricionistaResponse>.Erro(
+                "Já existe outro usuário cadastrado com este e-mail.");
+
+        if (await db.Nutricionistas.IgnoreQueryFilters()
+                .AnyAsync(n => n.Id != id && n.Crn == crn, ct))
+            return Resultado<NutricionistaResponse>.Erro(
+                "Já existe outro nutricionista cadastrado com este CRN.");
+
+        nutricionista.Nome = pedido.Nome.Trim();
+        nutricionista.Email = email;
+        nutricionista.Crn = crn;
+        nutricionista.Especialidade = pedido.Especialidade?.Trim();
+        nutricionista.Telefone = pedido.Telefone?.Trim();
+
+        await db.SaveChangesAsync(ct);
+        return Resultado<NutricionistaResponse>.Ok((await BuscarAsync(id, ct))!);
+    }
 
     /// <summary>
     /// RN05 — desativação é soft delete: nenhum dado clínico é apagado.

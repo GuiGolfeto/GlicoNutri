@@ -67,6 +67,26 @@ public record DefinirMetasGlicemicasRequest(
     [Range(20, 600)] double? GlicemiaMinAlvo,
     [Range(20, 600)] double? GlicemiaMaxAlvo);
 
+// ── RF10.5 — Edição de cadastros ────────────────────────────────────────────
+
+public record AtualizarNutricionistaRequest(
+    [Required, StringLength(150, MinimumLength = 3)] string Nome,
+    [Required, EmailAddress, StringLength(150)] string Email,
+    [Required, StringLength(20)] string Crn,
+    [StringLength(100)] string? Especialidade,
+    [StringLength(20)] string? Telefone);
+
+public record AtualizarPacienteRequest(
+    [Required, StringLength(150, MinimumLength = 3)] string Nome,
+    [Required, EmailAddress, StringLength(150)] string Email,
+    [Required, StringLength(14)] string Cpf,
+    [Required] DateOnly DataNascimento,
+    [Required] long SexoId,
+    [Required] long TipoDiabetesId,
+    [StringLength(20)] string? Telefone,
+    string? MedicacaoEmUso,
+    string? ObservacoesClinicas);
+
 // ── Referências para preencher os selects do formulário ─────────────────────
 
 public record ReferenciaResponse(long Id, string Codigo, string Descricao);
