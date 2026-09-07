@@ -264,10 +264,6 @@ public class GlicoNutriDbContext(DbContextOptions<GlicoNutriDbContext> options) 
             e.ToTable("alertas");
             e.Property(x => x.DiasSemana).HasMaxLength(20);
 
-            // O conversor de snake_case produziria "horario1"; o DER V2.0 nomeia
-            // estas duas colunas com o separador antes do dígito.
-            e.Property(x => x.Horario1).HasColumnName("horario_1");
-            e.Property(x => x.Horario2).HasColumnName("horario_2");
 
             e.HasOne(x => x.Paciente).WithMany(x => x.Alertas)
              .HasForeignKey(x => x.PacienteId).OnDelete(DeleteBehavior.Restrict);
@@ -477,24 +473,52 @@ public class GlicoNutriDbContext(DbContextOptions<GlicoNutriDbContext> options) 
         }
     }
 
+    /// <summary>
+    /// Converte PascalCase para snake_case reproduzindo os nomes do DER V2.0,
+    /// inclusive onde há dígitos:
+    ///   CaloriasPor100g       → calorias_por_100g
+    ///   MediaGlicemia7Dias    → media_glicemia_7dias
+    ///   Horario1              → horario_1
+    /// As duas regras que os dígitos impõem são separar a letra do número que a
+    /// segue, e nunca separar o número da letra que vem depois dele.
+    /// </summary>
     private static string ParaSnakeCase(string nome)
     {
         var sb = new StringBuilder(nome.Length + 8);
+
         for (var i = 0; i < nome.Length; i++)
         {
             var c = nome[i];
+            var anterior = i > 0 ? nome[i - 1] : '\0';
+            var jaSeparado = i == 0 || anterior == '_';
+
+            if (char.IsAsciiDigit(c))
+            {
+                // "Por100" → "por_100", mas o "0" seguinte não separa de novo.
+                if (!jaSeparado && char.IsLetter(anterior)) sb.Append('_');
+                sb.Append(c);
+                continue;
+            }
+
             if (char.IsUpper(c))
             {
-                if (i > 0 && nome[i - 1] != '_' &&
-                    (!char.IsUpper(nome[i - 1]) || (i + 1 < nome.Length && char.IsLower(nome[i + 1]))))
+                // "7Dias" continua "7dias": o dígito já é a fronteira da palavra.
+                var depoisDeDigito = char.IsAsciiDigit(anterior);
+
+                var fimDeSigla = char.IsUpper(anterior)
+                                 && i + 1 < nome.Length
+                                 && char.IsLower(nome[i + 1]);
+
+                if (!jaSeparado && !depoisDeDigito && (!char.IsUpper(anterior) || fimDeSigla))
                     sb.Append('_');
+
                 sb.Append(char.ToLowerInvariant(c));
+                continue;
             }
-            else
-            {
-                sb.Append(c);
-            }
+
+            sb.Append(c);
         }
+
         return sb.ToString();
     }
 }

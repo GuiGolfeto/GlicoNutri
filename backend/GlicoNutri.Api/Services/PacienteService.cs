@@ -31,7 +31,8 @@ public class PacienteService(
     GlicoNutriDbContext db,
     IUsuarioRepository usuarios,
     ISenhaService senhas,
-    IEmailService emails) : IPacienteService
+    IEmailService emails,
+    IGlicemiaService glicemias) : IPacienteService
 {
     /// <summary>RN24 — horários padrão pré-configurados no cadastro do paciente.</summary>
     private static readonly TimeOnly HorarioAlertaManha = new(8, 0);
@@ -189,6 +190,10 @@ public class PacienteService(
         paciente.GlicemiaMinAlvo = pedido.GlicemiaMinAlvo;
         paciente.GlicemiaMaxAlvo = pedido.GlicemiaMaxAlvo;
         await db.SaveChangesAsync(ct);
+
+        // RN19 — a nova faixa vale para todo o histórico, não só para os próximos
+        // registros; o percentual no alvo tem de refletir um critério único.
+        await glicemias.ReclassificarAsync(id, ct);
 
         return Resultado<PacienteResponse>.Ok((await BuscarAsync(id, ct))!);
     }

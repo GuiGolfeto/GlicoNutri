@@ -88,6 +88,40 @@ public static class CalculadoraNutricional
         return idade;
     }
 
+    // ── Glicemia (UC004, UC005) ─────────────────────────────────────────────
+
+    /// <summary>
+    /// RN20 — faixa aplicada enquanto o Nutricionista não personalizar os limites
+    /// do paciente. São também os limites clínicos de hipo e hiperglicemia da
+    /// RN02 do UC004.
+    /// </summary>
+    public const double GlicemiaMinPadrao = 70;
+    public const double GlicemiaMaxPadrao = 180;
+
+    /// <summary>Faixa aceita no registro (UC004 A1) — validada também por CHECK no banco.</summary>
+    public const double GlicemiaMinimaAceita = 0;
+    public const double GlicemiaMaximaAceita = 600;
+
+    /// <summary>
+    /// RN19 — classifica contra a faixa alvo individual do paciente. Sem
+    /// personalização, cai no padrão da RN20.
+    /// </summary>
+    public static bool ForaDoAlvo(double valor, double? minAlvo, double? maxAlvo) =>
+        valor < (minAlvo ?? GlicemiaMinPadrao) || valor > (maxAlvo ?? GlicemiaMaxPadrao);
+
+    /// <summary>
+    /// RN02 do UC004 — hipo e hiperglicemia são definidas por limiares clínicos
+    /// absolutos (70 e 180), e não pela faixa alvo individual. As duas coisas
+    /// convivem: um paciente com alvo estreito pode estar fora do alvo sem estar
+    /// em hipoglicemia.
+    /// </summary>
+    public static string ClassificarGlicemia(double valor) => valor switch
+    {
+        < GlicemiaMinPadrao => "HIPOGLICEMIA",
+        > GlicemiaMaxPadrao => "HIPERGLICEMIA",
+        _ => "NORMAL",
+    };
+
     // ── Macronutrientes (UC007) ─────────────────────────────────────────────
 
     /// <summary>Fatores de Atwater: quilocalorias por grama de cada macronutriente.</summary>
