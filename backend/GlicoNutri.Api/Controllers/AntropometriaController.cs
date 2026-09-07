@@ -41,6 +41,17 @@ public class AntropometriaController(
         return Ok(await servico.HistoricoAsync(pacienteId, ct));
     }
 
+    /// <summary>RF08.2 — série de peso e IMC para o gráfico.</summary>
+    [HttpGet("serie")]
+    public async Task<IActionResult> Serie(
+        long pacienteId, [FromQuery] int dias = 90, CancellationToken ct = default)
+    {
+        if (!await acesso.PodeAcessarAsync(User, pacienteId, ct)) return Forbid();
+
+        var resultado = await servico.SerieAsync(pacienteId, dias, ct);
+        return resultado.Sucesso ? Ok(resultado.Dados) : BadRequest(new { mensagem = resultado.Mensagem });
+    }
+
     [HttpDelete("{registroId:long}")]
     public async Task<IActionResult> Remover(long pacienteId, long registroId, CancellationToken ct)
     {

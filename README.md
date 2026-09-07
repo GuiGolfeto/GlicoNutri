@@ -71,7 +71,7 @@ aparecem as senhas provisórias geradas nos cadastros.
 - [x] UC007 — Elaborar plano alimentar
 - [x] UC004 — Registrar glicemia
 - [x] UC005 — Histórico glicêmico
-- [ ] UC011 — Dashboard do nutricionista
+- [x] UC011 — Dashboard do nutricionista
 - [x] UC012 — Registrar emoção e correlação com glicemia
 - [x] UC010 — Alertas e expiração automática
 - [ ] RF09 — Repositório educativo

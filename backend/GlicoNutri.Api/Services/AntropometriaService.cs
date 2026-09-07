@@ -14,6 +14,10 @@ public interface IAntropometriaService
         long pacienteId, CancellationToken ct = default);
 
     Task<Resultado<bool>> RemoverAsync(long registroId, CancellationToken ct = default);
+
+    /// <summary>RF08.2 — série de peso e IMC para o gráfico de evolução.</summary>
+    Task<Resultado<SerieAntropometricaResponse>> SerieAsync(
+        long pacienteId, int dias, CancellationToken ct = default);
 }
 
 /// <summary>
@@ -85,6 +89,30 @@ public class AntropometriaService(GlicoNutriDbContext db) : IAntropometriaServic
         return registros
             .Select((r, i) => Mapear(r, i + 1 < registros.Count ? registros[i + 1] : null))
             .ToList();
+    }
+
+    /// <summary>
+    /// RF08.2 — série cronológica de peso e IMC. O caso de uso oferece 30, 60 e
+    /// 90 dias como períodos de filtro.
+    /// </summary>
+    public async Task<Resultado<SerieAntropometricaResponse>> SerieAsync(
+        long pacienteId, int dias, CancellationToken ct = default)
+    {
+        int[] periodosAceitos = [7, 15, 30, 60, 90, 180, 365];
+        if (!periodosAceitos.Contains(dias))
+            return Resultado<SerieAntropometricaResponse>.Erro(
+                $"Período inválido. Use um destes: {string.Join(", ", periodosAceitos)} dias.");
+
+        var inicio = DateTime.UtcNow.AddDays(-dias);
+
+        var pontos = await db.RegistrosAntropometricos
+            .Where(r => r.PacienteId == pacienteId && r.DataHora >= inicio)
+            .OrderBy(r => r.DataHora)
+            .Select(r => new PontoSerieAntropometrica(r.DataHora, r.Peso, r.Imc, r.ClassificacaoImc))
+            .ToListAsync(ct);
+
+        return Resultado<SerieAntropometricaResponse>.Ok(
+            new SerieAntropometricaResponse(dias, pontos));
     }
 
     /// <summary>RN05 e o soft delete do DER: remover é inativar, nunca apagar.</summary>
