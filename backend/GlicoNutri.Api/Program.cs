@@ -47,6 +47,7 @@ builder.Services.AddScoped<IGlicemiaService, GlicemiaService>();
 builder.Services.AddScoped<IRegistroEmocionalService, RegistroEmocionalService>();
 builder.Services.AddScoped<IAlertaService, AlertaService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IRepositorioEducativoService, RepositorioEducativoService>();
 
 // ── Autenticação: o JwtMiddleware do C4 ─────────────────────────────────────
 var jwt = builder.Configuration.GetSection(JwtOptions.Secao).Get<JwtOptions>()

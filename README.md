@@ -74,5 +74,5 @@ aparecem as senhas provisórias geradas nos cadastros.
 - [x] UC011 — Dashboard do nutricionista
 - [x] UC012 — Registrar emoção e correlação com glicemia
 - [x] UC010 — Alertas e expiração automática
-- [ ] RF09 — Repositório educativo
+- [x] RF09 — Repositório educativo e receitas
 - [ ] Aplicativo mobile
