@@ -68,6 +68,19 @@ dotnet user-secrets set "Email:Senha" "<senha de app>"
 dotnet user-secrets set "Email:Remetente" "nao-responda@adj.org.br"
 ```
 
+## Testes
+
+```bash
+docker compose up -d          # os testes de integracao usam o Postgres local
+dotnet test backend/GlicoNutri.Tests
+```
+
+129 testes. Os unitarios cobrem os calculos clinicos (IMC, Harris-Benedict,
+Mifflin-St Jeor, macronutrientes, classificacao glicemica), o validador de CPF,
+a politica de senha e o leitor do CSV da TACO. Os de integracao sobem a API
+contra um banco Postgres descartavel e exercitam as regras cuja violacao
+corrompe dado clinico: RN02, RN03, RN06, RN13, RN15, RN16, RN19 e RN33.
+
 ## Estado
 
 - [x] Modelo de dados completo do DER V2.0 (30 tabelas, herança TPT)

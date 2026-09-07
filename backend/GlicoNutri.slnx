@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="GlicoNutri.Api/GlicoNutri.Api.csproj" />
+  <Project Path="GlicoNutri.Tests/GlicoNutri.Tests.csproj" />
 </Solution>
