@@ -21,3 +21,7 @@ dist/
 
 # EF
 *.db
+
+# Segredos locais
+secrets.json
+*.pgpass
