@@ -10,8 +10,18 @@ using Microsoft.IdentityModel.Tokens;
 var builder = WebApplication.CreateBuilder(args);
 
 // ── Persistência ────────────────────────────────────────────────────────────
-builder.Services.AddDbContext<GlicoNutriDbContext>(opt =>
-    opt.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+// Por padrão usa o Postgres local do docker-compose. Com USAR_SUPABASE=true a
+// aplicação aponta para a connection string do Supabase guardada no user-secrets
+// — nunca no repositório.
+var usarSupabase = builder.Configuration.GetValue<bool>("USAR_SUPABASE");
+var nomeConexao = usarSupabase ? "Supabase" : "Default";
+
+var conexao = builder.Configuration.GetConnectionString(nomeConexao)
+    ?? throw new InvalidOperationException(
+        $"Connection string '{nomeConexao}' não configurada. " +
+        "Para o Supabase: dotnet user-secrets set \"ConnectionStrings:Supabase\" \"...\"");
+
+builder.Services.AddDbContext<GlicoNutriDbContext>(opt => opt.UseNpgsql(conexao));
 
 // ── Configuração ────────────────────────────────────────────────────────────
 builder.Services.AddOptions<JwtOptions>()

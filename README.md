@@ -28,6 +28,27 @@ cd ../../web
 npm install && npm run dev                    # web em http://localhost:5173
 ```
 
+### Apontando para o Supabase
+
+A connection string fica no user-secrets, nunca no repositorio:
+
+```bash
+cd backend/GlicoNutri.Api
+dotnet user-secrets set "ConnectionStrings:Supabase" \
+  "Host=aws-0-sa-east-1.pooler.supabase.com;Port=5432;Database=postgres;Username=postgres.<REF>;Password=<SENHA>;SSL Mode=Require;Trust Server Certificate=true"
+
+USAR_SUPABASE=true ASPNETCORE_ENVIRONMENT=Development dotnet run
+```
+
+O host de conexao direta (`db.<REF>.supabase.co`) e **somente IPv6** e nem
+sempre e alcancavel; o acesso se da pelo pooler Supavisor, que tem IPv4:
+
+- **porta 5432 (session)** — obrigatoria para `dotnet ef database update`
+- **porta 6543 (transaction)** — recomendada para a aplicacao em producao,
+  exigindo `No Reset On Close=true;Max Auto Prepare=0` na string
+
+O usuario do pooler leva o ref do projeto: `postgres.<REF>`.
+
 O primeiro start cria o Administrador inicial (o sistema não permite
 auto-cadastro, conforme RN08 e RN09):
 
