@@ -3,17 +3,84 @@
 
 CAPA = {
     "titulo": "GlicoNutri",
-    "subtitulo": "Ecossistema digital de apoio ao controle nutricional do diabetes — "
-                 "documentação do sistema web e da API",
+    "sobretitulo": "Relatório de desenvolvimento",
+    "subtitulo": "O que foi construído até aqui no sistema web e na API, "
+                 "o que está pendente e o que depende de decisão sua",
     "meta": [
-        ("Trabalho de Conclusão de Curso", "Mateus Rossini Marques Pêgo · RA 219468"),
-        ("Instituição", "UniSalesiano Araçatuba · Tecnologia em Desenvolvimento de Sistemas"),
-        ("Parceria", "ADJ — Associação de Diabetes Juvenil de Birigui"),
-        ("Orientação", "Prof. Francisco Antônio de Sousa"),
+        ("Preparado para", "Mateus Rossini Marques Pêgo"),
+        ("Projeto", "GlicoNutri · TCC em parceria com a ADJ de Birigui"),
+        ("Etapa", "Sistema web e API concluídos; aplicativo mobile na sequência"),
+        ("Documento", "Entrega parcial de desenvolvimento"),
+    ],
+}
+
+SITUACAO = {
+    "intro": "Este documento mostra o estado do desenvolvimento. Cada módulo aparece com as "
+             "telas do sistema em funcionamento e a descrição do que faz, seguido da "
+             "rastreabilidade contra os requisitos e as regras de negócio da sua documentação.",
+    "entregue": [
+        "Os 36 requisitos funcionais da planilha de requisitos, versão 4.0",
+        "As 35 regras de negócio, com as três exceções detalhadas ao final",
+        "Os 12 casos de uso, incluindo os que o aplicativo mobile vai consumir",
+        "Os 597 alimentos da tabela TACO importados e disponíveis para os planos",
+    ],
+    "decisoes": [
+        ("Qual equação de Harris-Benedict",
+         "O sistema usa a revisão de Roza e Shizgal, de 1984, que é a mais precisa e a de uso "
+         "corrente. A equação original, de 1919, ainda é ensinada em parte dos cursos e produz "
+         "resultado diferente em algumas dezenas de quilocalorias por dia. A escolha muda a "
+         "prescrição de todos os pacientes e precisa ser validada pela equipe de Nutrição, como o "
+         "próprio projeto de pesquisa prevê. Trocar são quatro coeficientes."),
+        ("Distribuição padrão de macronutrientes",
+         "O caso de uso define faixas — carboidratos de 50 a 60%, proteínas de 15 a 20% e "
+         "lipídios de 25 a 30% — mas não um valor. O sistema parte de 55, 20 e 25, que fica dentro "
+         "das três e soma exatamente 100%. Vale confirmar se é o padrão que a ADJ adota."),
+        ("Índice glicêmico dos alimentos",
+         "A tabela TACO não publica esse dado em nenhum dos 597 alimentos. Num sistema de apoio ao "
+         "diabetes é a informação mais relevante clinicamente. Precisa vir de outra fonte, como a "
+         "tabela internacional de Sydney, ou do preenchimento pelo nutricionista."),
+        ("Conta de e-mail para o sistema",
+         "O envio está implementado e é ativado ao configurar as credenciais. Sem ele, as senhas "
+         "provisórias dos cadastros só aparecem no log da aplicação, o que inviabiliza cadastrar "
+         "usuários de verdade."),
+        ("Credencial do Google",
+         "O login com conta Google, exigido pela regra de negócio 01 e desenhado no diagrama de "
+         "contexto, está implementado nos dois lados. Falta criar a credencial no Google Cloud "
+         "Console para ativá-lo."),
+        ("Onde o sistema será publicado",
+         "Hoje ele roda em ambiente de desenvolvimento. A regra de negócio 31 exige comunicação "
+         "criptografada, o que depende de definir a hospedagem. É preciso saber se a defesa será "
+         "com o sistema no ar ou com demonstração local."),
+    ],
+    "divergencias": [
+        ("Campos previstos nos casos de uso sem coluna no modelo de dados",
+         "Os casos de uso mencionam CPF, data de nascimento e sexo do nutricionista, endereço do "
+         "paciente, observações no registro antropométrico e um nome para o plano alimentar. O "
+         "diagrama entidade-relacionamento não define colunas para esses dados. O sistema seguiu a "
+         "modelagem, e esses campos não aparecem nas telas."),
+        ("Enumerações como tabela ou como tipo do banco",
+         "O diagrama de classes, versão 5.0, converteu as enumerações em entidades com cadastro "
+         "próprio; o diagrama entidade-relacionamento, versão 2.0, as mantém como tipos do banco. "
+         "Os dois estão marcados como versão vigente. O sistema seguiu o diagrama de classes, que é "
+         "o mais recente — e isso já se mostrou útil: acrescentar um contexto de medição virou uma "
+         "linha de tabela, sem alterar o banco."),
+        ("Tipos de diabetes divergentes",
+         "O caso de uso de cadastro de paciente lista pré-diabetes; o modelo de dados lista MODY. "
+         "O sistema carregou o conjunto do modelo de dados. Como agora é tabela, incluir "
+         "pré-diabetes é um cadastro, não uma alteração de banco."),
+        ("Ator do registro antropométrico",
+         "O caso de uso 008 coloca o nutricionista como ator, o requisito 04.1 diz que o paciente "
+         "registra pelo aplicativo, e o diagrama de componentes marca o controlador como perfil "
+         "paciente. O sistema atende aos três: quem pode registrar é decidido por paciente, "
+         "conforme o vínculo."),
+        ("Duas versões marcadas como vigentes",
+         "As pastas V4.0 e V5.0 do diagrama de classes estão ambas marcadas como a mais recente. "
+         "Vale corrigir antes da entrega, para não haver dúvida sobre qual vale."),
     ],
 }
 
 SUMARIO = [
+    ("Situação da entrega", "O que está pronto e o que depende de você"),
     ("Visão geral do sistema", "Arquitetura, tecnologias e números"),
     ("Autenticação e controle de acesso", "Login, perfis, senha provisória e recuperação"),
     ("Gestão de usuários", "Cadastro de nutricionistas e pacientes"),
@@ -31,9 +98,10 @@ SUMARIO = [
 ]
 
 VISAO_GERAL = {
-    "intro": "O GlicoNutri é composto por uma API REST central, um sistema web para "
-             "nutricionistas e administradores, e um aplicativo mobile para os pacientes. "
-             "Este documento cobre o que está implementado na API e no sistema web.",
+    "intro": "O sistema é composto por uma API REST central, um sistema web para nutricionistas "
+             "e administradores, e um aplicativo mobile para os pacientes. A API e o sistema web "
+             "estão construídos; o aplicativo é a etapa seguinte, e os endpoints que ele vai "
+             "consumir já existem e estão testados.",
     "indicadores": [
         ("81", "endpoints"),
         ("31", "tabelas"),

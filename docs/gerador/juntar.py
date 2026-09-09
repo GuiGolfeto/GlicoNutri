@@ -9,13 +9,13 @@ for arquivo in ("capa.pdf", "miolo.pdf"):
         saida.add_page(pagina)
 
 saida.add_metadata({
-    "/Title": "GlicoNutri — Funcionalidades Implementadas",
-    "/Author": "Mateus Rossini Marques Pêgo",
-    "/Subject": "Documentação do sistema web e da API do GlicoNutri",
+    "/Title": "GlicoNutri — Relatório de Desenvolvimento",
+    
+    "/Subject": "Relatório de desenvolvimento do sistema web e da API do GlicoNutri",
     "/Keywords": "GlicoNutri, diabetes, nutrição, ADJ Birigui, TCC",
 })
 
-destino = RAIZ / "GlicoNutri-Funcionalidades.pdf"
+destino = RAIZ / "GlicoNutri-Relatorio-Desenvolvimento.pdf"
 with open(destino, "wb") as f:
     saida.write(f)
 print(f"  {destino.name}: {len(saida.pages)} páginas, {destino.stat().st_size/1048576:.1f} MB")

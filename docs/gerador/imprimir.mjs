@@ -25,7 +25,7 @@ async function imprimir(arquivo, saida, comRodape) {
     footerTemplate: comRodape ? `
       <div style="width:100%;font-family:Inter,-apple-system,sans-serif;font-size:7pt;
                   color:#94a3b8;padding:0 16mm;display:flex;justify-content:space-between;">
-        <span>GlicoNutri · Funcionalidades implementadas</span>
+        <span>GlicoNutri · Relatório de desenvolvimento</span>
         <span class="pageNumber"></span>
       </div>` : '<div></div>',
     // A capa sangra ate a borda; o miolo respira nas margens.

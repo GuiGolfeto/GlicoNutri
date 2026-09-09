@@ -53,10 +53,10 @@ meta = "".join(f"<div><dt>{e(k)}</dt><dd>{e(v)}</dd></div>" for k, v in C.CAPA["
 partes.append(f"""
 <div class="capa">
   <div class="marca"><span class="gota">◐</span> GlicoNutri</div>
+  <p class="sobretitulo">{e(C.CAPA['sobretitulo'])}</p>
   <h1>{e(C.CAPA['titulo'])}</h1>
   <p class="subtitulo">{e(C.CAPA['subtitulo'])}</p>
   <dl class="rodape">{meta}
-    <div><dt>Documento</dt><dd>Funcionalidades implementadas</dd></div>
     <div><dt>Emitido em</dt><dd>{e(hoje)}</dd></div>
   </dl>
 </div>""")
@@ -65,6 +65,35 @@ partes.append(f"""
 itens = "".join(f'<li><span class="titulo">{e(t)}</span><span class="desc">{e(d)}</span></li>'
                 for t, d in C.SUMARIO)
 partes.append(f'<div class="secao sumario"><h2>Sumário</h2><ol>{itens}</ol></div>')
+
+# ── Situação da entrega ──
+S = C.SITUACAO
+entregue = "".join(f"<li>{e(x)}</li>" for x in S["entregue"])
+decisoes_voce = "".join(
+    f'<tr><td><strong>{e(t)}</strong></td><td>{e(d)}</td></tr>' for t, d in S["decisoes"])
+divergencias = "".join(
+    f'<tr><td><strong>{e(t)}</strong></td><td>{e(d)}</td></tr>' for t, d in S["divergencias"])
+partes.append(f"""
+<div class="secao">
+  <h2><span class="numero">1</span>Situação da entrega</h2>
+  <p class="intro">{e(S['intro'])}</p>
+
+  <h3>Implementado</h3>
+  <ul>{entregue}</ul>
+
+  <h3>Decisões que dependem de você</h3>
+  <p>Nenhuma delas impede o sistema de funcionar, mas todas precisam de resposta antes da
+  entrega final. As duas primeiras são clínicas e mudam o resultado das prescrições.</p>
+  <table><thead><tr><th style="width:30%">Assunto</th><th>Por quê</th></tr></thead>
+  <tbody>{decisoes_voce}</tbody></table>
+
+  <h3>Divergências encontradas na documentação</h3>
+  <p>Ao implementar, apareceram pontos em que os documentos discordam entre si. Em cada caso o
+  sistema seguiu a opção indicada abaixo, mas vale corrigir os documentos antes da defesa para
+  que ninguém encontre a contradição primeiro.</p>
+  <table><thead><tr><th style="width:30%">Ponto</th><th>Situação</th></tr></thead>
+  <tbody>{divergencias}</tbody></table>
+</div>""")
 
 # ── Visão geral ──
 v = C.VISAO_GERAL
@@ -78,7 +107,7 @@ decisoes = "".join(f"<tr><td><strong>{e(t)}</strong></td><td>{e(d)}</td></tr>"
                    for t, d in v["decisoes"])
 partes.append(f"""
 <div class="secao">
-  <h2><span class="numero">1</span>Visão geral do sistema</h2>
+  <h2><span class="numero">2</span>Visão geral do sistema</h2>
   <p class="intro">{e(v['intro'])}</p>
   <div class="indicadores">{ind}</div>
   <h3>Camadas</h3>
@@ -90,7 +119,7 @@ partes.append(f"""
 </div>""")
 
 # ── Seções ──
-for i, s in enumerate(C.SECOES, start=2):
+for i, s in enumerate(C.SECOES, start=3):
     funcoes = "".join(f"<tr><td><strong>{e(n)}</strong></td><td>{e(d)}</td></tr>" for n, d in s["funcoes"])
     telas = "".join(figura(nome, legenda) for nome, legenda in s["telas"])
     partes.append(f"""
@@ -105,7 +134,7 @@ for i, s in enumerate(C.SECOES, start=2):
 </div>""")
 
 # ── Validação ──
-n = len(C.SECOES) + 2
+n = len(C.SECOES) + 3
 grupos = "".join(f"<tr><td><strong>{e(t)}</strong></td><td>{e(d)}</td></tr>" for t, d in C.VALIDACAO["grupos"])
 partes.append(f"""
 <div class="secao">
