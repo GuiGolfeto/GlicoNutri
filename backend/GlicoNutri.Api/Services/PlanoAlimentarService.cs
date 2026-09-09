@@ -56,6 +56,25 @@ public class PlanoAlimentarService(GlicoNutriDbContext db) : IPlanoAlimentarServ
             return Resultado<PlanoAlimentarResponse>.Erro(
                 "A data de término não pode ser anterior à data de início.");
 
+        // Pela RN04 o Administrador herda as permissões do Nutricionista, mas ele
+        // não é um: o DER exige que nutricionista_id aponte para a tabela de
+        // nutricionistas. Quando quem elabora é o Administrador, o plano fica
+        // atribuído ao profissional responsável pelo paciente (RN07) — que é de
+        // quem a prescrição é, clinicamente.
+        if (!await db.Nutricionistas.AnyAsync(n => n.Id == nutricionistaId, ct))
+        {
+            var responsavel = await db.NutricionistaPaciente
+                .Where(v => v.PacienteId == pacienteId && v.Ativo)
+                .Select(v => (long?)v.NutricionistaId)
+                .FirstOrDefaultAsync(ct);
+
+            if (responsavel is null)
+                return Resultado<PlanoAlimentarResponse>.Erro(
+                    "Este paciente não possui nutricionista responsável ativo.");
+
+            nutricionistaId = responsavel.Value;
+        }
+
         // UC007 A2 — sempre executado. Sem ajuste explícito, aplica a distribuição
         // automática; com ajuste, é o RF03.2 sobrepondo o cálculo.
         var pct = pedido.Distribuicao ?? new DistribuicaoRequest(

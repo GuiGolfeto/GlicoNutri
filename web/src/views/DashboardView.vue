@@ -38,6 +38,22 @@ const acionaveis = computed(() =>
 const informativas = computed(() =>
   dados.value?.alertas.filter((a) => a.severidade === 'INFORMATIVO') ?? [])
 
+/**
+ * Cor por significado da classificação, não por posição na lista. A ordenação é
+ * por quantidade, então índice não diz nada: "Sem medição" saía em verde e
+ * "Peso normal" em laranja quando a contagem invertia.
+ */
+const CORES_IMC: Record<string, string> = {
+  'Peso normal': 'var(--success)',
+  'Sobrepeso': 'var(--warning)',
+  'Obesidade': 'var(--danger)',
+  'Abaixo do peso': 'var(--info)',
+  'Sem medição': 'var(--text-muted)',
+}
+
+const coresImc = computed(() =>
+  (dados.value?.classificacaoImc ?? []).map((f) => CORES_IMC[f.rotulo] ?? 'var(--text-muted)'))
+
 const hora = (iso: string | null) =>
   iso ? new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—'
 </script>
@@ -129,10 +145,7 @@ const hora = (iso: string | null) =>
 
         <section class="card">
           <h3>Classificação de IMC</h3>
-          <BarrasDistribuicao
-            :fatias="dados.classificacaoImc"
-            :cores="['var(--success)', 'var(--warning)', 'var(--danger)', 'var(--info)', 'var(--text-muted)']"
-          />
+          <BarrasDistribuicao :fatias="dados.classificacaoImc" :cores="coresImc" />
         </section>
       </div>
     </div>

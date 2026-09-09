@@ -1,0 +1,152 @@
+/* Identidade visual do proprio sistema, adaptada para impressao. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --primary: #00685d;
+  --primary-escuro: #004c44;
+  --teal-claro: #e0f2f1;
+  --texto: #0f172a;
+  --texto-suave: #475569;
+  --texto-fraco: #94a3b8;
+  --borda: #e2e8f0;
+  --fundo: #f7f9fb;
+  --sucesso: #16a34a;
+  --alerta: #d97706;
+  --perigo: #dc2626;
+}
+
+@page { size: A4; margin: 18mm 16mm 20mm; }
+
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Inter, -apple-system, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.55;
+  color: var(--texto);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.numerico { font-variant-numeric: tabular-nums; }
+
+/* ── Capa ─────────────────────────────────────────────────────────────── */
+.capa {
+  height: 297mm; width: 210mm;
+  padding: 34mm 24mm;
+  background: linear-gradient(160deg, var(--primary-escuro) 0%, var(--primary) 55%, #00897b 100%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.capa .marca { display: flex; align-items: center; gap: 10px; font-size: 15pt; font-weight: 600; }
+.capa .gota { font-size: 22pt; }
+
+.capa h1 {
+  font-size: 33pt; line-height: 1.12; font-weight: 700;
+  letter-spacing: -0.02em; margin: auto 0 0;
+}
+.capa .subtitulo { font-size: 13pt; font-weight: 400; opacity: 0.9; margin: 14px 0 0; max-width: 135mm; }
+
+.capa .rodape { margin-top: 26mm; display: grid; grid-template-columns: 1fr 1fr; gap: 7mm 12mm; font-size: 9.5pt; }
+.capa .rodape dt { opacity: 0.7; font-size: 8pt; letter-spacing: 0.08em; text-transform: uppercase; }
+.capa .rodape dd { margin: 3px 0 0; font-weight: 500; }
+
+/* ── Estrutura ────────────────────────────────────────────────────────── */
+.secao { page-break-before: always; }
+.secao:first-of-type { page-break-before: avoid; }
+
+h2 {
+  font-size: 19pt; font-weight: 600; letter-spacing: -0.01em;
+  color: var(--primary); margin: 0 0 3mm;
+  padding-bottom: 3mm; border-bottom: 2px solid var(--teal-claro);
+}
+h2 .numero { color: var(--texto-fraco); font-weight: 400; margin-right: 8px; }
+
+h3 { font-size: 12.5pt; font-weight: 600; margin: 8mm 0 2mm; page-break-after: avoid; }
+h4 { font-size: 10.5pt; font-weight: 600; margin: 5mm 0 1.5mm; color: var(--texto-suave); page-break-after: avoid; }
+
+p { margin: 0 0 3mm; }
+.intro { color: var(--texto-suave); font-size: 11pt; margin-bottom: 5mm; }
+
+ul { margin: 0 0 3mm; padding-left: 5mm; }
+li { margin-bottom: 1.5mm; }
+
+strong { font-weight: 600; }
+
+/* ── Etiquetas de requisito ───────────────────────────────────────────── */
+.req {
+  display: inline-block; font-size: 7.5pt; font-weight: 600;
+  padding: 1.5px 7px; border-radius: 9999px; margin-right: 4px;
+  background: var(--teal-claro); color: var(--primary);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.req.rn { background: #fef3c7; color: #78350f; }
+.req.uc { background: #e0e7ff; color: #3730a3; }
+
+.requisitos { margin: 0 0 4mm; }
+
+/* ── Telas ────────────────────────────────────────────────────────────── */
+figure { margin: 4mm 0 6mm; page-break-inside: avoid; }
+figure img {
+  width: 100%; display: block;
+  border: 1px solid var(--borda); border-radius: 6px;
+}
+figcaption {
+  font-size: 8.5pt; color: var(--texto-fraco);
+  margin-top: 2mm; text-align: center;
+}
+
+/* Telas altas ganham a pagina inteira. A altura util e 259mm; o teto deixa
+   espaco para a legenda, que senao transbordava sozinha para a pagina seguinte. */
+figure.alta { page-break-before: always; page-break-inside: avoid; }
+figure.alta img { max-height: 232mm; width: auto; margin: 0 auto; }
+
+/* ── Tabelas ──────────────────────────────────────────────────────────── */
+table { width: 100%; border-collapse: collapse; margin: 3mm 0 5mm; font-size: 9.5pt; }
+tr { page-break-inside: avoid; }
+thead { display: table-header-group; }
+thead th {
+  text-align: left; font-size: 7.5pt; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--texto-fraco);
+  padding: 0 3mm 2mm; border-bottom: 1.5px solid var(--borda);
+}
+td { padding: 2mm 3mm; border-bottom: 1px solid var(--borda); vertical-align: top; }
+tbody tr:last-child td { border-bottom: none; }
+td.numerico, th.numerico { text-align: right; }
+
+/* ── Blocos de destaque ───────────────────────────────────────────────── */
+.destaque {
+  background: var(--fundo); border-left: 3px solid var(--primary);
+  padding: 3.5mm 5mm; margin: 4mm 0; border-radius: 0 5px 5px 0;
+}
+.destaque.atencao { border-left-color: var(--alerta); background: #fffbeb; }
+.destaque p:last-child { margin-bottom: 0; }
+.destaque .titulo { font-weight: 600; font-size: 10pt; margin-bottom: 1.5mm; }
+
+/* ── Números ──────────────────────────────────────────────────────────── */
+.indicadores { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4mm; margin: 5mm 0; }
+.indicador {
+  border: 1px solid var(--borda); border-radius: 6px; padding: 4mm;
+  text-align: center; page-break-inside: avoid;
+}
+.indicador .valor { font-size: 21pt; font-weight: 700; color: var(--primary); line-height: 1; }
+.indicador .rotulo { font-size: 7.5pt; letter-spacing: 0.06em; text-transform: uppercase; color: var(--texto-fraco); margin-top: 2mm; }
+
+/* ── Sumário ──────────────────────────────────────────────────────────── */
+.sumario ol { list-style: none; padding: 0; counter-reset: item; }
+.sumario li {
+  counter-increment: item; display: flex; align-items: baseline; gap: 3mm;
+  padding: 2mm 0; border-bottom: 1px solid var(--borda); font-size: 10.5pt;
+}
+.sumario li::before { content: counter(item) "."; color: var(--texto-fraco); min-width: 7mm; font-variant-numeric: tabular-nums; }
+.sumario .titulo { flex: 1; font-weight: 500; }
+.sumario .desc { color: var(--texto-fraco); font-size: 9pt; }
+
+/* ── Estados ──────────────────────────────────────────────────────────── */
+.ok { color: var(--sucesso); font-weight: 600; }
+.pendente { color: var(--alerta); font-weight: 600; }
+.nao { color: var(--texto-fraco); }

@@ -41,10 +41,12 @@ public class AntropometriaService(GlicoNutriDbContext db) : IAntropometriaServic
             return Resultado<RegistroAntropometricoResponse>.Erro(
                 "A data da medição não pode estar no futuro.");
 
-        // UC008 A3 — o registro anterior é lido antes de gravar o novo, para
-        // compor o comparativo devolvido ao nutricionista.
+        // UC008 A3 — o comparativo é contra a medição imediatamente anterior no
+        // tempo, e não contra a mais recente do paciente. A distinção só aparece
+        // num lançamento retroativo, e sem ela o mesmo registro mostraria uma
+        // variação no momento do cadastro e outra no histórico.
         var anterior = await db.RegistrosAntropometricos
-            .Where(r => r.PacienteId == pacienteId)
+            .Where(r => r.PacienteId == pacienteId && r.DataHora < dataHora)
             .OrderByDescending(r => r.DataHora)
             .FirstOrDefaultAsync(ct);
 
