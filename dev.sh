@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Sobe, derruba e inspeciona o ambiente de desenvolvimento do GlicoNutri.
 #
-#   ./dev.sh up        sobe banco, API e front
-#   ./dev.sh up --supabase   idem, mas a API aponta para o Supabase
-#   ./dev.sh down      derruba API e front (o banco continua de pé)
+#   ./dev.sh up        sobe API e front contra o Supabase
+#   ./dev.sh up --local      idem, mas contra um Postgres local em Docker
+#   ./dev.sh down      derruba API e front
 #   ./dev.sh status    mostra o que está rodando
 #   ./dev.sh logs api|web    acompanha o log
 #   ./dev.sh test      roda a suite de testes
@@ -58,16 +58,15 @@ subir_banco() {
 }
 
 subir_api() {
-  local usar_supabase="${1:-false}"
+  local usar_local="${1:-false}"
 
   ( cd backend/GlicoNutri.Api
-    if [ "$usar_supabase" = "true" ]; then
-      amarelo "  API apontando para o Supabase"
-      USAR_SUPABASE=true ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS=http://localhost:5080 \
+    if [ "$usar_local" = "true" ]; then
+      amarelo "  API apontando para o Postgres local"
+      USAR_LOCAL=true dotnet ef database update >/dev/null 2>&1 || true
+      USAR_LOCAL=true ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS=http://localhost:5080 \
         nohup dotnet run --no-launch-profile > "$API_LOG" 2>&1 &
     else
-      # Garante o schema no banco local antes de subir.
-      dotnet ef database update >/dev/null 2>&1 || true
       ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS=http://localhost:5080 \
         nohup dotnet run --no-launch-profile > "$API_LOG" 2>&1 &
     fi )
@@ -85,15 +84,20 @@ subir_web() {
 
 case "${1:-up}" in
   up)
-    supabase=false
-    [ "${2:-}" = "--supabase" ] && supabase=true
+    local_db=false
+    [ "${2:-}" = "--local" ] && local_db=true
 
     echo "Subindo o GlicoNutri…"
-    subir_banco
+    if [ "$local_db" = "true" ]; then
+      subir_banco
+    else
+      verde "  Banco: Supabase (aws-0-sa-east-1)"
+    fi
+
     pkill -f "GlicoNutri.Api" 2>/dev/null || true
     pkill -f "vite" 2>/dev/null || true
     sleep 1
-    subir_api "$supabase"
+    subir_api "$local_db"
     subir_web
 
     echo
@@ -109,14 +113,11 @@ case "${1:-up}" in
   down)
     pkill -f "GlicoNutri.Api" 2>/dev/null && verde "  API parada" || amarelo "  API ja estava parada"
     pkill -f "vite" 2>/dev/null && verde "  Front parado" || amarelo "  Front ja estava parado"
-    amarelo "  O Postgres continua de pe. Para derrubar: docker compose down"
     ;;
 
   status)
-    pgrep -f "GlicoNutri.Api" >/dev/null && verde "  API ........ rodando" || vermelho "  API ........ parada"
-    pgrep -f "vite" >/dev/null && verde "  Front ...... rodando" || vermelho "  Front ...... parado"
-    docker ps --format '{{.Names}}' 2>/dev/null | grep -q gliconutri-db \
-      && verde "  Postgres ... rodando" || vermelho "  Postgres ... parado"
+    pgrep -f "GlicoNutri.Api" >/dev/null && verde "  API ...... rodando" || vermelho "  API ...... parada"
+    pgrep -f "vite" >/dev/null && verde "  Front .... rodando" || vermelho "  Front .... parado"
     ;;
 
   logs)
@@ -128,12 +129,13 @@ case "${1:-up}" in
     ;;
 
   test)
-    subir_banco
+    # Os testes de integracao criam e destroem um banco proprio no Supabase,
+    # com prefixo gliconutri_teste_, e varrem orfaos antes de comecar.
     dotnet test backend/GlicoNutri.Tests --nologo
     ;;
 
   *)
-    echo "uso: ./dev.sh [up [--supabase] | down | status | logs api|web | test]"
+    echo "uso: ./dev.sh [up [--local] | down | status | logs api|web | test]"
     exit 1
     ;;
 esac

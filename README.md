@@ -18,27 +18,37 @@ autenticação e do controle de acesso, como descrevem o C4 e as RN01–RN04.
 ## Como rodar
 
 ```bash
-./dev.sh up              # sobe banco, API e front
-./dev.sh up --supabase   # idem, com a API apontando para o Supabase
-./dev.sh status          # o que esta rodando
-./dev.sh logs api        # acompanha o log da API
-./dev.sh down            # derruba API e front
-./dev.sh test            # roda a suite de testes
+./dev.sh up          # sobe API e front contra o Supabase
+./dev.sh status      # o que esta rodando
+./dev.sh logs api    # acompanha o log da API
+./dev.sh down        # derruba API e front
+./dev.sh test        # roda a suite de testes
 ```
 
-O script cuida do runtime de container, do schema e das dependencias do
-front. Passo a passo, se preferir manual:
+O banco e o Supabase, e nao ha Postgres local no fluxo normal. Passo a
+passo, se preferir manual:
 
 ```bash
-docker compose up -d                          # Postgres na porta 5433
-
 cd backend/GlicoNutri.Api
-dotnet ef database update                     # cria o schema
+dotnet ef database update                     # aplica migrations pendentes
 ASPNETCORE_ENVIRONMENT=Development dotnet run # API em http://localhost:5080
 
 cd ../../web
 npm install && npm run dev                    # web em http://localhost:5173
 ```
+
+### Postgres local (opcional)
+
+O `docker-compose.yml` continua no repositorio para quem precisar trabalhar
+sem rede. Nesse caso, `./dev.sh up --local` sobe o container e aponta a API
+para ele.
+
+### Testes
+
+Os testes de integracao criam um banco proprio no Supabase, com prefixo
+`gliconutri_teste_`, aplicam as migrations nele e o destroem ao final.
+Orfaos de execucoes interrompidas sao varridos no inicio da proxima. O banco
+da aplicacao nunca e tocado.
 
 ### Apontando para o Supabase
 

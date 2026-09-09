@@ -4,6 +4,7 @@ using GlicoNutri.Api.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Npgsql;
 
 namespace GlicoNutri.Tests.Integracao;
@@ -15,17 +16,41 @@ namespace GlicoNutri.Tests.Integracao;
 /// </summary>
 public class ApiFixture : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    private const string Servidor = "Host=localhost;Port=5433;Username=gliconutri;Password=gliconutri_dev";
+    /// <summary>Prefixo dos bancos descartáveis, usado também para varrer órfãos.</summary>
+    private const string Prefixo = "gliconutri_teste_";
 
-    private readonly string _banco = $"gliconutri_teste_{Guid.NewGuid():N}"[..28];
+    private readonly string _banco = $"{Prefixo}{Guid.NewGuid():N}"[..28];
 
-    private string ConexaoDoTeste => $"{Servidor};Database={_banco}";
+    /// <summary>
+    /// A connection string vem do user-secrets compartilhado com a API — a mesma
+    /// chave que a aplicação usa —, para a senha do banco não entrar no código
+    /// nem no repositório.
+    /// </summary>
+    private static readonly string ConexaoBase =
+        new ConfigurationBuilder()
+            .AddUserSecrets<ApiFixture>()
+            .AddEnvironmentVariables()
+            .Build()
+            .GetConnectionString("Supabase")
+        ?? throw new InvalidOperationException(
+            "ConnectionStrings:Supabase não configurada. Rode: dotnet user-secrets set " +
+            "\"ConnectionStrings:Supabase\" \"...\" no projeto GlicoNutri.Api.");
+
+    private static string TrocarBanco(string conexao, string banco) =>
+        new NpgsqlConnectionStringBuilder(conexao) { Database = banco }.ConnectionString;
+
+    private string ConexaoDoTeste => TrocarBanco(ConexaoBase, _banco);
 
     async Task IAsyncLifetime.InitializeAsync()
     {
-        await using (var admin = new NpgsqlConnection($"{Servidor};Database=postgres"))
+        await using (var admin = new NpgsqlConnection(TrocarBanco(ConexaoBase, "postgres")))
         {
             await admin.OpenAsync();
+
+            // Uma execução interrompida deixa banco para trás. Varrer antes evita
+            // que os descartáveis se acumulem no projeto ao longo do tempo.
+            await LimparOrfaosAsync(admin);
+
             await using var cmd = new NpgsqlCommand($"CREATE DATABASE \"{_banco}\"", admin);
             await cmd.ExecuteNonQueryAsync();
         }
@@ -42,19 +67,47 @@ public class ApiFixture : WebApplicationFactory<Program>, IAsyncLifetime
         await base.DisposeAsync();
         NpgsqlConnection.ClearAllPools();
 
-        await using var admin = new NpgsqlConnection($"{Servidor};Database=postgres");
+        await using var admin = new NpgsqlConnection(TrocarBanco(ConexaoBase, "postgres"));
         await admin.OpenAsync();
         await using var cmd = new NpgsqlCommand(
             $"DROP DATABASE IF EXISTS \"{_banco}\" WITH (FORCE)", admin);
         await cmd.ExecuteNonQueryAsync();
     }
 
+    /// <summary>
+    /// Remove bancos de teste de execuções anteriores. Só apaga o que casa com o
+    /// prefixo: o banco da aplicação nunca entra no filtro.
+    /// </summary>
+    private static async Task LimparOrfaosAsync(NpgsqlConnection admin)
+    {
+        var orfaos = new List<string>();
+
+        await using (var busca = new NpgsqlCommand(
+            "select datname from pg_database where datname like @prefixo", admin))
+        {
+            busca.Parameters.AddWithValue("prefixo", $"{Prefixo}%");
+            await using var leitor = await busca.ExecuteReaderAsync();
+            while (await leitor.ReadAsync()) orfaos.Add(leitor.GetString(0));
+        }
+
+        foreach (var orfao in orfaos)
+        {
+            await using var drop = new NpgsqlCommand(
+                $"DROP DATABASE IF EXISTS \"{orfao}\" WITH (FORCE)", admin);
+            await drop.ExecuteNonQueryAsync();
+        }
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");
 
+        // Sobrescreve as DUAS chaves. A aplicação escolhe entre elas por
+        // configuração, e deixar qualquer uma apontando para o banco real faria
+        // a suíte escrever em produção.
+        builder.UseSetting("ConnectionStrings:Supabase", ConexaoDoTeste);
         builder.UseSetting("ConnectionStrings:Default", ConexaoDoTeste);
-        builder.UseSetting("USAR_SUPABASE", "false");
+        builder.UseSetting("USAR_LOCAL", "false");
         builder.UseSetting("Jwt:Issuer", "gliconutri-teste");
         builder.UseSetting("Jwt:Audience", "gliconutri-teste");
         builder.UseSetting("Jwt:SigningKey", "chave-de-teste-com-mais-de-32-bytes-para-o-hmac");
