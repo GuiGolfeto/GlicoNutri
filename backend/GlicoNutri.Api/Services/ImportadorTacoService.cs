@@ -25,6 +25,9 @@ public class ImportadorTacoService(GlicoNutriDbContext db, ILogger<ImportadorTac
     /// <summary>Teto por arquivo, para uma planilha errada não travar a API.</summary>
     private const int LimiteLinhas = 5000;
 
+    private static readonly string[] ColunasNumericas =
+        ["calorias", "carboidratos", "proteinas", "lipidios", "fibras"];
+
     public async Task<Resultado<ResultadoImportacao>> ImportarAsync(
         Stream arquivo, CancellationToken ct = default)
     {
@@ -119,13 +122,17 @@ public class ImportadorTacoService(GlicoNutriDbContext db, ILogger<ImportadorTac
 
             // A planilha oficial da TACO separa os alimentos por seções, e o
             // título da seção ocupa a própria coluna de descrição — não uma linha
-            // em branco. Uma linha com nome mas sem nenhum valor nutricional é
-            // esse título: não é alimento nem erro, é a estrutura do arquivo.
-            // Guardado como grupo corrente, cobre os arquivos sem coluna de grupo.
-            var semNenhumValor = calorias is null && carboidratos is null
-                              && proteinas is null && lipidios is null;
+            // em branco.
+            //
+            // O que separa um título de um alimento não é o valor ausente, e sim
+            // a célula vazia: a 4ª edição publica "*" (não determinado) em todos
+            // os macronutrientes de alguns itens reais, como o leite de vaca
+            // líquido e o sal. Decidir pelo valor nulo descartaria esses
+            // alimentos silenciosamente; decidir pela célula vazia não.
+            var todasCelulasVazias = ColunasNumericas.All(campo =>
+                string.IsNullOrWhiteSpace(Campo(csv, mapa, campo)));
 
-            if (semNenhumValor)
+            if (todasCelulasVazias)
             {
                 grupoCorrente = nome;
                 lidas--;
