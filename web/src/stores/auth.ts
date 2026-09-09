@@ -43,6 +43,39 @@ export const useAuthStore = defineStore('auth', () => {
     return data
   }
 
+  /**
+   * RN03 do UC001 — renova o token em uso ativo. Sem isto a sessão morre 24h
+   * depois do login, e o nutricionista perde o que estava preenchendo.
+   */
+  async function renovar() {
+    if (!token.value) return
+    try {
+      const { data } = await api.post<LoginResponse>('/auth/renovar')
+      guardar(data)
+    } catch {
+      // Token já expirado ou conta desativada: o interceptador de 401 cuida.
+    }
+  }
+
+  /** Minutos antes da expiração em que vale a pena renovar. */
+  const MARGEM_MINUTOS = 60
+
+  /** Renova quando falta pouco, e ao voltar para a aba após um tempo parado. */
+  function iniciarRenovacaoAutomatica() {
+    const precisaRenovar = () => {
+      if (!usuario.value?.expiraEm) return false
+      const restante = new Date(usuario.value.expiraEm).getTime() - Date.now()
+      return restante < MARGEM_MINUTOS * 60_000
+    }
+
+    const verificar = () => { if (autenticado.value && precisaRenovar()) renovar() }
+
+    setInterval(verificar, 5 * 60_000)
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') verificar()
+    })
+  }
+
   async function alterarSenha(senhaAtual: string, novaSenha: string) {
     await api.post('/auth/alterar-senha', { senhaAtual, novaSenha })
     // O token em mãos ainda carrega senha_provisoria=true; reautenticar com a
@@ -60,5 +93,6 @@ export const useAuthStore = defineStore('auth', () => {
   return {
     token, usuario, autenticado, perfil, precisaTrocarSenha,
     ehNutricionista, ehAdministrador, entrar, entrarComGoogle, alterarSenha, sair,
+    renovar, iniciarRenovacaoAutomatica,
   }
 })

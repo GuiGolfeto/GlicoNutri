@@ -28,6 +28,16 @@ async function carregar() {
 
 onMounted(carregar)
 
+async function remover(id: number) {
+  erro.value = ''
+  try {
+    await api.delete(`/pacientes/${props.pacienteId}/emocoes/${id}`)
+    await carregar()
+  } catch (e) {
+    erro.value = mensagemDeErro(e)
+  }
+}
+
 const intensidade = (n: number) => '●'.repeat(n) + '○'.repeat(5 - n)
 
 const quando = (iso: string) =>
@@ -98,6 +108,7 @@ const desvio = (media: number | null) => {
               <strong>{{ r.estadoEmocional }}</strong>
               <span class="escala">{{ intensidade(r.intensidade) }}</span>
               <span v-if="r.descricao" class="descricao">{{ r.descricao }}</span>
+              <button class="remover" @click="remover(r.id)">remover</button>
             </li>
           </ul>
         </details>
@@ -122,5 +133,9 @@ const desvio = (media: number | null) => {
   padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 14px;
 }
 .data { color: var(--text-muted); font-size: 12px; min-width: 100px; }
-.descricao { color: var(--text-secondary); font-size: 13px; }
+.descricao { color: var(--text-secondary); font-size: 13px; flex: 1; }
+.remover {
+  background: none; border: none; color: var(--danger);
+  font-family: inherit; font-size: 12px; cursor: pointer; padding: 0;
+}
 </style>

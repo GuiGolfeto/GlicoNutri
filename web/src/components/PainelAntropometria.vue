@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { api, mensagemDeErro } from '../api/client'
-import type { CriarRegistroAntropometrico, RegistroAntropometrico } from '../api/tipos'
+import type { CriarRegistroAntropometrico, RegistroAntropometrico, SerieAntropometrica } from '../api/tipos'
+import GraficoLinha, { type PontoGrafico } from './GraficoLinha.vue'
 
 const props = defineProps<{ pacienteId: number }>()
 const emit = defineEmits<{ registrado: [] }>()
 
 const historico = ref<RegistroAntropometrico[]>([])
+const serie = ref<SerieAntropometrica | null>(null)
+const metrica = ref<'peso' | 'imc'>('peso')
 const carregando = ref(true)
 const erro = ref('')
 const abrindoForm = ref(false)
@@ -33,8 +36,14 @@ const imcPrevia = computed(() => {
 async function carregar() {
   carregando.value = true
   try {
-    const { data } = await api.get<RegistroAntropometrico[]>(`/pacientes/${props.pacienteId}/antropometria`)
-    historico.value = data
+    const [h, s] = await Promise.all([
+      api.get<RegistroAntropometrico[]>(`/pacientes/${props.pacienteId}/antropometria`),
+      api.get<SerieAntropometrica>(`/pacientes/${props.pacienteId}/antropometria/serie`, {
+        params: { dias: 90 },
+      }),
+    ])
+    historico.value = h.data
+    serie.value = s.data
   } catch (e) {
     erro.value = mensagemDeErro(e, 'Não foi possível carregar as medidas.')
   } finally {
@@ -69,6 +78,28 @@ function abrir() {
   // e evita erro num campo que entra ao quadrado no IMC.
   if (ultimo.value) form.altura = ultimo.value.altura
   abrindoForm.value = true
+}
+
+/** RF08.2 — evolução de peso e IMC. As duas escalas não convivem num eixo só. */
+const pontos = computed<PontoGrafico[]>(() =>
+  (serie.value?.pontos ?? [])
+    .filter((p) => (metrica.value === 'peso' ? p.peso : p.imc) != null)
+    .map((p) => ({
+      data: p.dataHora,
+      valor: metrica.value === 'peso' ? p.peso : p.imc!,
+      rotulo: p.classificacaoImc ?? undefined,
+    })))
+
+/** RN12 — remover é inativar; o registro sai do histórico mas não do banco. */
+async function remover(r: RegistroAntropometrico) {
+  erro.value = ''
+  try {
+    await api.delete(`/pacientes/${props.pacienteId}/antropometria/${r.id}`)
+    await carregar()
+    emit('registrado')
+  } catch (e) {
+    erro.value = mensagemDeErro(e)
+  }
 }
 
 const seloImc = (c: string | null) =>
@@ -142,9 +173,20 @@ const data = (iso: string) => new Date(iso).toLocaleDateString('pt-BR')
       Nenhuma medição registrada. É o primeiro passo antes do cálculo energético.
     </p>
 
-    <table v-else-if="historico.length" class="tabela">
+    <template v-if="historico.length > 1">
+      <div class="entre titulo-grafico">
+        <span class="rotulo-grafico">Evolução em 90 dias</span>
+        <div class="metricas">
+          <button class="metrica" :class="{ ativo: metrica === 'peso' }" @click="metrica = 'peso'">Peso</button>
+          <button class="metrica" :class="{ ativo: metrica === 'imc' }" @click="metrica = 'imc'">IMC</button>
+        </div>
+      </div>
+      <GraficoLinha :pontos="pontos" :unidade="metrica === 'peso' ? 'kg' : ''" :altura="170" />
+    </template>
+
+    <table v-if="historico.length" class="tabela">
       <thead>
-        <tr><th>Data</th><th>Peso</th><th>IMC</th><th>RCQ</th><th>Variação</th></tr>
+        <tr><th>Data</th><th>Peso</th><th>IMC</th><th>RCQ</th><th>Variação</th><th></th></tr>
       </thead>
       <tbody>
         <tr v-for="r in historico" :key="r.id">
@@ -163,6 +205,9 @@ const data = (iso: string) => new Date(iso).toLocaleDateString('pt-BR')
               ({{ sinal(r.comparativoPeso.deltaPercentual) }}%)
             </span>
             <span v-else class="primeiro">primeira</span>
+          </td>
+          <td class="acao">
+            <button class="remover" @click="remover(r)">remover</button>
           </td>
         </tr>
       </tbody>
@@ -184,4 +229,20 @@ const data = (iso: string) => new Date(iso).toLocaleDateString('pt-BR')
 .baixa { color: var(--success); }
 .alta { color: var(--warning); }
 .primeiro { color: var(--text-muted); font-size: 13px; }
+
+.titulo-grafico { margin: var(--md) 0 var(--xs); }
+.rotulo-grafico { font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); }
+.metricas { display: flex; border: 1px solid var(--border); border-radius: var(--raio); overflow: hidden; }
+.metrica {
+  font-family: inherit; font-size: 12px; padding: 4px 12px;
+  background: var(--surface); border: none; cursor: pointer; color: var(--text-secondary);
+}
+.metrica + .metrica { border-left: 1px solid var(--border); }
+.metrica.ativo { background: var(--teal-light); color: var(--primary); font-weight: 500; }
+
+.acao { text-align: right; }
+.remover {
+  background: none; border: none; color: var(--danger);
+  font-family: inherit; font-size: 12px; cursor: pointer; padding: 0;
+}
 </style>

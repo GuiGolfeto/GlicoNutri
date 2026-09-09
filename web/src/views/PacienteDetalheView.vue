@@ -65,6 +65,26 @@ async function salvarMetas() {
   }
 }
 
+/**
+ * RN05 — desativar é soft delete: nenhum dado clínico é apagado, e a reativação
+ * restaura o acesso a todo o histórico.
+ */
+async function alternarSituacao() {
+  if (!paciente.value) return
+  erro.value = ''
+  sucesso.value = ''
+  try {
+    if (paciente.value.ativo) await api.delete(`/pacientes/${id.value}`)
+    else await api.post(`/pacientes/${id.value}/reativar`, {})
+    await carregar()
+    sucesso.value = paciente.value?.ativo
+      ? 'Paciente reativado, com todo o histórico preservado.'
+      : 'Paciente desativado. Nenhum dado clínico foi apagado.'
+  } catch (e) {
+    erro.value = mensagemDeErro(e)
+  }
+}
+
 function baixarRelatorio(tipo: 'glicemico' | 'antropometrico' | 'completo') {
   const url = `${api.defaults.baseURL}/pacientes/${id.value}/relatorios/${tipo}`
   api.get(url, { responseType: 'blob' }).then((resposta) => {
@@ -100,6 +120,10 @@ const formatarData = (iso: string) => new Date(iso).toLocaleDateString('pt-BR', 
         <RouterLink class="btn btn-secundario" :to="{ name: 'paciente-editar', params: { id: paciente.id } }">
           Editar
         </RouterLink>
+        <button class="btn" :class="paciente.ativo ? 'btn-perigo' : 'btn-secundario'"
+                @click="alternarSituacao">
+          {{ paciente.ativo ? 'Desativar' : 'Reativar' }}
+        </button>
       </div>
     </div>
 

@@ -25,6 +25,15 @@ const enviando = ref(false)
 
 const form = reactive({ valor: null as number | null, contextoId: null as number | null, observacao: '' })
 
+// UC012 — registro emocional pelo próprio paciente.
+const emocoes = ref<Referencia[]>([])
+const registrandoEmocao = ref(false)
+const formEmocao = reactive({
+  estadosEmocionaisIds: [] as number[],
+  intensidade: 3,
+  descricao: '',
+})
+
 async function carregar() {
   carregando.value = true
   try {
@@ -48,9 +57,13 @@ async function carregar() {
 }
 
 onMounted(async () => {
-  const { data } = await api.get<Referencia[]>('/referencias/contextos-glicemia')
-  contextos.value = data
-  form.contextoId = data[0]?.id ?? null
+  const [ctx, emo] = await Promise.all([
+    api.get<Referencia[]>('/referencias/contextos-glicemia'),
+    api.get<Referencia[]>('/referencias/estados-emocionais'),
+  ])
+  contextos.value = ctx.data
+  emocoes.value = emo.data
+  form.contextoId = ctx.data[0]?.id ?? null
 
   // RN35 — ao abrir a sessão, os alertas pendentes fora da janela expiram.
   api.post(`/pacientes/${id.value}/alertas/verificar-expirados`, {}).catch(() => {})
@@ -80,6 +93,35 @@ async function registrar() {
   }
 }
 
+/** RN01 do UC012 — ao menos uma emoção precisa estar selecionada. */
+function alternarEmocao(id: number) {
+  const i = formEmocao.estadosEmocionaisIds.indexOf(id)
+  if (i >= 0) formEmocao.estadosEmocionaisIds.splice(i, 1)
+  else formEmocao.estadosEmocionaisIds.push(id)
+}
+
+async function registrarEmocao() {
+  erro.value = ''
+  sucesso.value = ''
+  enviando.value = true
+  try {
+    await api.post(`/pacientes/${id.value}/emocoes`, {
+      estadosEmocionaisIds: formEmocao.estadosEmocionaisIds,
+      intensidade: formEmocao.intensidade,
+      descricao: formEmocao.descricao || null,
+    })
+    formEmocao.estadosEmocionaisIds = []
+    formEmocao.intensidade = 3
+    formEmocao.descricao = ''
+    registrandoEmocao.value = false
+    sucesso.value = 'Registro emocional salvo.'
+  } catch (e) {
+    erro.value = mensagemDeErro(e)
+  } finally {
+    enviando.value = false
+  }
+}
+
 const ultima = computed(() => historico.value?.registros[0] ?? null)
 
 const pontos = computed<PontoGrafico[]>(() =>
@@ -101,9 +143,14 @@ const primeiroNome = computed(() => auth.usuario?.nome.split(' ')[0] ?? '')
       <h1>Olá, {{ primeiroNome }}</h1>
       <p class="sub">Seu acompanhamento nutricional</p>
     </div>
-    <button v-if="!registrando" class="btn btn-primario" @click="registrando = true">
-      Registrar glicemia
-    </button>
+    <div class="linha">
+      <button v-if="!registrandoEmocao" class="btn btn-secundario" @click="registrandoEmocao = true">
+        Como me sinto
+      </button>
+      <button v-if="!registrando" class="btn btn-primario" @click="registrando = true">
+        Registrar glicemia
+      </button>
+    </div>
   </div>
 
   <div v-if="erro" class="aviso aviso-erro">{{ erro }}</div>
@@ -135,6 +182,43 @@ const primeiroNome = computed(() => auth.usuario?.nome.split(' ')[0] ?? '')
         </button>
         <button class="btn btn-secundario" type="button" @click="registrando = false">Cancelar</button>
       </div>
+    </form>
+  </section>
+
+  <!-- UC012 — registro emocional; opcional por natureza (RN22) -->
+  <section v-if="registrandoEmocao" class="card">
+    <h3>Como você está se sentindo?</h3>
+    <form @submit.prevent="registrarEmocao">
+      <div class="emocoes">
+        <button v-for="e in emocoes" :key="e.id" type="button" class="emocao"
+                :class="{ ativa: formEmocao.estadosEmocionaisIds.includes(e.id) }"
+                @click="alternarEmocao(e.id)">
+          {{ e.descricao }}
+        </button>
+      </div>
+
+      <div class="campo intensidade">
+        <label for="intensidade">Intensidade: <strong>{{ formEmocao.intensidade }}</strong> de 5</label>
+        <input id="intensidade" v-model.number="formEmocao.intensidade" type="range" min="1" max="5" />
+        <span class="ajuda">1 é leve, 5 é muito intenso.</span>
+      </div>
+
+      <div class="campo">
+        <label for="desc-emocao">Quer contar o que aconteceu?</label>
+        <input id="desc-emocao" v-model="formEmocao.descricao" maxlength="500" placeholder="Opcional" />
+      </div>
+
+      <div class="linha">
+        <button class="btn btn-primario" type="submit"
+                :disabled="enviando || formEmocao.estadosEmocionaisIds.length === 0">
+          {{ enviando ? 'Salvando…' : 'Salvar' }}
+        </button>
+        <button class="btn btn-secundario" type="button" @click="registrandoEmocao = false">Cancelar</button>
+      </div>
+      <p class="apoio">
+        Registrar como você se sente ajuda seu nutricionista a entender o que
+        influencia sua glicemia. É opcional.
+      </p>
     </form>
   </section>
 
@@ -272,5 +356,17 @@ const primeiroNome = computed(() => auth.usuario?.nome.split(' ')[0] ?? '')
 .refeicoes li:last-child, .lembretes li:last-child, .receitas li:last-child { border-bottom: none; }
 .nome, .texto { flex: 1; }
 .hora { color: var(--primary); font-weight: 500; min-width: 92px; }
+
+.emocoes { display: flex; flex-wrap: wrap; gap: var(--xs); margin-bottom: var(--md); }
+.emocao {
+  font-family: inherit; font-size: 15px; padding: 9px 18px;
+  border: 1px solid var(--border); border-radius: 9999px;
+  background: var(--surface); color: var(--text-secondary); cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.emocao:hover { background: var(--hover); }
+.emocao.ativa { background: var(--teal-light); border-color: var(--primary); color: var(--primary); font-weight: 500; }
+
+.intensidade input[type=range] { accent-color: var(--primary); }
 .receitas li { flex-direction: column; align-items: flex-start; gap: 2px; }
 </style>

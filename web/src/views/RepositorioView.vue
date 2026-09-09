@@ -27,6 +27,10 @@ const formReceita = reactive({
 const formConteudo = reactive({ titulo: '', tipoId: null as number | null, corpo: '' })
 const abrindo = ref<'receita' | 'conteudo' | null>(null)
 
+// Quando preenchido, o formulário está editando em vez de criar.
+const editandoReceita = ref<number | null>(null)
+const editandoConteudo = ref<number | null>(null)
+
 // Seletor de ingredientes
 const busca = ref('')
 const resultados = ref<Alimento[]>([])
@@ -54,9 +58,16 @@ async function carregar() {
   try {
     const [r, c] = await Promise.all([
       api.get<Receita[]>('/receitas', {
-        params: { termo: termo.value || undefined, ingrediente: ingrediente.value || undefined },
+        params: {
+          termo: termo.value || undefined,
+          ingrediente: ingrediente.value || undefined,
+          // RN29 — só quem despublica enxerga o que está fora do ar.
+          incluirInativas: auth.ehAdministrador || undefined,
+        },
       }),
-      api.get<ConteudoEducativo[]>('/conteudos', { params: { termo: termo.value || undefined } }),
+      api.get<ConteudoEducativo[]>('/conteudos', {
+        params: { termo: termo.value || undefined, incluirInativos: auth.ehAdministrador || undefined },
+      }),
     ])
     receitas.value = r.data
     conteudos.value = c.data
@@ -88,19 +99,53 @@ function adicionarIngrediente() {
   quantidade.value = 100
 }
 
+function editarReceita(r: Receita) {
+  Object.assign(formReceita, {
+    nome: r.nome,
+    descricao: r.descricao ?? '',
+    tempoPreparo: r.tempoPreparo,
+    porcoes: r.porcoes,
+    instrucoes: r.instrucoes ?? '',
+    ingredientes: r.ingredientes.map((i) => ({
+      alimentoId: i.alimentoId, quantidade: i.quantidade,
+      unidade: i.unidade ?? 'g', nome: i.alimentoNome,
+    })),
+  })
+  editandoReceita.value = r.id
+  abrindo.value = 'receita'
+}
+
+function editarConteudo(c: ConteudoEducativo) {
+  Object.assign(formConteudo, { titulo: c.titulo, tipoId: c.tipoId, corpo: c.corpo ?? '' })
+  editandoConteudo.value = c.id
+  abrindo.value = 'conteudo'
+}
+
+function fecharFormulario() {
+  abrindo.value = null
+  editandoReceita.value = null
+  editandoConteudo.value = null
+  Object.assign(formReceita, {
+    nome: '', descricao: '', tempoPreparo: null, porcoes: null, instrucoes: '', ingredientes: [],
+  })
+  formConteudo.titulo = ''
+  formConteudo.corpo = ''
+}
+
 async function salvarReceita() {
   erro.value = ''
   enviando.value = true
   try {
-    await api.post('/receitas', {
+    const corpo = {
       ...formReceita,
       ingredientes: formReceita.ingredientes.map(({ nome, ...i }) => i),
-    })
-    abrindo.value = null
-    Object.assign(formReceita, {
-      nome: '', descricao: '', tempoPreparo: null, porcoes: null, instrucoes: '', ingredientes: [],
-    })
-    sucesso.value = 'Receita publicada.'
+    }
+    if (editandoReceita.value) await api.put(`/receitas/${editandoReceita.value}`, corpo)
+    else await api.post('/receitas', corpo)
+
+    const acao = editandoReceita.value ? 'atualizada' : 'publicada'
+    fecharFormulario()
+    sucesso.value = `Receita ${acao}.`
     await carregar()
   } catch (e) {
     erro.value = mensagemDeErro(e)
@@ -113,11 +158,12 @@ async function salvarConteudo() {
   erro.value = ''
   enviando.value = true
   try {
-    await api.post('/conteudos', formConteudo)
-    abrindo.value = null
-    formConteudo.titulo = ''
-    formConteudo.corpo = ''
-    sucesso.value = 'Conteúdo publicado.'
+    if (editandoConteudo.value) await api.put(`/conteudos/${editandoConteudo.value}`, formConteudo)
+    else await api.post('/conteudos', formConteudo)
+
+    const acao = editandoConteudo.value ? 'atualizado' : 'publicado'
+    fecharFormulario()
+    sucesso.value = `Conteúdo ${acao}.`
     await carregar()
   } catch (e) {
     erro.value = mensagemDeErro(e)
@@ -137,6 +183,18 @@ async function despublicar(tipo: 'receitas' | 'conteudos', id: number) {
     erro.value = mensagemDeErro(e)
   }
 }
+
+/** RN29 — a despublicação é lógica, então republicar devolve o item ao ar. */
+async function republicar(tipo: 'receitas' | 'conteudos', id: number) {
+  erro.value = ''
+  try {
+    await api.post(`/${tipo}/${id}/republicar`, {})
+    sucesso.value = 'Item republicado.'
+    await carregar()
+  } catch (e) {
+    erro.value = mensagemDeErro(e)
+  }
+}
 </script>
 
 <template>
@@ -146,10 +204,10 @@ async function despublicar(tipo: 'receitas' | 'conteudos', id: number) {
       <p class="sub">Receitas e conteúdos disponíveis aos pacientes no aplicativo</p>
     </div>
     <div class="linha">
-      <button class="btn btn-secundario" @click="abrindo = abrindo === 'conteudo' ? null : 'conteudo'">
+      <button class="btn btn-secundario" @click="fecharFormulario(); abrindo = 'conteudo'">
         Novo conteúdo
       </button>
-      <button class="btn btn-primario" @click="abrindo = abrindo === 'receita' ? null : 'receita'">
+      <button class="btn btn-primario" @click="fecharFormulario(); abrindo = 'receita'">
         Nova receita
       </button>
     </div>
@@ -160,7 +218,7 @@ async function despublicar(tipo: 'receitas' | 'conteudos', id: number) {
 
   <!-- RF09.1 — cadastro de receita -->
   <section v-if="abrindo === 'receita'" class="card">
-    <h3>Nova receita</h3>
+    <h3>{{ editandoReceita ? 'Editar receita' : 'Nova receita' }}</h3>
     <form @submit.prevent="salvarReceita">
       <div class="campo">
         <label for="rnome">Nome *</label>
@@ -220,16 +278,16 @@ async function despublicar(tipo: 'receitas' | 'conteudos', id: number) {
       <div class="acoes">
         <button class="btn btn-primario" type="submit"
                 :disabled="enviando || !formReceita.nome || formReceita.ingredientes.length === 0">
-          {{ enviando ? 'Publicando…' : 'Publicar receita' }}
+          {{ enviando ? 'Salvando…' : editandoReceita ? 'Salvar alterações' : 'Publicar receita' }}
         </button>
-        <button class="btn btn-secundario" type="button" @click="abrindo = null">Cancelar</button>
+        <button class="btn btn-secundario" type="button" @click="fecharFormulario">Cancelar</button>
       </div>
     </form>
   </section>
 
   <!-- RF09.2 — conteúdo educativo -->
   <section v-if="abrindo === 'conteudo'" class="card">
-    <h3>Novo conteúdo educativo</h3>
+    <h3>{{ editandoConteudo ? 'Editar conteúdo' : 'Novo conteúdo educativo' }}</h3>
     <form @submit.prevent="salvarConteudo">
       <div class="grade-2">
         <div class="campo">
@@ -250,9 +308,9 @@ async function despublicar(tipo: 'receitas' | 'conteudos', id: number) {
       </div>
       <div class="acoes">
         <button class="btn btn-primario" type="submit" :disabled="enviando || !formConteudo.titulo">
-          {{ enviando ? 'Publicando…' : 'Publicar conteúdo' }}
+          {{ enviando ? 'Salvando…' : editandoConteudo ? 'Salvar alterações' : 'Publicar conteúdo' }}
         </button>
-        <button class="btn btn-secundario" type="button" @click="abrindo = null">Cancelar</button>
+        <button class="btn btn-secundario" type="button" @click="fecharFormulario">Cancelar</button>
       </div>
     </form>
   </section>
@@ -278,7 +336,7 @@ async function despublicar(tipo: 'receitas' | 'conteudos', id: number) {
   <template v-else-if="secao === 'receitas'">
     <p v-if="receitas.length === 0" class="vazio">Nenhuma receita publicada.</p>
 
-    <article v-for="r in receitas" :key="r.id" class="card receita">
+    <article v-for="r in receitas" :key="r.id" class="card receita" :class="{ inativo: !r.ativo }">
       <div class="entre">
         <div>
           <h3>{{ r.nome }}</h3>
@@ -288,8 +346,18 @@ async function despublicar(tipo: 'receitas' | 'conteudos', id: number) {
             por {{ r.nutricionistaNome }}
           </p>
         </div>
-        <button v-if="auth.ehAdministrador" class="btn btn-perigo"
-                @click="despublicar('receitas', r.id)">Despublicar</button>
+        <div class="linha acoes-item">
+          <span v-if="!r.ativo" class="selo selo-neutro">Despublicada</span>
+          <button class="btn btn-secundario" @click="editarReceita(r)">Editar</button>
+          <template v-if="auth.ehAdministrador">
+            <button v-if="r.ativo" class="btn btn-perigo" @click="despublicar('receitas', r.id)">
+              Despublicar
+            </button>
+            <button v-else class="btn btn-secundario" @click="republicar('receitas', r.id)">
+              Republicar
+            </button>
+          </template>
+        </div>
       </div>
 
       <p v-if="r.descricao" class="descricao">{{ r.descricao }}</p>
@@ -327,7 +395,7 @@ async function despublicar(tipo: 'receitas' | 'conteudos', id: number) {
   <template v-else>
     <p v-if="conteudos.length === 0" class="vazio">Nenhum conteúdo publicado.</p>
 
-    <article v-for="c in conteudos" :key="c.id" class="card">
+    <article v-for="c in conteudos" :key="c.id" class="card" :class="{ inativo: !c.ativo }">
       <div class="entre">
         <div>
           <h3>{{ c.titulo }}</h3>
@@ -336,8 +404,18 @@ async function despublicar(tipo: 'receitas' | 'conteudos', id: number) {
             por {{ c.autorNome }}
           </p>
         </div>
-        <button v-if="auth.ehAdministrador" class="btn btn-perigo"
-                @click="despublicar('conteudos', c.id)">Despublicar</button>
+        <div class="linha acoes-item">
+          <span v-if="!c.ativo" class="selo selo-neutro">Despublicado</span>
+          <button class="btn btn-secundario" @click="editarConteudo(c)">Editar</button>
+          <template v-if="auth.ehAdministrador">
+            <button v-if="c.ativo" class="btn btn-perigo" @click="despublicar('conteudos', c.id)">
+              Despublicar
+            </button>
+            <button v-else class="btn btn-secundario" @click="republicar('conteudos', c.id)">
+              Republicar
+            </button>
+          </template>
+        </div>
       </div>
       <p class="corpo">{{ c.corpo }}</p>
     </article>
@@ -348,6 +426,8 @@ async function despublicar(tipo: 'receitas' | 'conteudos', id: number) {
 .cabecalho { margin-bottom: var(--lg); }
 .sub { margin: 4px 0 0; color: var(--text-secondary); font-size: 15px; }
 .card { margin-bottom: var(--md); }
+.acoes-item .btn { padding: 5px 12px; font-size: 13px; }
+.inativo { opacity: 0.6; }
 .card h3 { font-size: 16px; margin-bottom: 2px; }
 .meta { margin: 0 0 var(--sm); font-size: 13px; color: var(--text-muted); }
 

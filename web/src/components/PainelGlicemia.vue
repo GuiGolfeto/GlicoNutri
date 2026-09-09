@@ -77,6 +77,22 @@ async function salvar() {
   }
 }
 
+/**
+ * Soft delete: o registro sai do histórico e das médias, mas continua no banco.
+ * Existe porque um valor digitado errado — 1050 em vez de 105 — distorce a média
+ * e o percentual no alvo até ser removido.
+ */
+async function remover(id: number) {
+  erro.value = ''
+  try {
+    await api.delete(`/pacientes/${props.pacienteId}/glicemia/${id}`)
+    await carregar()
+    emit('registrado')
+  } catch (e) {
+    erro.value = mensagemDeErro(e)
+  }
+}
+
 const pontos = computed<PontoGrafico[]>(() =>
   serie.value?.pontos.map((p) => ({
     data: p.dataHora, valor: p.valor, destaque: p.foraDoAlvo, rotulo: p.contexto,
@@ -174,7 +190,7 @@ const quando = (iso: string) =>
 
       <table v-if="historico.registros.length" class="tabela lista">
         <thead>
-          <tr><th>Data e hora</th><th>Valor</th><th>Contexto</th><th>Situação</th><th>Observação</th></tr>
+          <tr><th>Data e hora</th><th>Valor</th><th>Contexto</th><th>Situação</th><th>Observação</th><th></th></tr>
         </thead>
         <tbody>
           <tr v-for="r in historico.registros" :key="r.id">
@@ -190,6 +206,7 @@ const quando = (iso: string) =>
               </span>
             </td>
             <td class="obs">{{ r.observacao || '—' }}</td>
+            <td class="acao"><button class="remover" @click="remover(r.id)">remover</button></td>
           </tr>
         </tbody>
       </table>
@@ -226,4 +243,9 @@ const quando = (iso: string) =>
 .lista .fora strong { color: var(--danger); }
 .lista .selo + .selo { margin-left: 4px; }
 .obs { color: var(--text-secondary); font-size: 13px; }
+.acao { text-align: right; }
+.remover {
+  background: none; border: none; color: var(--danger);
+  font-family: inherit; font-size: 12px; cursor: pointer; padding: 0;
+}
 </style>
