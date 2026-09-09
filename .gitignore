@@ -25,3 +25,4 @@ dist/
 # Segredos locais
 secrets.json
 *.pgpass
+.logs/

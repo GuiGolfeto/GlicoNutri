@@ -18,6 +18,18 @@ autenticação e do controle de acesso, como descrevem o C4 e as RN01–RN04.
 ## Como rodar
 
 ```bash
+./dev.sh up              # sobe banco, API e front
+./dev.sh up --supabase   # idem, com a API apontando para o Supabase
+./dev.sh status          # o que esta rodando
+./dev.sh logs api        # acompanha o log da API
+./dev.sh down            # derruba API e front
+./dev.sh test            # roda a suite de testes
+```
+
+O script cuida do runtime de container, do schema e das dependencias do
+front. Passo a passo, se preferir manual:
+
+```bash
 docker compose up -d                          # Postgres na porta 5433
 
 cd backend/GlicoNutri.Api
