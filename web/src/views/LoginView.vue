@@ -5,6 +5,11 @@ import { mensagemDeErro } from '../api/client'
 import type { LoginFalha } from '../api/tipos'
 import { googleHabilitado, renderizarBotaoGoogle } from '../api/google'
 import { useAuthStore } from '../stores/auth'
+import type { Perfil } from '../api/tipos'
+
+/** O paciente não tem telas de gestão; sua área é outra. */
+const destinoPorPerfil = (perfil: Perfil) =>
+  perfil === 'PACIENTE' ? 'minha-area' : 'dashboard'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -61,7 +66,7 @@ async function entrarComGoogle(idToken: string) {
   enviando.value = true
   try {
     const dados = await auth.entrarComGoogle(idToken)
-    router.push({ name: dados.senhaProvisoria ? 'trocar-senha' : 'dashboard' })
+    router.push({ name: dados.senhaProvisoria ? 'trocar-senha' : destinoPorPerfil(dados.perfil) })
   } catch (e) {
     erro.value = mensagemDeErro(e, 'Não foi possível entrar com o Google.')
   } finally {
@@ -75,7 +80,7 @@ async function entrar() {
   try {
     const dados = await auth.entrar(email.value.trim(), senha.value)
     // RN03 — quem ainda usa a senha provisória vai direto para a troca.
-    router.push({ name: dados.senhaProvisoria ? 'trocar-senha' : 'dashboard' })
+    router.push({ name: dados.senhaProvisoria ? 'trocar-senha' : destinoPorPerfil(dados.perfil) })
   } catch (e) {
     const falha = (e as { response?: { data?: LoginFalha } }).response?.data
     erro.value = mensagemDeErro(e, 'Não foi possível entrar.')

@@ -26,7 +26,7 @@ async function trocar() {
   enviando.value = true
   try {
     await auth.alterarSenha(senhaAtual.value, novaSenha.value)
-    router.push({ name: 'dashboard' })
+    router.push({ name: auth.ehNutricionista ? 'dashboard' : 'minha-area' })
   } catch (e) {
     erro.value = mensagemDeErro(e, 'Não foi possível alterar a senha.')
   } finally {

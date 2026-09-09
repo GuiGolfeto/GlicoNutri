@@ -22,7 +22,12 @@ const iniciais = (nome: string) =>
         <strong>GlicoNutri</strong>
       </div>
 
-      <nav>
+      <nav v-if="!auth.ehNutricionista">
+        <p class="secao">Meu acompanhamento</p>
+        <RouterLink :to="{ name: 'minha-area' }">Início</RouterLink>
+      </nav>
+
+      <nav v-else>
         <p class="secao">Visão geral</p>
         <RouterLink :to="{ name: 'dashboard' }">Dashboard</RouterLink>
 
