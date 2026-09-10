@@ -1,0 +1,25 @@
+# Postgres local para desenvolvimento.
+# Quando o Mateus repassar as credenciais do Supabase, basta trocar a
+# connection string da API — o schema e as migrations sao os mesmos.
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: gliconutri-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: gliconutri
+      POSTGRES_USER: gliconutri
+      POSTGRES_PASSWORD: gliconutri_dev
+      TZ: America/Sao_Paulo
+    ports:
+      - "5433:5432"
+    volumes:
+      - gliconutri_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gliconutri -d gliconutri"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  gliconutri_pgdata:

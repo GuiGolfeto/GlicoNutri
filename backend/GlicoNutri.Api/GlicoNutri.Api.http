@@ -1,0 +1,6 @@
+@GlicoNutri.Api_HostAddress = http://localhost:5150
+
+GET {{GlicoNutri.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
