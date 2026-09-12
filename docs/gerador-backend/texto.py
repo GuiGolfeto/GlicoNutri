@@ -103,6 +103,10 @@ TECNOLOGIAS = {
         ("Envio de e-mail", "MailKit", "Biblioteca recomendada para SMTP em .NET."),
         ("Login federado", "Google.Apis.Auth", "Valida o token de identidade emitido pelo Google, "
          "conforme a regra de negócio 01."),
+        ("Containerização", "Docker · Docker Compose", "O Postgres de desenvolvimento sobe em "
+         "container, o que dispensa instalar banco na máquina de quem for trabalhar no projeto. A "
+         "API também é publicada como imagem: é a containerização que define quais hospedagens "
+         "gratuitas conseguem receber o sistema."),
         ("Testes", "xUnit · Microsoft.AspNetCore.Mvc.Testing", "Testes unitários e de integração, "
          "estes últimos subindo a aplicação inteira contra um banco descartável."),
     ],
@@ -115,8 +119,9 @@ DADOS = {
     "grupos": [
         ("Identidade e autenticação", ["usuarios", "nutricionistas", "pacientes", "administradores",
                                         "nutricionista_paciente"],
-         "Hierarquia com herança Table-Per-Type: a tabela usuarios guarda o que é comum, e cada "
-         "subtipo tem tabela própria cuja chave primária é também estrangeira para a base."),
+         "Hierarquia com herança Table-Per-Hierarchy: uma única tabela usuarios guarda paciente, "
+         "nutricionista e administrador, e a coluna de perfil diz o que cada linha é. As tabelas "
+         "por subtipo do modelo entidade-relacionamento versão 2.0 deixaram de existir."),
         ("Plano alimentar", ["planos_alimentares", "distribuicao_macronutrientes",
                               "itens_plano_alimentar", "necessidades_energeticas"],
          "O plano referencia paciente e nutricionista, tem exatamente uma distribuição de "
@@ -132,7 +137,7 @@ DADOS = {
          "A configuração fica em alertas; cada disparo e seu desfecho ficam no histórico."),
         ("Conteúdo educativo", ["conteudos_educativos"],
          "Artigos, dicas, receitas e vídeos publicados pelos profissionais."),
-        ("Modelo de leitura", ["resumo_clinico_paciente"],
+        ("Modelo de leitura", ["resumo_clinico_paciente (view)"],
          "Uma linha por paciente, alimentada pelos serviços de escrita e consumida apenas pelo painel."),
         ("Tabelas de referência", ["perfis_usuario", "sexos_biologicos", "tipos_diabetes",
                                     "contextos_glicemia", "estados_emocionais", "formulas_energeticas",
@@ -142,11 +147,12 @@ DADOS = {
          "5.0. Todas seguem o mesmo formato: identificador, código, descrição e situação."),
     ],
     "decisoes": [
-        ("Herança Table-Per-Type",
-         "A tabela usuarios usa identidade automática e chama a chave de id; os subtipos chamam "
-         "usuario_id, que é chave primária e estrangeira ao mesmo tempo. Como as três compartilham a "
-         "mesma propriedade no código, o nome da coluna precisou ser definido por tabela — renomear "
-         "pela propriedade teria renomeado também a coluna da tabela base."),
+        ("Herança Table-Per-Hierarchy",
+         "O discriminador é a própria coluna de perfil, que já era chave estrangeira obrigatória: "
+         "uma segunda coluna com o tipo diria o mesmo e poderia divergir dela. Em troca, o que era "
+         "obrigatório apenas em um subtipo não pode mais ser NOT NULL, porque a coluna fica nula "
+         "nas linhas dos outros perfis — a obrigatoriedade virou verificação condicionada ao perfil, "
+         "declarada no banco."),
         ("Exclusão lógica com filtro global",
          "Doze entidades têm o campo de situação e um filtro global que as esconde quando inativas. "
          "Dependentes sem campo próprio — histórico de alertas, distribuição de macronutrientes, "
@@ -310,27 +316,28 @@ TACO = {
 }
 
 LEITURA = {
-    "intro": "O painel do nutricionista não consulta as tabelas de escrita. Essa separação foi "
-             "orientada na modelagem e está registrada como nota no modelo entidade-relacionamento.",
+    "intro": "O painel do nutricionista lê de uma projeção própria, separada das tabelas de escrita. "
+             "Essa separação foi orientada na modelagem; a forma como ela é construída mudou depois "
+             "da revisão do professor orientador.",
     "como": [
-        ("Uma linha por paciente", "A tabela de resumo é criada junto com o paciente e guarda os "
-         "indicadores já calculados: última glicemia com contexto e data, média e percentual no alvo "
-         "dos últimos sete dias, último índice de massa corporal e sua classificação, situação do "
-         "plano, contagem de alertas pendentes e dias sem registro."),
-        ("Atualizada pelos serviços de escrita", "Cada serviço que persiste dado clínico atualiza os "
-         "campos que lhe dizem respeito. O de glicemia recalcula por inteiro em vez de somar de forma "
-         "incremental — só assim o resumo permanece correto após um lançamento retroativo ou uma "
-         "remoção, que mudam a média sem serem a medição mais recente."),
-        ("Lida apenas pelo painel", "O serviço do painel consulta essa tabela e mais o vínculo com o "
-         "nutricionista, necessário para filtrar por responsável. Nenhum indicador clínico é agregado "
-         "sobre as tabelas transacionais."),
+        ("Uma view, não uma tabela", "O resumo clínico era uma tabela física que guardava indicadores "
+         "já calculados. Guardar dado derivado de outras tabelas viola a terceira forma normal, e foi "
+         "o que a orientação apontou. Hoje é uma view: cada coluna é calculada na hora da consulta, a "
+         "partir das tabelas transacionais."),
+        ("Sem atualização a cargo dos serviços", "Antes, todo serviço que gravava dado clínico "
+         "precisava lembrar de atualizar o resumo depois. Esquecer era deixar o painel mostrando "
+         "número velho. Com a view não existe versão desatualizada para corrigir, e a camada de "
+         "serviço perdeu cerca de cento e cinquenta linhas dedicadas a essa sincronização."),
+        ("O que a view calcula", "Última glicemia com contexto e data, média e percentual no alvo dos "
+         "últimos sete dias, último índice de massa corporal com a classificação, situação do plano, "
+         "contagem de disparos pendentes e dias sem registro. Medições e materiais removidos por "
+         "exclusão lógica ficam de fora, como nas telas."),
         ("O relatório faz o contrário", "O serviço de relatórios lê das tabelas de escrita, porque "
          "precisa do histórico completo e não de indicadores consolidados. A separação entre os dois "
          "está explícita no diagrama de componentes."),
     ],
     "efeito": "O cartão de registros do dia conta pacientes que registraram hoje, e não a quantidade "
-              "de registros. Contar registros exigiria agregar sobre as tabelas de escrita, o que "
-              "essa separação veda. O protótipo rotula o cartão de outra forma, e a diferença está "
+              "de registros. O protótipo rotula o cartão de outra forma, e a diferença está "
               "documentada.",
 }
 
@@ -380,12 +387,6 @@ DEFEITOS = {
 DIVIDA = {
     "intro": "O que ficou pendente, com o custo de cada item. Nada aqui impede o sistema de funcionar.",
     "itens": [
-        ("Favoritos do paciente", "Exige tabela nova",
-         "O requisito 09.3 prevê marcar conteúdos como favoritos. O modelo entidade-relacionamento não "
-         "define tabela para isso. Implementar significa alterar a modelagem documentada."),
-        ("Imagens no conteúdo educativo", "Exige serviço de armazenamento",
-         "O corpo do conteúdo aceita texto formatado. Imagens precisariam de armazenamento de "
-         "arquivos, que não está previsto na arquitetura."),
         ("Campos previstos nos casos de uso", "Exige colunas novas",
          "CPF, data de nascimento e sexo do nutricionista; endereço do paciente; observações no "
          "registro antropométrico; nome do plano alimentar, hoje gravado no campo de objetivo."),
@@ -395,7 +396,17 @@ DIVIDA = {
          "ordenação e as agregações do painel."),
         ("Publicação com HTTPS", "Depende de decisão de hospedagem",
          "A regra 31 exige comunicação criptografada. O redirecionamento e o cabeçalho de segurança já "
-         "são aplicados fora do ambiente de desenvolvimento; falta definir onde publicar."),
+         "são aplicados fora do ambiente de desenvolvimento; falta definir onde publicar. Como a API "
+         "roda em container, a hospedagem precisa aceitar imagem Docker — critério que descarta "
+         "plataformas restritas a aplicações estáticas ou a funções em JavaScript."),
+        ("Índice glicêmico sem valores", "Depende da tabela de referência",
+         "O alimento já guarda o índice e a origem do número, e o nutricionista pode informar o valor. "
+         "A carga a partir das tabelas internacionais de 2021 ainda não foi feita, então os alimentos "
+         "importados da tabela nutricional brasileira seguem sem o dado."),
+        ("Conta de e-mail sem senha de aplicativo", "Depende de credencial",
+         "A conta de envio existe e o serviço de SMTP está implementado. O Google recusa a senha comum "
+         "da conta em conexões SMTP: é preciso gerar uma senha de aplicativo, com a verificação em "
+         "duas etapas ativa."),
         ("Conexão em modo transação", "Ajuste na string de conexão",
          "O acesso ao Supabase usa o modo sessão, exigido pelas migrations. Para produção, o modo "
          "transação é mais eficiente, mas precisa desabilitar prepared statements na string."),

@@ -97,11 +97,12 @@ docker compose up -d          # os testes de integracao usam o Postgres local
 dotnet test backend/GlicoNutri.Tests
 ```
 
-129 testes. Os unitarios cobrem os calculos clinicos (IMC, Harris-Benedict,
+138 testes. Os unitarios cobrem os calculos clinicos (IMC, Harris-Benedict,
 Mifflin-St Jeor, macronutrientes, classificacao glicemica), o validador de CPF,
 a politica de senha e o leitor do CSV da TACO. Os de integracao sobem a API
 contra um banco Postgres descartavel e exercitam as regras cuja violacao
-corrompe dado clinico: RN02, RN03, RN06, RN13, RN15, RN16, RN19 e RN33.
+corrompe dado clinico: RN02, RN03, RN06, RN13, RN15, RN16, RN19, RN33, o UC007
+A2, o UC008 e o RF09.3.
 
 ## Estado
 
@@ -121,4 +122,6 @@ corrompe dado clinico: RN02, RN03, RN06, RN13, RN15, RN16, RN19 e RN33.
 - [x] RF09 — Repositório educativo e receitas
 - [x] Relatórios clínicos em PDF
 - [x] Front-end web
+- [x] RF09.3 — favoritos do paciente
+- [x] Paginas publicas de divulgacao
 - [ ] Aplicativo mobile

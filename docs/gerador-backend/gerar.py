@@ -47,7 +47,12 @@ for en, pt in {"January":"janeiro","February":"fevereiro","March":"março","Apri
 meta = "".join(f"<div><dt>{e(k)}</dt><dd>{e(v)}</dd></div>" for k, v in T.CAPA["meta"])
 partes.append(f"""
 <div class="capa">
-  <div class="marca"><span class="gota">◐</span> GlicoNutri</div>
+  <div class="marca">
+    <svg class="gota" viewBox="0 0 40 40" fill="none" width="30" height="30">
+      <path d="M20 38C27.732 38 34 31.732 34 24C34 16.268 20 2 20 2C20 2 6 16.268 6 24C6 31.732 12.268 38 20 38Z" fill="#00897B"/>
+      <path d="M15 24L18.5 27.5L25.5 20.5" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg> GlicoNutri
+  </div>
   <p class="sobretitulo">{e(T.CAPA['sobretitulo'])}</p>
   <h1>{e(T.CAPA['titulo'])}</h1>
   <p class="subtitulo">{e(T.CAPA['subtitulo'])}</p>
@@ -130,8 +135,8 @@ def detalhar(tabela):
             f'<th style="width:22%">Tipo</th><th>Notas</th></tr></thead><tbody>{linhas}</tbody></table>')
 
 detalhes = "".join(detalhar(t) for t in
-                   ["usuarios", "pacientes", "planos_alimentares", "registros_glicemia",
-                    "resumo_clinico_paciente"])
+                   ["usuarios", "planos_alimentares", "registros_glicemia",
+                    "resumo_clinico_paciente", "favoritos_conteudo"])
 
 chks = "".join(f"<tr><td class='mono'>{e(t)}</td><td class='mono'>{e(c[0])}</td>"
                f"<td class='mono'>{e(c[1])}</td></tr>"
@@ -257,7 +262,7 @@ sec("Modelo de leitura do painel", f"""
 
 # ── 11. Testes ──
 sec("Testes", """
-  <p class="intro">São 134 testes em duas camadas. Os unitários rodam em cerca de dois segundos e
+  <p class="intro">São 138 testes em duas camadas. Os unitários rodam em cerca de dois segundos e
   não dependem de banco; os de integração sobem a aplicação inteira contra um banco descartável,
   criado e destruído a cada execução.</p>
   <h3>Cobertura</h3>
@@ -303,9 +308,17 @@ sec("Configuração e execução", """
   </tbody></table>
   <h3>Execução</h3>
   <div class="formula">./dev.sh up          sobe API e front contra o Supabase
-./dev.sh up --local  usa o Postgres local em Docker
+./dev.sh up --local  sobe o Postgres em Docker e aponta a API para ele
 ./dev.sh test        roda a suíte
 ./dev.sh logs api    acompanha o log</div>
+  <h3>Ambiente em container</h3>
+  <p>O banco de desenvolvimento sobe por Docker Compose, em um serviço PostgreSQL com volume
+  nomeado e verificação de saúde. Quem for trabalhar no projeto não precisa instalar banco na
+  máquina: o <span class="mono">./dev.sh up --local</span> levanta o container, aplica as
+  migrations pendentes e sobe a API apontada para ele. A porta publicada é 5433, escolhida para
+  não colidir com um PostgreSQL já instalado no sistema.</p>
+  <p>A mesma containerização vale para a publicação: a API é distribuída como imagem, e é isso
+  que determina quais hospedagens conseguem recebê-la.</p>
   <h3>Conexão com o Supabase</h3>
   <p>O host de conexão direta resolve apenas em IPv6 e nem sempre é alcançável. O acesso vai pelo
   pooler, que tem IPv4, e o usuário leva o identificador do projeto. O modo sessão, na porta 5432,

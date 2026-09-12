@@ -14,7 +14,7 @@ construir o sistema.
 ./dev.sh status
 ./dev.sh logs api    # senhas provisórias aparecem aqui
 ./dev.sh down
-./dev.sh test        # 134 testes
+./dev.sh test        # 138 testes
 ```
 
 Login inicial: `admin@gliconutri.local` / `GlicoNutri@2026`.
@@ -24,9 +24,9 @@ autocadastro (RN08 e RN09).
 ## Estrutura
 
 ```
-backend/GlicoNutri.Api     C# / ASP.NET (.NET 10) · 15 controllers · 24 services
-backend/GlicoNutri.Tests   xUnit · 134 testes
-web                        Vue 3 + TypeScript
+backend/GlicoNutri.Api     C# / ASP.NET (.NET 10) · 16 controllers · 25 services
+backend/GlicoNutri.Tests   xUnit · 138 testes
+web                        Vue 3 + TypeScript · 3 páginas públicas + o sistema
 db/taco                    Tabela TACO 4ª edição em CSV, 597 alimentos
 db/fixtures                Amostra para testar o importador (NÃO é a tabela oficial)
 docs                       Dois PDFs e seus geradores
@@ -82,16 +82,22 @@ versão marcada **latest**.
 está escrito, e as divergências ficam registradas em vez de resolvidas no
 documento.
 
-## Duas decisões clínicas em aberto
+## Decisões clínicas — fechadas em 11/09/2026 pelo Mateus
 
-Nenhuma trava o sistema, mas as duas mudam o resultado das prescrições e
-precisam da equipe de Nutrição:
-
-1. **Qual Harris-Benedict.** O sistema usa a revisão de Roza e Shizgal (1984).
-   A original (1919) usa outros coeficientes e ainda é ensinada. Os dois
-   conjuntos estão documentados em `CalculadoraNutricional`.
-2. **Distribuição padrão de macronutrientes.** Hoje 55/20/25, dentro das faixas
-   do UC007. O caso de uso não fixa um valor.
+1. **Equação de gasto energético.** Harris-Benedict fica na revisão de Roza e
+   Shizgal (1984), mas **a escolha entre ela e Mifflin-St Jeor é do
+   nutricionista**, em cada cálculo. Já era assim no código; o que mudou foi a
+   descrição da fórmula, que agora diz qual revisão é.
+2. **Macronutrientes pela SBD**, diabetes tipo 2: carboidrato 45–60% (padrão
+   50), proteína 15–20% (padrão 20), lipídio 25–35% (padrão 30). Substitui o
+   55/20/25 e as faixas mais estreitas do UC007 A2. A tela avisa quando a
+   distribuição sai da faixa, mas não bloqueia — a conduta é do profissional.
+   As faixas saem por `GET /api/referencias/faixas-macronutrientes`, para não
+   existirem dois lugares dizendo qual é o padrão.
+3. **Índice glicêmico**: a fonte padrão são as *International Tables of Glycemic
+   Index and Glycemic Load Values 2021*. O alimento guarda **a origem** do
+   número — tabela internacional ou informado pelo nutricionista. Os valores em
+   si ainda não foram carregados.
 
 ## Divergências entre os documentos
 
@@ -99,25 +105,32 @@ Encontradas ao implementar. O sistema seguiu a opção indicada:
 
 | Ponto | O que o sistema faz |
 |---|---|
-| Enums: DER V2 usa tipo do banco, Classes V5 usa tabela | Seguiu o V5, que é mais recente |
+| Enums: DER V2 usa tipo do banco, Classes V5 usa tabela | Seguiu o V5. Índice único sobre a descrição normalizada impede "Glicose", "glicose" e "GLICOSE" conviverem |
 | V4.0 e V5.0 do diagrama de classes ambas marcadas "latest" | Seguiu a V5.0 |
 | Campos nos casos de uso sem coluna no DER | Seguiu o DER; os campos não existem |
-| Tipos de diabetes: UC002 diz pré-diabetes, DER diz MODY | Carregou o conjunto do DER |
-| Ator do registro antropométrico definido de 3 formas | Decide por paciente, atendendo às três |
+| Tipos de diabetes: UC002 diz pré-diabetes, DER diz MODY | Os dois. Pré-diabetes entrou como opção de cadastro |
+| Ator do registro antropométrico definido de 3 formas | **Só o nutricionista registra.** O paciente lê e não edita: peso e altura entram no cálculo energético e no plano |
 | RF01 aceita CSV e JSON, RN10 diz só CSV | Só CSV |
 
 ## Limites conhecidos
 
-- **Índice glicêmico**: a TACO não publica em nenhum dos 597 alimentos
+- **Índice glicêmico sem valores**: a estrutura existe (valor + origem), mas a
+  carga a partir das tabelas internacionais de 2021 ainda não foi feita
 - **Seis alimentos sem macronutrientes**: leite líquido, sais, coco verde,
   iogurte de abacaxi — a 4ª edição traz `*` (não determinado)
-- **Favoritos** (RF09.3) e **imagens** (RF09.2): sem lugar no DER
-- **SMTP e Google OAuth**: implementados, aguardando credenciais
-- **Publicação com HTTPS** (RN31): depende de decidir a hospedagem
+- **SMTP**: a conta existe (`gliconutrisuporte@gmail.com`), mas o Google recusa
+  a senha comum em SMTP. Precisa de **senha de aplicativo**, com verificação em
+  duas etapas ativa na conta
+- **Google OAuth**: implementado dos dois lados, aguardando o ClientId
+- **Publicação com HTTPS** (RN31): a API roda em container, então a hospedagem
+  precisa aceitar imagem Docker — o que descarta plataformas só de estático
 
 ## Próximo passo
 
 O aplicativo **Flutter** para o paciente. Os endpoints que ele consome já
-existem e estão testados: registro de glicemia, antropometria e emoções pelo
-paciente, leitura do plano vigente, ciclo de disparo de alertas e a varredura
-de expiração da RN35.
+existem e estão testados: registro de glicemia e de emoção pelo paciente,
+leitura das próprias medidas, plano vigente, favoritos do repositório, ciclo de
+disparo de alertas e a varredura de expiração da RN35.
+
+**A área do paciente fica nos dois ambientes**, web e Flutter — não é ponte
+temporária. O que for construído para ela vale para os dois.

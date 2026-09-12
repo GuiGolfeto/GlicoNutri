@@ -26,3 +26,9 @@ dist/
 secrets.json
 *.pgpass
 .logs/
+
+# Extrações do gerador de documentação (refeitas a cada regeração)
+docs/gerador-backend/*.psv
+docs/gerador-backend/*.json
+docs/gerador-backend/*.html
+docs/gerador-backend/__pycache__/
