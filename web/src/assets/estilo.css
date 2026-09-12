@@ -79,6 +79,11 @@ a:hover { text-decoration: underline; }
 .campo input, .campo select, .campo textarea {
   font-family: inherit;
   font-size: 16px;
+  /* Sem isto, um <select> com opção longa — "Harris-Benedict (revisão de Roza e
+     Shizgal, 1984)" — define a largura mínima da coluna e empurra o card inteiro
+     para fora da área de conteúdo. */
+  width: 100%;
+  min-width: 0;
   padding: 10px 12px;
   background: var(--background);
   border: 1px solid var(--border);
@@ -97,6 +102,9 @@ a:hover { text-decoration: underline; }
 .campo .erro-campo { font-size: 13px; color: var(--danger); }
 
 .grade-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 var(--md); }
+/* Item de grade não encolhe abaixo do conteúdo por padrão: é o que faz uma
+   coluna "1fr" estourar quando o que está dentro é largo. */
+.grade-2 > * { min-width: 0; }
 @media (max-width: 720px) { .grade-2 { grid-template-columns: 1fr; } }
 
 /* ── Botões ──────────────────────────────────────────────────────────────── */

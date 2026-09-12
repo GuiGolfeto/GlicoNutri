@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import LogoGlicoNutri from '../components/LogoGlicoNutri.vue'
 import { ref } from 'vue'
 import { api, mensagemDeErro } from '../api/client'
 
@@ -25,7 +26,7 @@ async function enviar() {
 <template>
   <div class="tela">
     <div class="card caixa">
-      <div class="marca"><span class="gota">◐</span><strong>GlicoNutri</strong></div>
+      <div class="marca"><LogoGlicoNutri :tamanho="24" /><strong>GlicoNutri</strong></div>
 
       <template v-if="!enviado">
         <h2>Recuperar acesso</h2>
@@ -54,7 +55,7 @@ async function enviar() {
         </p>
       </template>
 
-      <RouterLink class="btn btn-secundario largo" :to="{ name: 'login' }">Voltar ao login</RouterLink>
+      <RouterLink class="btn btn-secundario largo voltar" :to="{ name: 'login' }">Voltar ao login</RouterLink>
     </div>
   </div>
 </template>
@@ -64,7 +65,17 @@ async function enviar() {
 .caixa { width: 100%; max-width: 400px; }
 .marca { display: flex; align-items: center; gap: var(--xs); margin-bottom: var(--lg); }
 .marca strong { font-size: 20px; }
-.gota { color: var(--primary); font-size: 24px; }
 .subtitulo { margin: var(--xs) 0 var(--lg); font-size: 14px; color: var(--text-secondary); }
 .largo { width: 100%; margin-top: var(--xs); }
+
+/* RouterLink vira <a>, que é inline: sem display de bloco ele encosta no botão
+   de cima e o texto desalinha dentro da própria caixa. */
+.voltar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: var(--md);
+  text-decoration: none;
+}
+.voltar:hover { text-decoration: none; }
 </style>

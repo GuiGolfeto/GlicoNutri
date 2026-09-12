@@ -230,7 +230,11 @@ const numero = (v: number | null) => (v === null ? '—' : v.toLocaleString('pt-
         <div class="campo">
           <label for="ig">Índice glicêmico</label>
           <input id="ig" v-model.number="form.indiceGlicemico" type="number" min="0" max="200" />
-          <span class="ajuda">A tabela TACO não publica este dado.</span>
+          <span class="ajuda">
+            A TACO não publica este dado. A referência do sistema são as International
+            Tables of Glycemic Index and Glycemic Load Values 2021 — o que você informar
+            aqui passa a constar como valor seu.
+          </span>
         </div>
       </div>
 
@@ -278,7 +282,13 @@ const numero = (v: number | null) => (v === null ? '—' : v.toLocaleString('pt-
           <td class="numerico">{{ numero(a.proteinasPor100g) }}</td>
           <td class="numerico">{{ numero(a.lipidiosPor100g) }}</td>
           <td class="numerico">{{ numero(a.fibrasPor100g) }}</td>
-          <td class="numerico">{{ numero(a.indiceGlicemico) }}</td>
+          <td class="numerico">
+            {{ numero(a.indiceGlicemico) }}
+            <!-- Saber de onde veio o número importa tanto quanto o número. -->
+            <span v-if="a.fonteIndiceGlicemico" class="origem-ig" :title="a.fonteIndiceGlicemico">
+              {{ a.fonteIndiceGlicemico.startsWith('International') ? 'tabela' : 'informado' }}
+            </span>
+          </td>
           <td class="acao">
             <button class="btn btn-secundario" @click="abrirEdicao(a)">Editar</button>
             <button class="btn btn-perigo" @click="inativar(a)">Inativar</button>
@@ -290,6 +300,10 @@ const numero = (v: number | null) => (v === null ? '—' : v.toLocaleString('pt-
 </template>
 
 <style scoped>
+.origem-ig {
+  display: block; font-size: 11px; color: var(--text-muted);
+  letter-spacing: 0.03em; text-transform: uppercase;
+}
 .cabecalho { margin-bottom: var(--lg); }
 .sub { margin: 4px 0 0; color: var(--text-secondary); font-size: 15px; }
 .card { margin-bottom: var(--md); }

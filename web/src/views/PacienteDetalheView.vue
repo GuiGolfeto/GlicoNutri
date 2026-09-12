@@ -228,6 +228,7 @@ const formatarData = (iso: string) => new Date(iso).toLocaleDateString('pt-BR', 
 .aba.ativa { color: var(--primary); border-bottom-color: var(--primary); font-weight: 500; }
 
 .colunas { display: grid; grid-template-columns: 1fr 1fr; gap: var(--md); align-items: start; }
+.colunas > * { min-width: 0; }
 @media (max-width: 900px) { .colunas { grid-template-columns: 1fr; } }
 
 :deep(.card) { margin-bottom: var(--md); }

@@ -4,12 +4,20 @@ import { useAuthStore } from '../stores/auth'
 const router = createRouter({
   history: createWebHistory(),
   routes: [
+    // Páginas de divulgação, abertas a quem ainda não entrou. Diferente de
+    // 'publica', não expulsam quem já está autenticado: dá para abrir a
+    // apresentação do sistema com a sessão em curso.
+    { path: '/', name: 'divulgacao', component: () => import('../views/DivulgacaoView.vue'), meta: { divulgacao: true } },
+    { path: '/funcionalidades', name: 'funcionalidades', component: () => import('../views/FuncionalidadesView.vue'), meta: { divulgacao: true } },
+    { path: '/sobre', name: 'sobre', component: () => import('../views/SobreView.vue'), meta: { divulgacao: true } },
+
     { path: '/login', name: 'login', component: () => import('../views/LoginView.vue'), meta: { publica: true } },
     { path: '/recuperar-senha', name: 'recuperar-senha', component: () => import('../views/RecuperarSenhaView.vue'), meta: { publica: true } },
     { path: '/redefinir-senha', name: 'redefinir-senha', component: () => import('../views/RedefinirSenhaView.vue'), meta: { publica: true } },
     { path: '/trocar-senha', name: 'trocar-senha', component: () => import('../views/TrocarSenhaView.vue') },
-    { path: '/', redirect: () => ({ name: telaInicial() }) },
+    { path: '/inicio', redirect: () => ({ name: telaInicial() }) },
     { path: '/minha-area', name: 'minha-area', component: () => import('../views/MinhaAreaView.vue'), meta: { paciente: true } },
+    { path: '/meus-favoritos', name: 'meus-favoritos', component: () => import('../views/FavoritosView.vue'), meta: { paciente: true } },
     { path: '/dashboard', name: 'dashboard', component: () => import('../views/DashboardView.vue'), meta: { nutricionista: true } },
     { path: '/pacientes', name: 'pacientes', component: () => import('../views/PacientesView.vue'), meta: { nutricionista: true } },
     { path: '/pacientes/novo', name: 'paciente-novo', component: () => import('../views/PacienteFormView.vue'), meta: { nutricionista: true } },
@@ -35,6 +43,8 @@ function telaInicial(): string {
 
 router.beforeEach((para) => {
   const auth = useAuthStore()
+
+  if (para.meta.divulgacao) return true
 
   if (para.meta.publica) {
     return auth.autenticado && !auth.precisaTrocarSenha ? { name: telaInicial() } : true

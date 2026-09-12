@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
+import LogoGlicoNutri from '../components/LogoGlicoNutri.vue'
 import { useAuthStore } from '../stores/auth'
 
 const auth = useAuthStore()
@@ -18,13 +19,14 @@ const iniciais = (nome: string) =>
   <div class="app">
     <aside class="menu">
       <div class="marca">
-        <span class="gota">◐</span>
+        <LogoGlicoNutri :tamanho="22" />
         <strong>GlicoNutri</strong>
       </div>
 
       <nav v-if="!auth.ehNutricionista">
         <p class="secao">Meu acompanhamento</p>
         <RouterLink :to="{ name: 'minha-area' }">Início</RouterLink>
+        <RouterLink :to="{ name: 'meus-favoritos' }">Meus favoritos</RouterLink>
       </nav>
 
       <nav v-else>
@@ -76,7 +78,6 @@ const iniciais = (nome: string) =>
 
 .marca { display: flex; align-items: center; gap: var(--xs); margin-bottom: var(--xl); padding: 0 var(--xs); }
 .marca strong { font-size: 18px; }
-.gota { color: var(--primary); font-size: 22px; }
 
 nav { flex: 1; }
 

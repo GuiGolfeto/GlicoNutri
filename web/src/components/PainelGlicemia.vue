@@ -206,7 +206,7 @@ const quando = (iso: string) =>
               </span>
             </td>
             <td class="obs">{{ r.observacao || '—' }}</td>
-            <td class="acao"><button class="remover" @click="remover(r.id)">remover</button></td>
+            <td class="acao"><button class="remover" @click="remover(r.id)">Remover</button></td>
           </tr>
         </tbody>
       </table>

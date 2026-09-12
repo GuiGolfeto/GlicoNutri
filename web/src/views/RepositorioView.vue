@@ -24,7 +24,7 @@ const formReceita = reactive({
   ingredientes: [] as { alimentoId: number; quantidade: number; unidade: string; nome: string }[],
 })
 
-const formConteudo = reactive({ titulo: '', tipoId: null as number | null, corpo: '' })
+const formConteudo = reactive({ titulo: '', tipoId: null as number | null, corpo: '', urlMidia: '' })
 const abrindo = ref<'receita' | 'conteudo' | null>(null)
 
 // Quando preenchido, o formulário está editando em vez de criar.
@@ -116,7 +116,9 @@ function editarReceita(r: Receita) {
 }
 
 function editarConteudo(c: ConteudoEducativo) {
-  Object.assign(formConteudo, { titulo: c.titulo, tipoId: c.tipoId, corpo: c.corpo ?? '' })
+  Object.assign(formConteudo, {
+    titulo: c.titulo, tipoId: c.tipoId, corpo: c.corpo ?? '', urlMidia: c.urlMidia ?? '',
+  })
   editandoConteudo.value = c.id
   abrindo.value = 'conteudo'
 }
@@ -130,6 +132,7 @@ function fecharFormulario() {
   })
   formConteudo.titulo = ''
   formConteudo.corpo = ''
+  formConteudo.urlMidia = ''
 }
 
 async function salvarReceita() {
@@ -304,6 +307,17 @@ async function republicar(tipo: 'receitas' | 'conteudos', id: number) {
       <div class="campo">
         <label for="ccorpo">Texto *</label>
         <textarea id="ccorpo" v-model="formConteudo.corpo" rows="8" required minlength="10"></textarea>
+      </div>
+
+      <div class="campo">
+        <label for="cmidia">Vídeo ou matéria relacionada (opcional)</label>
+        <input id="cmidia" v-model="formConteudo.urlMidia" type="url" placeholder="https://…"
+               pattern="https?://.*" />
+        <span class="ajuda">
+          Link externo, começando com https://. Vídeo do YouTube aparece embutido na tela do
+          paciente; qualquer outro endereço vira link. O conteúdo fica hospedado por terceiros,
+          então pode sair do ar — o sistema avisa quando isso acontecer.
+        </span>
         <span class="ajuda">Aceita Markdown para formatação.</span>
       </div>
       <div class="acoes">

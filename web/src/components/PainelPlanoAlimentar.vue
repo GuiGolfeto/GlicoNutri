@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { api, mensagemDeErro } from '../api/client'
-import type { Alimento, Distribuicao, ItemPlanoNovo, PlanoAlimentar } from '../api/tipos'
+import type {
+  Alimento, Distribuicao, FaixasMacronutrientes, ItemPlanoNovo, PlanoAlimentar,
+} from '../api/tipos'
 
 const props = defineProps<{ pacienteId: number; recarregar: number }>()
 
@@ -20,9 +22,10 @@ const form = reactive({
   objetivo: '',
   dataInicio: new Date().toISOString().slice(0, 10),
   observacoes: '',
-  carboidratosPercentual: 55,
+  // Sobrescritos pelas faixas da SBD assim que a referência chega do servidor.
+  carboidratosPercentual: 50,
   proteinasPercentual: 20,
-  lipidiosPercentual: 25,
+  lipidiosPercentual: 30,
 })
 
 const itens = ref<(ItemPlanoNovo & { nome: string })[]>([])
@@ -34,6 +37,24 @@ const resultados = ref<Alimento[]>([])
 const selecionado = ref<Alimento | null>(null)
 const quantidade = ref<number | null>(100)
 const refeicaoAtual = ref(REFEICOES[0])
+
+/**
+ * UC007 A2 — faixas da diretriz da SBD, vindas do servidor para não existirem
+ * dois lugares dizendo qual é o padrão clínico.
+ */
+const faixas = ref<FaixasMacronutrientes | null>(null)
+
+/** Fora da faixa a tela avisa, mas não impede: a conduta é do nutricionista. */
+function foraDaFaixa(valor: number, qual: 'carboidratos' | 'proteinas' | 'lipidios') {
+  const faixa = faixas.value?.[qual]
+  if (!faixa) return false
+  return valor < faixa.minimo || valor > faixa.maximo
+}
+
+const algumForaDaFaixa = computed(() =>
+  foraDaFaixa(form.carboidratosPercentual, 'carboidratos')
+  || foraDaFaixa(form.proteinasPercentual, 'proteinas')
+  || foraDaFaixa(form.lipidiosPercentual, 'lipidios'))
 
 const soma = computed(() =>
   Math.round((form.carboidratosPercentual + form.proteinasPercentual + form.lipidiosPercentual) * 100) / 100)
@@ -57,7 +78,24 @@ async function carregar() {
   }
 }
 
-onMounted(carregar)
+onMounted(async () => {
+  await carregar()
+
+  // Sem as faixas o formulário ainda funciona; só deixa de orientar.
+  try {
+    const { data } = await api.get<FaixasMacronutrientes>('/referencias/faixas-macronutrientes')
+    faixas.value = data
+
+    // Plano ainda não montado: os campos partem do padrão da diretriz.
+    if (!plano.value) {
+      form.carboidratosPercentual = data.carboidratos.padrao
+      form.proteinasPercentual = data.proteinas.padrao
+      form.lipidiosPercentual = data.lipidios.padrao
+    }
+  } catch {
+    // referência indisponível: segue com o padrão compilado no formulário
+  }
+})
 watch(() => props.recarregar, carregar)
 
 /** UC007 A2 — prévia da distribuição sobre o VET vigente. */
@@ -220,22 +258,31 @@ const data = (iso: string) => new Date(iso + 'T12:00:00').toLocaleDateString('pt
         </div>
       </div>
 
-      <p class="rotulo-secao">Distribuição de macronutrientes</p>
+      <div class="entre cabecalho-macros">
+        <p class="rotulo-secao">Distribuição de macronutrientes</p>
+        <span v-if="faixas" class="fonte-faixa">{{ faixas.referencia }}</span>
+      </div>
       <div class="macros">
         <div class="campo">
           <label for="cho">Carboidratos (%)</label>
           <input id="cho" v-model.number="form.carboidratosPercentual" type="number" step="0.5"
-                 min="0" max="100" @change="calcularPrevia" />
+                 min="0" max="100" :class="{ atencao: foraDaFaixa(form.carboidratosPercentual, 'carboidratos') }"
+                 @change="calcularPrevia" />
+          <span v-if="faixas" class="ajuda">{{ faixas.carboidratos.minimo }}–{{ faixas.carboidratos.maximo }}%</span>
         </div>
         <div class="campo">
           <label for="ptn">Proteínas (%)</label>
           <input id="ptn" v-model.number="form.proteinasPercentual" type="number" step="0.5"
-                 min="0" max="100" @change="calcularPrevia" />
+                 min="0" max="100" :class="{ atencao: foraDaFaixa(form.proteinasPercentual, 'proteinas') }"
+                 @change="calcularPrevia" />
+          <span v-if="faixas" class="ajuda">{{ faixas.proteinas.minimo }}–{{ faixas.proteinas.maximo }}%</span>
         </div>
         <div class="campo">
           <label for="lip">Lipídios (%)</label>
           <input id="lip" v-model.number="form.lipidiosPercentual" type="number" step="0.5"
-                 min="0" max="100" @change="calcularPrevia" />
+                 min="0" max="100" :class="{ atencao: foraDaFaixa(form.lipidiosPercentual, 'lipidios') }"
+                 @change="calcularPrevia" />
+          <span v-if="faixas" class="ajuda">{{ faixas.lipidios.minimo }}–{{ faixas.lipidios.maximo }}%</span>
         </div>
         <div class="soma" :class="{ invalida: !somaValida }">
           <span class="rotulo">Soma</span>
@@ -246,6 +293,11 @@ const data = (iso: string) => new Date(iso + 'T12:00:00').toLocaleDateString('pt
       <!-- RN15 — a soma precisa fechar em 100% -->
       <p v-if="!somaValida" class="erro-campo">
         A soma dos percentuais deve ser exatamente 100%.
+      </p>
+
+      <p v-else-if="algumForaDaFaixa" class="aviso aviso-atencao fora-faixa">
+        A distribuição está fora das faixas da diretriz. O plano pode ser salvo assim —
+        a conduta é sua.
       </p>
 
       <div v-if="previa" class="previa">
@@ -494,4 +546,9 @@ const data = (iso: string) => new Date(iso + 'T12:00:00').toLocaleDateString('pt
 }
 .objetivo-hist { flex: 1; }
 .historico .btn { padding: 3px 10px; font-size: 12px; }
+
+.cabecalho-macros { align-items: baseline; }
+.fonte-faixa { font-size: 12px; color: var(--text-muted); }
+.macros input.atencao { border-color: var(--warning); }
+.fora-faixa { margin-top: var(--xs); font-size: 13px; }
 </style>

@@ -167,7 +167,9 @@ async function salvar() {
 
 <style scoped>
 .sub { margin: 4px 0 var(--lg); color: var(--text-secondary); font-size: 15px; }
-.formulario { max-width: 720px; }
+/* Centralizado: colado à esquerda, sobrava metade da tela vazia. */
+.formulario { max-width: 720px; margin-inline: auto; }
+h1, .sub { max-width: 720px; margin-inline: auto; }
 .formulario h3 { font-size: 15px; color: var(--text-secondary); margin: var(--lg) 0 var(--md); }
 .formulario h3:first-of-type { margin-top: 0; }
 .vinculo { display: block; margin: var(--md) 0 0; }

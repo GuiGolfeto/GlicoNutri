@@ -108,7 +108,7 @@ const desvio = (media: number | null) => {
               <strong>{{ r.estadoEmocional }}</strong>
               <span class="escala">{{ intensidade(r.intensidade) }}</span>
               <span v-if="r.descricao" class="descricao">{{ r.descricao }}</span>
-              <button class="remover" @click="remover(r.id)">remover</button>
+              <button class="remover" @click="remover(r.id)">Remover</button>
             </li>
           </ul>
         </details>

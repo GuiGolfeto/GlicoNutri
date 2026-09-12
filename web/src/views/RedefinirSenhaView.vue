@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import LogoGlicoNutri from '../components/LogoGlicoNutri.vue'
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { api, mensagemDeErro } from '../api/client'
@@ -40,7 +41,7 @@ async function redefinir() {
 <template>
   <div class="tela">
     <div class="card caixa">
-      <div class="marca"><span class="gota">◐</span><strong>GlicoNutri</strong></div>
+      <div class="marca"><LogoGlicoNutri :tamanho="24" /><strong>GlicoNutri</strong></div>
 
       <div v-if="!token" class="aviso aviso-erro">
         Link inválido. Solicite uma nova redefinição de senha.
@@ -88,7 +89,6 @@ async function redefinir() {
 .caixa { width: 100%; max-width: 400px; }
 .marca { display: flex; align-items: center; gap: var(--xs); margin-bottom: var(--lg); }
 .marca strong { font-size: 20px; }
-.gota { color: var(--primary); font-size: 24px; }
 .subtitulo { margin: var(--xs) 0 var(--lg); font-size: 14px; color: var(--text-secondary); }
 .largo { width: 100%; margin-top: var(--xs); }
 </style>

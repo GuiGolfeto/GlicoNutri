@@ -89,6 +89,8 @@ async function salvar() {
 
 <style scoped>
 .sub { margin: 4px 0 var(--lg); color: var(--text-secondary); font-size: 15px; }
-.formulario { max-width: 720px; }
+/* Centralizado: colado à esquerda, sobrava metade da tela vazia. */
+.formulario { max-width: 720px; margin-inline: auto; }
+h1, .sub { max-width: 720px; margin-inline: auto; }
 .acoes { display: flex; gap: var(--sm); margin-top: var(--lg); padding-top: var(--lg); border-top: 1px solid var(--border); }
 </style>

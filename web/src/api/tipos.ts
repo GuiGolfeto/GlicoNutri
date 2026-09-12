@@ -156,6 +156,8 @@ export interface Alimento {
   lipidiosPor100g: number | null
   fibrasPor100g: number | null
   indiceGlicemico: number | null
+  /** Origem do índice glicêmico; nulo quando o alimento não tem o valor. */
+  fonteIndiceGlicemico: string | null
   fonte: string
   ativo: boolean
 }
@@ -435,6 +437,8 @@ export interface ConteudoEducativo {
   tipoId: number
   tipo: string
   corpo: string | null
+  /** RF09.2 — vídeo ou matéria externa, por link. */
+  urlMidia: string | null
   autorId: number
   autorNome: string
   dataPublicacao: string | null
@@ -477,4 +481,47 @@ export interface Receita {
   ativo: boolean
   ingredientes: IngredienteReceita[]
   nutricional: InformacaoNutricional
+}
+
+// ── RF09.3 — Favoritos do paciente ──────────────────────────────────────────
+
+export interface FavoritoConteudo {
+  conteudoId: number
+  titulo: string
+  tipo: string
+  corpo: string | null
+  urlMidia: string | null
+  autorNome: string
+  dataPublicacao: string | null
+  dataFavoritado: string
+}
+
+export interface FavoritoReceita {
+  receitaId: number
+  nome: string
+  descricao: string | null
+  tempoPreparo: number | null
+  porcoes: number | null
+  caloriasPorPorcao: number | null
+  dataFavoritado: string
+}
+
+export interface Favoritos {
+  conteudos: FavoritoConteudo[]
+  receitas: FavoritoReceita[]
+}
+
+// ── UC007 A2 — faixas da diretriz da SBD ────────────────────────────────────
+
+export interface FaixaMacronutriente {
+  minimo: number
+  maximo: number
+  padrao: number
+}
+
+export interface FaixasMacronutrientes {
+  carboidratos: FaixaMacronutriente
+  proteinas: FaixaMacronutriente
+  lipidios: FaixaMacronutriente
+  referencia: string
 }

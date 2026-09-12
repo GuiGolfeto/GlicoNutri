@@ -193,8 +193,10 @@ const data = (iso: string) => new Date(iso).toLocaleDateString('pt-BR')
           <td class="numerico">{{ data(r.dataHora) }}</td>
           <td class="numerico">{{ r.peso }} kg</td>
           <td>
-            <span class="numerico">{{ r.imc }}</span>
-            <span class="selo" :class="seloImc(r.classificacaoImc)">{{ r.classificacaoImc }}</span>
+            <div class="imc-celula">
+              <span class="numerico">{{ r.imc }}</span>
+              <span class="selo" :class="seloImc(r.classificacaoImc)">{{ r.classificacaoImc }}</span>
+            </div>
           </td>
           <td class="numerico">{{ r.rcq ?? '—' }}</td>
           <td class="numerico">
@@ -207,7 +209,7 @@ const data = (iso: string) => new Date(iso).toLocaleDateString('pt-BR')
             <span v-else class="primeiro">primeira</span>
           </td>
           <td class="acao">
-            <button class="remover" @click="remover(r)">remover</button>
+            <button class="remover" @click="remover(r)">Remover</button>
           </td>
         </tr>
       </tbody>
@@ -225,7 +227,12 @@ const data = (iso: string) => new Date(iso).toLocaleDateString('pt-BR')
 .previa { font-size: 15px; margin-bottom: var(--md); display: flex; align-items: center; gap: var(--xs); }
 .acoes { display: flex; gap: var(--xs); }
 
-.tabela td .selo { margin-left: var(--xs); }
+/* "Peso normal" e "Abaixo do peso" não cabiam na largura da coluna e o selo
+   escapava da célula. Flex com quebra mantém o rótulo inteiro embaixo do valor
+   quando falta espaço, em vez de atravessar a borda. */
+.imc-celula { display: flex; align-items: center; gap: var(--xs); flex-wrap: wrap; }
+.imc-celula .selo { white-space: nowrap; }
+.previa .selo { white-space: nowrap; }
 .baixa { color: var(--success); }
 .alta { color: var(--warning); }
 .primeiro { color: var(--text-muted); font-size: 13px; }
