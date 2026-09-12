@@ -43,7 +43,15 @@ O `docker-compose.yml` continua no repositorio para quem precisar trabalhar
 sem rede. Nesse caso, `./dev.sh up --local` sobe o container e aponta a API
 para ele.
 
-### Testes
+### Documentacao
+
+| Documento | O que e |
+|---|---|
+| [`docs/DOCUMENTACAO-TECNICA.md`](docs/DOCUMENTACAO-TECNICA.md) | Referencia completa: arquitetura, modelo de dados, regras implementadas, calculos clinicos, API, web, testes e divergencias |
+| `docs/GlicoNutri-Backend.pdf` | Inventario do back-end, gerado a partir do codigo e do banco |
+| `docs/GlicoNutri-Relatorio-Desenvolvimento.pdf` | Relatorio de entrega, com telas |
+
+## Testes
 
 Os testes de integracao criam um banco proprio no Supabase, com prefixo
 `gliconutri_teste_`, aplicam as migrations nele e o destroem ao final.
