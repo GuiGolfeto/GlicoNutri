@@ -1,6 +1,7 @@
 using GlicoNutri.Api.Data;
 using GlicoNutri.Api.Dtos;
 using GlicoNutri.Api.Models.Referencia;
+using GlicoNutri.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -40,6 +41,27 @@ public class ReferenciasController(GlicoNutriDbContext db) : ControllerBase
 
     [HttpGet("tipos-conteudo")]
     public Task<List<ReferenciaResponse>> TiposConteudo(CancellationToken ct) => Listar<TipoConteudo>(ct);
+
+    /// <summary>
+    /// Faixas da Diretriz da SBD para diabetes tipo 2, com o padrão que o sistema
+    /// sugere. A tela usa para orientar o nutricionista sem impedir a conduta
+    /// dele: sair da faixa avisa, não bloqueia.
+    /// </summary>
+    [HttpGet("faixas-macronutrientes")]
+    public FaixasMacronutrientesResponse FaixasMacronutrientes() => new(
+        new FaixaMacronutriente(
+            CalculadoraNutricional.FaixaCarboidratos.Min,
+            CalculadoraNutricional.FaixaCarboidratos.Max,
+            CalculadoraNutricional.PadraoCarboidratos),
+        new FaixaMacronutriente(
+            CalculadoraNutricional.FaixaProteinas.Min,
+            CalculadoraNutricional.FaixaProteinas.Max,
+            CalculadoraNutricional.PadraoProteinas),
+        new FaixaMacronutriente(
+            CalculadoraNutricional.FaixaLipidios.Min,
+            CalculadoraNutricional.FaixaLipidios.Max,
+            CalculadoraNutricional.PadraoLipidios),
+        "Diretriz da Sociedade Brasileira de Diabetes — diabetes tipo 2");
 
     private Task<List<ReferenciaResponse>> Listar<T>(CancellationToken ct) where T : class, IEntidadeReferencia =>
         db.Set<T>()

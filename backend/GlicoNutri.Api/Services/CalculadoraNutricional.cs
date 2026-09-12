@@ -130,14 +130,32 @@ public static class CalculadoraNutricional
     public const double KcalPorGramaLipidio = 9;
 
     /// <summary>
-    /// UC007 A2 — distribuição automática. As faixas do caso de uso são
-    /// carboidratos 50–60%, proteínas 15–20% e lipídios 25–30%; 55/20/25 fica
-    /// dentro das três e soma exatamente 100%, atendendo a RN15.
+    /// UC007 A2 — distribuição automática, nas faixas da Diretriz da Sociedade
+    /// Brasileira de Diabetes para diabetes tipo 2: carboidratos 45–60%,
+    /// proteínas 15–20% e lipídios 25–35%. O padrão é o centro de cada faixa, e
+    /// os três somam exatamente 100%, atendendo a RN15.
+    ///
+    /// As faixas do UC007 A2 são mais estreitas (50–60 e 25–30) e ficaram para
+    /// trás: a referência clínica do sistema é a SBD, e o caso de uso reprovaria
+    /// distribuições que a diretriz aceita. Decisão do Mateus em 11/09/2026.
+    ///
     /// Valores de partida: o nutricionista ajusta pelo RF03.2.
     /// </summary>
-    public const double PadraoCarboidratos = 55;
+    public const double PadraoCarboidratos = 50;
     public const double PadraoProteinas = 20;
-    public const double PadraoLipidios = 25;
+    public const double PadraoLipidios = 30;
+
+    /// <summary>Faixas aceitas pela SBD para cada macronutriente, em % do VET.</summary>
+    public static readonly (double Min, double Max) FaixaCarboidratos = (45, 60);
+    public static readonly (double Min, double Max) FaixaProteinas = (15, 20);
+    public static readonly (double Min, double Max) FaixaLipidios = (25, 35);
+
+    /// <summary>
+    /// Percentual dentro da faixa da diretriz. Fora dela o plano não é recusado —
+    /// a conduta é do nutricionista —, mas a tela avisa.
+    /// </summary>
+    public static bool DentroDaFaixa(double valor, (double Min, double Max) faixa) =>
+        valor >= faixa.Min && valor <= faixa.Max;
 
     /// <summary>Tolerância na soma dos percentuais, para não brigar com ponto flutuante.</summary>
     private const double ToleranciaSoma = 0.01;

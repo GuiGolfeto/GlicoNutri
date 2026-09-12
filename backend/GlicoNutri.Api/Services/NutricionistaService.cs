@@ -47,8 +47,6 @@ public class NutricionistaService(
         if (await db.Nutricionistas.IgnoreQueryFilters().AnyAsync(n => n.Crn == crn, ct))
             return Resultado<NutricionistaResponse>.Erro("Já existe um nutricionista cadastrado com este CRN.");
 
-        var perfil = await db.PerfisUsuario.FirstAsync(p => p.Codigo == Codigos.Perfil.Nutricionista, ct);
-
         // RN03 e UC003 passo 10 — senha provisória gerada pelo sistema, trocada
         // obrigatoriamente no primeiro acesso.
         var senhaProvisoria = senhas.GerarProvisoria();
@@ -58,7 +56,6 @@ public class NutricionistaService(
             Nome = pedido.Nome.Trim(),
             Email = email,
             SenhaHash = senhas.Hash(senhaProvisoria),
-            PerfilId = perfil.Id,
             Crn = crn,
             Especialidade = pedido.Especialidade?.Trim(),
             Telefone = pedido.Telefone?.Trim(),

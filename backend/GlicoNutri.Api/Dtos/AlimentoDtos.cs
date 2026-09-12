@@ -13,8 +13,10 @@ public record CriarAlimentoRequest(
     [Range(0, 100)] double? LipidiosPor100g,
     [Range(0, 100)] double? FibrasPor100g,
     /// <summary>
-    /// A TACO não publica índice glicêmico; quando informado, vem de outra fonte
-    /// ou do julgamento clínico do nutricionista.
+    /// A TACO não publica índice glicêmico em nenhum dos 597 alimentos. A fonte
+    /// padrão do sistema são as International Tables of Glycemic Index and
+    /// Glycemic Load Values 2021; o que o nutricionista informar aqui sobrepõe o
+    /// valor da tabela e passa a constar como informado por ele.
     /// </summary>
     [Range(0, 200)] int? IndiceGlicemico);
 
@@ -28,6 +30,8 @@ public record AlimentoResponse(
     double? LipidiosPor100g,
     double? FibrasPor100g,
     int? IndiceGlicemico,
+    /// <summary>Origem do índice glicêmico; nulo quando o alimento não tem o valor.</summary>
+    string? FonteIndiceGlicemico,
     string Fonte,
     bool Ativo);
 

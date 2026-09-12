@@ -3,15 +3,15 @@ using GlicoNutri.Api.Models.Referencia;
 namespace GlicoNutri.Api.Models;
 
 /// <summary>
-/// Read Model exclusivo dos dashboards (padrao orientado pelo professor).
-/// NUNCA e fonte de escrita nem de verdade para regra de negocio: os Services de
-/// escrita (Glicemia, Antropometria, PlanoAlimentar, Alerta) atualizam esta
-/// tabela apos cada persistencia, e o DashboardService le SOMENTE dela.
-/// Relacao 1:1 com paciente, criada junto do cadastro.
+/// Projecao de leitura dos dashboards. E uma VIEW, nao uma tabela: cada coluna e
+/// calculada na hora a partir das tabelas transacionais. Guardar esses valores
+/// era a violacao de 3FN que a orientacao vetou, e tambem o que exigia que todo
+/// Service de escrita se lembrasse de atualizar o resumo depois de gravar.
+/// Somente leitura: gravar aqui e erro, e o Postgres recusa.
 /// </summary>
 public class ResumoClinicoPaciente
 {
-    /// <summary>PK e FK para pacientes.usuario_id.</summary>
+    /// <summary>PK da view; corresponde a usuarios.id do paciente.</summary>
     public long PacienteId { get; set; }
     public Paciente Paciente { get; set; } = null!;
 
@@ -30,7 +30,7 @@ public class ResumoClinicoPaciente
 
     public bool PlanoAtivo { get; set; }
 
-    /// <summary>Recalculado pelo AlertaService a cada mudanca de status (RN35).</summary>
+    /// <summary>Disparos ainda pendentes, contados na leitura (RN35).</summary>
     public int AlertasPendentesCount { get; set; }
 
     public int? DiasSemRegistroGlicemia { get; set; }

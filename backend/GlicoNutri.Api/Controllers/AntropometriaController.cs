@@ -1,4 +1,5 @@
 using GlicoNutri.Api.Dtos;
+using GlicoNutri.Api.Security;
 using GlicoNutri.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,9 +8,14 @@ namespace GlicoNutri.Api.Controllers;
 
 /// <summary>
 /// UC008 — Registrar Dados Antropométricos.
-/// Aberto a qualquer perfil autenticado, com a permissão decidida por paciente
-/// (RN33): o Nutricionista responsável registra pela web, e o próprio paciente
-/// registra pelo app, como pede o RF04.1.
+///
+/// Quem registra é o Nutricionista, e só ele. O paciente lê as próprias medidas
+/// e não as edita: peso e altura entram no cálculo da necessidade energética e,
+/// por consequência, no plano alimentar, e um número errado digitado pelo
+/// paciente contamina a prescrição inteira. Decisão do Mateus em 11/09/2026,
+/// que restringe o que o RF04.1 deixava em aberto.
+///
+/// A leitura continua aberta aos dois perfis, decidida por paciente (RN33).
 /// </summary>
 [ApiController]
 [Route("api/pacientes/{pacienteId:long}/antropometria")]
@@ -19,6 +25,7 @@ public class AntropometriaController(
     IAcessoPacienteService acesso) : ControllerBase
 {
     [HttpPost]
+    [Authorize(Politicas.Nutricionista)]
     [ProducesResponseType<RegistroAntropometricoResponse>(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -53,6 +60,7 @@ public class AntropometriaController(
     }
 
     [HttpDelete("{registroId:long}")]
+    [Authorize(Politicas.Nutricionista)]
     public async Task<IActionResult> Remover(long pacienteId, long registroId, CancellationToken ct)
     {
         if (!await acesso.PodeAcessarAsync(User, pacienteId, ct)) return Forbid();

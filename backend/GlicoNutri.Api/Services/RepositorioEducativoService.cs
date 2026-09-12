@@ -60,6 +60,7 @@ public class RepositorioEducativoService(GlicoNutriDbContext db) : IRepositorioE
             Titulo = pedido.Titulo.Trim(),
             TipoId = tipo.Id,
             Corpo = pedido.Corpo.Trim(),
+            UrlMidia = string.IsNullOrWhiteSpace(pedido.UrlMidia) ? null : pedido.UrlMidia.Trim(),
             DataPublicacao = DateTime.UtcNow,
             Ativo = true,
         };
@@ -110,6 +111,7 @@ public class RepositorioEducativoService(GlicoNutriDbContext db) : IRepositorioE
         conteudo.Titulo = pedido.Titulo.Trim();
         conteudo.TipoId = tipo.Id;
         conteudo.Corpo = pedido.Corpo.Trim();
+        conteudo.UrlMidia = string.IsNullOrWhiteSpace(pedido.UrlMidia) ? null : pedido.UrlMidia.Trim();
 
         await db.SaveChangesAsync(ct);
         return Resultado<ConteudoEducativoResponse>.Ok((await ObterConteudoAsync(id, ct))!);
@@ -343,6 +345,6 @@ public class RepositorioEducativoService(GlicoNutriDbContext db) : IRepositorioE
     private static System.Linq.Expressions.Expression<Func<ConteudoEducativo, ConteudoEducativoResponse>>
         ProjecaoConteudo() =>
         c => new ConteudoEducativoResponse(
-            c.Id, c.Titulo, c.TipoId, c.Tipo.Descricao, c.Corpo,
+            c.Id, c.Titulo, c.TipoId, c.Tipo.Descricao, c.Corpo, c.UrlMidia,
             c.AutorId, c.Autor.Nome, c.DataPublicacao, c.Ativo);
 }

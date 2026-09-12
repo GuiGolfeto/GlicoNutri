@@ -97,7 +97,6 @@ public class PacienteService(
         if (!await db.TiposDiabetes.AnyAsync(t => t.Id == pedido.TipoDiabetesId && t.Ativo, ct))
             return Resultado<PacienteResponse>.Erro("Tipo de diabetes inválido.");
 
-        var perfil = await db.PerfisUsuario.FirstAsync(p => p.Codigo == Codigos.Perfil.Paciente, ct);
         var tipoAlertaGlicemia = await db.TiposAlerta.FirstAsync(t => t.Codigo == Codigos.Alerta.Glicemia, ct);
 
         var senhaProvisoria = senhas.GerarProvisoria();
@@ -108,7 +107,6 @@ public class PacienteService(
             Nome = pedido.Nome.Trim(),
             Email = email,
             SenhaHash = senhas.Hash(senhaProvisoria),
-            PerfilId = perfil.Id,
             Cpf = cpf,
             SexoId = pedido.SexoId,
             TipoDiabetesId = pedido.TipoDiabetesId,
@@ -143,14 +141,6 @@ public class PacienteService(
             DiasSemana = TodosOsDias,
             Ativo = true,
         });
-
-        // O read model do dashboard nasce junto do paciente, conforme a nota do DER.
-        paciente.Resumo = new ResumoClinicoPaciente
-        {
-            PlanoAtivo = false,
-            AlertasPendentesCount = 0,
-            DataAtualizacao = agora,
-        };
 
         db.Pacientes.Add(paciente);
         await db.SaveChangesAsync(ct);

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using GlicoNutri.Api.Security;
 
 namespace GlicoNutri.Api.Dtos;
 
@@ -8,7 +9,12 @@ public record CriarConteudoRequest(
     [Required, StringLength(200, MinimumLength = 3)] string Titulo,
     [Required] long TipoId,
     /// <summary>Texto do conteúdo. Aceita Markdown para a formatação do RF09.2.</summary>
-    [Required, MinLength(10)] string Corpo);
+    [Required, MinLength(10)] string Corpo,
+    /// <summary>
+    /// RF09.2 — vídeo ou matéria externa, por link. Só http e https; o resto é
+    /// recusado para não abrir espaço a javascript: e data: na tela do paciente.
+    /// </summary>
+    [StringLength(500), LinkExterno] string? UrlMidia = null);
 
 public record ConteudoEducativoResponse(
     long Id,
@@ -16,6 +22,7 @@ public record ConteudoEducativoResponse(
     long TipoId,
     string Tipo,
     string? Corpo,
+    string? UrlMidia,
     long AutorId,
     string AutorNome,
     DateTime? DataPublicacao,
@@ -78,3 +85,28 @@ public record ReceitaResponse(
     bool Ativo,
     IReadOnlyList<IngredienteResponse> Ingredientes,
     InformacaoNutricional Nutricional);
+
+// ── RF09.3 — Favoritos do paciente ──────────────────────────────────────────
+
+public record FavoritoConteudoResponse(
+    long ConteudoId,
+    string Titulo,
+    string Tipo,
+    string? Corpo,
+    string? UrlMidia,
+    string AutorNome,
+    DateTime? DataPublicacao,
+    DateTime DataFavoritado);
+
+public record FavoritoReceitaResponse(
+    long ReceitaId,
+    string Nome,
+    string? Descricao,
+    int? TempoPreparo,
+    int? Porcoes,
+    double? CaloriasPorPorcao,
+    DateTime DataFavoritado);
+
+public record FavoritosResponse(
+    IReadOnlyList<FavoritoConteudoResponse> Conteudos,
+    IReadOnlyList<FavoritoReceitaResponse> Receitas);

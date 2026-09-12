@@ -292,16 +292,6 @@ public class AlertaService(GlicoNutriDbContext db, ILogger<AlertaService> log) :
                           && h.Alerta.Ativo
                           && h.StatusEnvio.Codigo == Codigos.Status.Pendente, ct);
 
-        var resumo = await db.ResumoClinicoPaciente
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(r => r.PacienteId == pacienteId, ct);
-
-        if (resumo is not null)
-        {
-            resumo.AlertasPendentesCount = pendentes;
-            resumo.DataAtualizacao = DateTime.UtcNow;
-            await db.SaveChangesAsync(ct);
-        }
 
         return pendentes;
     }

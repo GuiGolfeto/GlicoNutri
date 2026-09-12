@@ -30,7 +30,6 @@ public class AntropometriaService(GlicoNutriDbContext db) : IAntropometriaServic
         long pacienteId, CriarRegistroAntropometricoRequest pedido, CancellationToken ct = default)
     {
         var paciente = await db.Pacientes
-            .Include(p => p.Resumo)
             .FirstOrDefaultAsync(p => p.Id == pacienteId, ct);
 
         if (paciente is null)
@@ -70,8 +69,6 @@ public class AntropometriaService(GlicoNutriDbContext db) : IAntropometriaServic
         };
 
         db.RegistrosAntropometricos.Add(registro);
-
-        AtualizarResumo(paciente, registro);
 
         await db.SaveChangesAsync(ct);
 
@@ -127,43 +124,8 @@ public class AntropometriaService(GlicoNutriDbContext db) : IAntropometriaServic
 
         registro.Ativo = false;
 
-        // O resumo pode estar apontando para o registro que acabou de sair.
-        var paciente = await db.Pacientes
-            .Include(p => p.Resumo)
-            .FirstAsync(p => p.Id == registro.PacienteId, ct);
-
-        var maisRecente = await db.RegistrosAntropometricos
-            .Where(r => r.PacienteId == registro.PacienteId && r.Id != registroId)
-            .OrderByDescending(r => r.DataHora)
-            .FirstOrDefaultAsync(ct);
-
-        if (paciente.Resumo is { } resumo)
-        {
-            resumo.UltimoImc = maisRecente?.Imc;
-            resumo.UltimaClassificacaoImc = maisRecente?.ClassificacaoImc;
-            resumo.UltimaDataAntropometria = maisRecente?.DataHora;
-            resumo.DataAtualizacao = DateTime.UtcNow;
-        }
-
         await db.SaveChangesAsync(ct);
         return Resultado<bool>.Ok(true);
-    }
-
-    /// <summary>
-    /// O read model é atualizado pela camada de serviço após cada persistência,
-    /// como manda a nota do DER V2.0. Só avança se este for o registro mais
-    /// recente — um lançamento retroativo não deve sobrescrever o atual.
-    /// </summary>
-    private static void AtualizarResumo(Paciente paciente, RegistroAntropometrico registro)
-    {
-        if (paciente.Resumo is not { } resumo) return;
-
-        if (resumo.UltimaDataAntropometria is { } ultima && registro.DataHora < ultima) return;
-
-        resumo.UltimoImc = registro.Imc;
-        resumo.UltimaClassificacaoImc = registro.ClassificacaoImc;
-        resumo.UltimaDataAntropometria = registro.DataHora;
-        resumo.DataAtualizacao = DateTime.UtcNow;
     }
 
     private static RegistroAntropometricoResponse Mapear(

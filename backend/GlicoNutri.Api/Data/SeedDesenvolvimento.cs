@@ -26,15 +26,11 @@ public static class SeedDesenvolvimento
         if (await db.Usuarios.IgnoreQueryFilters().AnyAsync(ct))
             return;
 
-        var perfilAdmin = await db.PerfisUsuario
-            .FirstAsync(p => p.Codigo == Codigos.Perfil.Administrador, ct);
-
         db.Administradores.Add(new Administrador
         {
             Nome = "Administrador do Sistema",
             Email = EmailAdmin,
             SenhaHash = senhas.Hash(SenhaAdmin),
-            PerfilId = perfilAdmin.Id,
             NivelAcesso = 1,
             Ativo = true,
             DataCadastro = DateTime.UtcNow,

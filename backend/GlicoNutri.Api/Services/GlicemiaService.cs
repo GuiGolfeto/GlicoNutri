@@ -39,7 +39,6 @@ public class GlicemiaService(GlicoNutriDbContext db) : IGlicemiaService
         long pacienteId, CriarRegistroGlicemiaRequest pedido, CancellationToken ct = default)
     {
         var paciente = await db.Pacientes
-            .Include(p => p.Resumo)
             .FirstOrDefaultAsync(p => p.Id == pacienteId, ct);
 
         if (paciente is null)
@@ -75,7 +74,6 @@ public class GlicemiaService(GlicoNutriDbContext db) : IGlicemiaService
         db.RegistrosGlicemia.Add(registro);
         await db.SaveChangesAsync(ct);
 
-        await AtualizarResumoAsync(pacienteId, ct);
 
         return Resultado<RegistroGlicemiaResponse>.Ok(Mapear(registro, contexto.Descricao, paciente));
     }
@@ -162,7 +160,6 @@ public class GlicemiaService(GlicoNutriDbContext db) : IGlicemiaService
         registro.Ativo = false;
         await db.SaveChangesAsync(ct);
 
-        await AtualizarResumoAsync(registro.PacienteId, ct);
         return Resultado<bool>.Ok(true);
     }
 
@@ -196,57 +193,8 @@ public class GlicemiaService(GlicoNutriDbContext db) : IGlicemiaService
 
         if (mudou) await db.SaveChangesAsync(ct);
 
-        await AtualizarResumoAsync(pacienteId, ct);
     }
 
-    /// <summary>
-    /// Recalcula os campos glicêmicos do read model a partir dos registros
-    /// vigentes, como manda a nota do DER V2.0.
-    ///
-    /// Recalcular tudo — em vez de somar incrementalmente — é o que mantém o
-    /// resumo correto depois de um registro retroativo ou de uma remoção, que
-    /// mudam a média e o percentual sem serem a medição mais recente.
-    /// </summary>
-    private async Task AtualizarResumoAsync(long pacienteId, CancellationToken ct)
-    {
-        var resumo = await db.ResumoClinicoPaciente
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(r => r.PacienteId == pacienteId, ct);
-
-        if (resumo is null) return;
-
-        var ultimo = await db.RegistrosGlicemia
-            .Where(r => r.PacienteId == pacienteId)
-            .OrderByDescending(r => r.DataHora)
-            .Select(r => new { r.Valor, r.ContextoId, r.DataHora })
-            .FirstOrDefaultAsync(ct);
-
-        var seteDias = DateTime.UtcNow.AddDays(-7);
-        var recentes = await db.RegistrosGlicemia
-            .Where(r => r.PacienteId == pacienteId && r.DataHora >= seteDias)
-            .Select(r => new { r.Valor, r.ForaDoAlvo })
-            .ToListAsync(ct);
-
-        resumo.UltimaGlicemiaValor = ultimo?.Valor;
-        resumo.UltimaGlicemiaContextoId = ultimo?.ContextoId;
-        resumo.UltimaGlicemiaData = ultimo?.DataHora;
-
-        resumo.MediaGlicemia7Dias = recentes.Count > 0
-            ? Math.Round(recentes.Average(r => r.Valor), 1)
-            : null;
-
-        resumo.PercentualNoAlvo7Dias = recentes.Count > 0
-            ? Math.Round(recentes.Count(r => !r.ForaDoAlvo) * 100.0 / recentes.Count, 1)
-            : null;
-
-        // Alimenta o painel "pacientes sem registro recente" do UC011.
-        resumo.DiasSemRegistroGlicemia = ultimo is not null
-            ? (int)Math.Floor((DateTime.UtcNow - ultimo.DataHora).TotalDays)
-            : null;
-
-        resumo.DataAtualizacao = DateTime.UtcNow;
-        await db.SaveChangesAsync(ct);
-    }
 
     private static RegistroGlicemiaResponse Mapear(
         RegistroGlicemia r, string contexto, Paciente paciente)

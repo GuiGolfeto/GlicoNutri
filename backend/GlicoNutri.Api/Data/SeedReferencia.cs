@@ -16,6 +16,18 @@ public static class Codigos
         public const string Administrador = "ADMINISTRADOR";
     }
 
+    /// <summary>
+    /// Ids fixos dos perfis. Precisam ser constantes porque perfil_id é o
+    /// discriminador da hierarquia TPH: o EF grava o valor direto na coluna, sem
+    /// consultar perfis_usuario.
+    /// </summary>
+    public static class IdPerfil
+    {
+        public const long Paciente = 1;
+        public const long Nutricionista = 2;
+        public const long Administrador = 3;
+    }
+
     public static class Formula
     {
         public const string HarrisBenedict = "HARRIS_BENEDICT";
@@ -44,6 +56,23 @@ public static class Codigos
         public const string Manual = "MANUAL";
     }
 
+    /// <summary>Origem do indice glicemico de um alimento.</summary>
+    public static class FonteIg
+    {
+        /// <summary>International Tables of Glycemic Index and Glycemic Load Values 2021.</summary>
+        public const string TabelaInternacional = "TABELA_INTERNACIONAL";
+
+        /// <summary>Informado pelo nutricionista no cadastro do alimento.</summary>
+        public const string Profissional = "PROFISSIONAL";
+    }
+
+    /// <summary>Ids fixos das fontes de indice glicemico, usados no cadastro de alimento.</summary>
+    public static class IdFonteIg
+    {
+        public const long TabelaInternacional = 1;
+        public const long Profissional = 2;
+    }
+
     public static class Sexo
     {
         public const string Masculino = "MASCULINO";
@@ -56,9 +85,9 @@ public static class SeedReferencia
     public static void Aplicar(ModelBuilder b)
     {
         b.Entity<PerfilUsuario>().HasData(
-            new PerfilUsuario { Id = 1, Codigo = Codigos.Perfil.Paciente, Descricao = "Paciente", Ativo = true },
-            new PerfilUsuario { Id = 2, Codigo = Codigos.Perfil.Nutricionista, Descricao = "Nutricionista", Ativo = true },
-            new PerfilUsuario { Id = 3, Codigo = Codigos.Perfil.Administrador, Descricao = "Administrador", Ativo = true });
+            new PerfilUsuario { Id = Codigos.IdPerfil.Paciente, Codigo = Codigos.Perfil.Paciente, Descricao = "Paciente", Ativo = true },
+            new PerfilUsuario { Id = Codigos.IdPerfil.Nutricionista, Codigo = Codigos.Perfil.Nutricionista, Descricao = "Nutricionista", Ativo = true },
+            new PerfilUsuario { Id = Codigos.IdPerfil.Administrador, Codigo = Codigos.Perfil.Administrador, Descricao = "Administrador", Ativo = true });
 
         b.Entity<SexoBiologico>().HasData(
             new SexoBiologico { Id = 1, Codigo = Codigos.Sexo.Masculino, Descricao = "Masculino", Ativo = true },
@@ -68,7 +97,26 @@ public static class SeedReferencia
             new TipoDiabetes { Id = 1, Codigo = "TIPO_1", Descricao = "Diabetes tipo 1", Ativo = true },
             new TipoDiabetes { Id = 2, Codigo = "TIPO_2", Descricao = "Diabetes tipo 2", Ativo = true },
             new TipoDiabetes { Id = 3, Codigo = "GESTACIONAL", Descricao = "Diabetes gestacional", Ativo = true },
-            new TipoDiabetes { Id = 4, Codigo = "MODY", Descricao = "MODY (Maturity Onset Diabetes of the Young)", Ativo = true });
+            new TipoDiabetes { Id = 4, Codigo = "MODY", Descricao = "MODY (Maturity Onset Diabetes of the Young)", Ativo = true },
+            // Nao consta do DER V2.0, mas o UC002 previa e a ADJ acompanha a condicao,
+            // que muda a conduta nutricional. Decisao do Mateus em 11/09/2026.
+            new TipoDiabetes { Id = 5, Codigo = "PRE_DIABETES", Descricao = "Pré-diabetes", Ativo = true });
+
+        b.Entity<FonteIndiceGlicemico>().HasData(
+            new FonteIndiceGlicemico
+            {
+                Id = Codigos.IdFonteIg.TabelaInternacional,
+                Codigo = Codigos.FonteIg.TabelaInternacional,
+                Descricao = "International Tables of Glycemic Index and Glycemic Load Values 2021",
+                Ativo = true,
+            },
+            new FonteIndiceGlicemico
+            {
+                Id = Codigos.IdFonteIg.Profissional,
+                Codigo = Codigos.FonteIg.Profissional,
+                Descricao = "Informado pelo nutricionista",
+                Ativo = true,
+            });
 
         // Contextos do DER V2.0. Por serem linhas de tabela, e não valores de um
         // enum compilado, o nutricionista pode desdobrar POS_REFEICAO em 1h e 2h
@@ -90,7 +138,7 @@ public static class SeedReferencia
 
         // RN14 — apenas fórmulas cientificamente reconhecidas e implementadas.
         b.Entity<FormulaEnergetica>().HasData(
-            new FormulaEnergetica { Id = 1, Codigo = Codigos.Formula.HarrisBenedict, Descricao = "Harris-Benedict", Ativo = true },
+            new FormulaEnergetica { Id = 1, Codigo = Codigos.Formula.HarrisBenedict, Descricao = "Harris-Benedict (revisão de Roza e Shizgal, 1984)", Ativo = true },
             new FormulaEnergetica { Id = 2, Codigo = Codigos.Formula.MifflinStJeor, Descricao = "Mifflin-St Jeor", Ativo = true });
 
         // Fatores de atividade aplicados sobre a TMB para obter o VET (UC006).

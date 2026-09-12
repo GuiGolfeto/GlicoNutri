@@ -3,8 +3,9 @@ using GlicoNutri.Api.Models.Referencia;
 namespace GlicoNutri.Api.Models;
 
 /// <summary>
-/// Raiz da hierarquia de identidade. Mapeada como TPT (Table-Per-Type) conforme o
-/// DER V2.0: uma tabela por subtipo, cuja PK (usuario_id) tambem e FK de usuarios.id.
+/// Raiz da hierarquia de identidade. Mapeada como TPH (Table-Per-Hierarchy) por
+/// especificacao do professor orientador: uma unica tabela usuarios, com perfil_id
+/// dizendo de que tipo e cada linha. O DER V2.0 descreve o TPT anterior.
 /// </summary>
 public abstract class Usuario
 {
@@ -13,6 +14,10 @@ public abstract class Usuario
     public string Email { get; set; } = null!;
     public string SenhaHash { get; set; } = null!;
 
+    /// <summary>
+    /// Discriminador da hierarquia TPH, alem de FK para perfis_usuario: e o EF que
+    /// o grava, a partir do tipo da entidade. Nao atribua na mao.
+    /// </summary>
     public long PerfilId { get; set; }
     public PerfilUsuario Perfil { get; set; } = null!;
 

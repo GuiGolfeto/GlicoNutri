@@ -188,6 +188,31 @@ public class ApiFixture : WebApplicationFactory<Program>, IAsyncLifetime
         return criado!.Id;
     }
 
+    /// <summary>
+    /// Cliente autenticado como o próprio paciente. A senha provisória é trocada
+    /// direto no banco, pelo mesmo motivo do cadastro de nutricionista.
+    /// </summary>
+    public async Task<HttpClient> ClientePacienteAsync(string email)
+    {
+        const string senha = "Paciente@2026";
+
+        await using (var db = CriarContexto())
+        {
+            var usuario = await db.Usuarios.FirstAsync(u => u.Email == email);
+            usuario.SenhaHash = BCrypt.Net.BCrypt.HashPassword(senha, 4);
+            usuario.SenhaProvisoria = false;
+            await db.SaveChangesAsync();
+        }
+
+        var cliente = CreateClient();
+        var login = await cliente.PostAsJsonAsync("/api/auth/login", new { email, senha });
+        login.EnsureSuccessStatusCode();
+        var dados = await login.Content.ReadFromJsonAsync<RespostaLogin>();
+        cliente.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", dados!.Token);
+
+        return cliente;
+    }
+
     public record RespostaLogin(string Token, bool SenhaProvisoria);
     public record RespostaId(long Id);
 }

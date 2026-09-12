@@ -30,6 +30,19 @@ public class TipoDiabetes : IEntidadeReferencia
     public bool Ativo { get; set; } = true;
 }
 
+/// <summary>
+/// De onde veio o indice glicemico de um alimento. A TACO nao publica o dado em
+/// nenhum dos 597 alimentos, entao ele entra por outra fonte — e precisa dizer
+/// qual, para o nutricionista saber o que esta lendo.
+/// </summary>
+public class FonteIndiceGlicemico : IEntidadeReferencia
+{
+    public long Id { get; set; }
+    public string Codigo { get; set; } = null!;
+    public string Descricao { get; set; } = null!;
+    public bool Ativo { get; set; } = true;
+}
+
 public class PerfilUsuario : IEntidadeReferencia
 {
     public long Id { get; set; }

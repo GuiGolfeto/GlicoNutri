@@ -9,7 +9,7 @@ namespace GlicoNutri.Api.Data;
 
 public class GlicoNutriDbContext(DbContextOptions<GlicoNutriDbContext> options) : DbContext(options)
 {
-    // --- Identidade (herança TPT) ---
+    // --- Identidade (herança TPH) ---
     public DbSet<Usuario> Usuarios => Set<Usuario>();
     public DbSet<Nutricionista> Nutricionistas => Set<Nutricionista>();
     public DbSet<Paciente> Pacientes => Set<Paciente>();
@@ -36,6 +36,8 @@ public class GlicoNutriDbContext(DbContextOptions<GlicoNutriDbContext> options) 
     public DbSet<ConteudoEducativo> ConteudosEducativos => Set<ConteudoEducativo>();
     public DbSet<Receita> Receitas => Set<Receita>();
     public DbSet<IngredienteReceita> IngredientesReceita => Set<IngredienteReceita>();
+    public DbSet<FavoritoConteudo> FavoritosConteudo => Set<FavoritoConteudo>();
+    public DbSet<FavoritoReceita> FavoritosReceita => Set<FavoritoReceita>();
 
     // --- Read model do dashboard ---
     public DbSet<ResumoClinicoPaciente> ResumoClinicoPaciente => Set<ResumoClinicoPaciente>();
@@ -52,6 +54,7 @@ public class GlicoNutriDbContext(DbContextOptions<GlicoNutriDbContext> options) 
     public DbSet<TipoAlerta> TiposAlerta => Set<TipoAlerta>();
     public DbSet<StatusEnvio> StatusEnvio => Set<StatusEnvio>();
     public DbSet<FonteAlimento> FontesAlimento => Set<FonteAlimento>();
+    public DbSet<FonteIndiceGlicemico> FontesIndiceGlicemico => Set<FonteIndiceGlicemico>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -71,7 +74,6 @@ public class GlicoNutriDbContext(DbContextOptions<GlicoNutriDbContext> options) 
 
         AplicarSoftDelete(b);
         AplicarNomesSnakeCase(b);
-        RenomearPkDosSubtiposTpt(b);
     }
 
     // ════════════════════════════════════════════════════════════════════
@@ -82,7 +84,19 @@ public class GlicoNutriDbContext(DbContextOptions<GlicoNutriDbContext> options) 
         b.Entity<Usuario>(e =>
         {
             e.ToTable("usuarios");
-            e.UseTptMappingStrategy();
+
+            // Questão 1 da orientação — a hierarquia passou de TPT para TPH: uma
+            // tabela só, com o perfil dizendo de que tipo é cada linha. No TPT do
+            // DER V2.0 qualquer leitura que misturasse dados de usuário e de
+            // subtipo custava um JOIN.
+            e.UseTphMappingStrategy();
+
+            // O discriminador é o próprio perfil_id, que já era FK obrigatória:
+            // uma segunda coluna com o tipo diria o mesmo e poderia divergir dela.
+            e.HasDiscriminator(x => x.PerfilId)
+             .HasValue<Paciente>(Codigos.IdPerfil.Paciente)
+             .HasValue<Nutricionista>(Codigos.IdPerfil.Nutricionista)
+             .HasValue<Administrador>(Codigos.IdPerfil.Administrador);
 
             e.Property(x => x.Nome).HasMaxLength(150).IsRequired();
             e.Property(x => x.Email).HasMaxLength(150).IsRequired();
@@ -98,21 +112,27 @@ public class GlicoNutriDbContext(DbContextOptions<GlicoNutriDbContext> options) 
              .OnDelete(DeleteBehavior.Restrict);
         });
 
-        // Nos subtipos a PK compartilhada chama-se usuario_id, como no DER V2.0.
+        // Sob TPH as colunas dos subtipos são nulas nas linhas dos outros perfis,
+        // então a obrigatoriedade não pode mais ser NOT NULL: ela vira CHECK
+        // condicionado ao perfil, aplicado na migration.
         b.Entity<Nutricionista>(e =>
         {
-            e.ToTable("nutricionistas");
-            e.Property(x => x.Crn).HasMaxLength(20).IsRequired();
+            e.Property(x => x.Crn).HasMaxLength(20);
             e.Property(x => x.Especialidade).HasMaxLength(100);
-            e.Property(x => x.Telefone).HasMaxLength(20);
+
+            // Nutricionista e Paciente dividem a coluna telefone. Sem dizer isso, o
+            // EF criaria telefone e telefone1 para o mesmo dado.
+            e.Property(x => x.Telefone).HasMaxLength(20).HasColumnName("telefone");
+
+            // Nulos não colidem entre si no Postgres, então o índice único continua
+            // valendo só para as linhas que têm CRN — as de nutricionista.
             e.HasIndex(x => x.Crn).IsUnique();
         });
 
         b.Entity<Paciente>(e =>
         {
-            e.ToTable("pacientes");
-            e.Property(x => x.Cpf).HasMaxLength(14).IsRequired();
-            e.Property(x => x.Telefone).HasMaxLength(20);
+            e.Property(x => x.Cpf).HasMaxLength(14);
+            e.Property(x => x.Telefone).HasMaxLength(20).HasColumnName("telefone");
             e.HasIndex(x => x.Cpf).IsUnique();
 
             e.HasOne(x => x.Sexo).WithMany()
@@ -123,8 +143,10 @@ public class GlicoNutriDbContext(DbContextOptions<GlicoNutriDbContext> options) 
 
         b.Entity<Administrador>(e =>
         {
-            e.ToTable("administradores");
-            e.Property(x => x.NivelAcesso).HasDefaultValue(1);
+            // Sem valor padrão no banco: sob TPH ele preencheria nivel_acesso também
+            // nas linhas de paciente e de nutricionista, onde a coluna não significa
+            // nada. O padrão 1 vive na propriedade, e só o administrador o grava.
+            e.Property(x => x.NivelAcesso);
         });
 
         b.Entity<NutricionistaPaciente>(e =>
@@ -156,6 +178,9 @@ public class GlicoNutriDbContext(DbContextOptions<GlicoNutriDbContext> options) 
 
             e.HasOne(x => x.Fonte).WithMany()
              .HasForeignKey(x => x.FonteId).OnDelete(DeleteBehavior.Restrict);
+
+            e.HasOne(x => x.FonteIndiceGlicemico).WithMany()
+             .HasForeignKey(x => x.FonteIndiceGlicemicoId).OnDelete(DeleteBehavior.Restrict);
         });
 
         b.Entity<PlanoAlimentar>(e =>
@@ -320,6 +345,32 @@ public class GlicoNutriDbContext(DbContextOptions<GlicoNutriDbContext> options) 
             e.HasOne(x => x.Alimento).WithMany(x => x.Ingredientes)
              .HasForeignKey(x => x.AlimentoId).OnDelete(DeleteBehavior.Restrict);
         });
+
+        // RF09.3 — favoritos do paciente. A chave é o par, então o mesmo material
+        // não entra duas vezes na lista de quem favoritou.
+        b.Entity<FavoritoConteudo>(e =>
+        {
+            e.ToTable("favoritos_conteudo");
+            e.HasKey(x => new { x.PacienteId, x.ConteudoId });
+            e.Property(x => x.DataFavoritado).HasDefaultValueSql("now()");
+
+            e.HasOne(x => x.Paciente).WithMany()
+             .HasForeignKey(x => x.PacienteId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Conteudo).WithMany()
+             .HasForeignKey(x => x.ConteudoId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        b.Entity<FavoritoReceita>(e =>
+        {
+            e.ToTable("favoritos_receita");
+            e.HasKey(x => new { x.PacienteId, x.ReceitaId });
+            e.Property(x => x.DataFavoritado).HasDefaultValueSql("now()");
+
+            e.HasOne(x => x.Paciente).WithMany()
+             .HasForeignKey(x => x.PacienteId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Receita).WithMany()
+             .HasForeignKey(x => x.ReceitaId).OnDelete(DeleteBehavior.Cascade);
+        });
     }
 
     // ════════════════════════════════════════════════════════════════════
@@ -329,11 +380,19 @@ public class GlicoNutriDbContext(DbContextOptions<GlicoNutriDbContext> options) 
     {
         b.Entity<ResumoClinicoPaciente>(e =>
         {
-            e.ToTable("resumo_clinico_paciente");
+            // Questão 2 da orientação — deixou de ser tabela e virou VIEW. Enquanto
+            // era tabela, guardava dado calculado a partir de outras tabelas, que é
+            // a violação de 3FN apontada: media_glicemia_7_dias e ultimo_imc podiam
+            // envelhecer sem que nada no banco os corrigisse. A view recalcula na
+            // leitura, então não existe versão desatualizada para corrigir.
+            e.ToView("resumo_clinico_paciente");
+
+            // ToView sozinho não desfaz o mapeamento de tabela: sem isto o EF
+            // continuaria gerando migrations para uma tabela que não existe mais.
+            e.ToTable((string?)null);
             e.HasKey(x => x.PacienteId);
             e.Property(x => x.PacienteId).ValueGeneratedNever();
             e.Property(x => x.UltimaClassificacaoImc).HasMaxLength(50);
-            e.Property(x => x.DataAtualizacao).HasDefaultValueSql("now()");
 
             e.HasOne(x => x.Paciente).WithOne(x => x.Resumo)
              .HasForeignKey<ResumoClinicoPaciente>(x => x.PacienteId)
@@ -359,6 +418,7 @@ public class GlicoNutriDbContext(DbContextOptions<GlicoNutriDbContext> options) 
         ConfigurarUma<TipoAlerta>(b, "tipos_alerta");
         ConfigurarUma<StatusEnvio>(b, "status_envio");
         ConfigurarUma<FonteAlimento>(b, "fontes_alimento");
+        ConfigurarUma<FonteIndiceGlicemico>(b, "fontes_indice_glicemico");
     }
 
     private static void ConfigurarUma<T>(ModelBuilder b, string tabela) where T : class, IEntidadeReferencia
@@ -382,7 +442,7 @@ public class GlicoNutriDbContext(DbContextOptions<GlicoNutriDbContext> options) 
     /// Filtro global de soft delete. Aplicado exatamente às entidades listadas na
     /// legenda do DER V2.0 — historico_alertas, distribuicao_macronutrientes,
     /// ingredientes_receita e o read model ficam de fora, por não terem "ativo".
-    /// Numa hierarquia TPT o filtro só pode ser declarado na raiz (Usuario).
+    /// Numa hierarquia TPH o filtro só pode ser declarado na raiz (Usuario).
     /// </summary>
     private static void AplicarSoftDelete(ModelBuilder b)
     {
@@ -411,6 +471,8 @@ public class GlicoNutriDbContext(DbContextOptions<GlicoNutriDbContext> options) 
         b.Entity<DistribuicaoMacronutrientes>().HasQueryFilter(x => x.PlanoAlimentar.Ativo);
         b.Entity<HistoricoAlerta>().HasQueryFilter(x => x.Alerta.Ativo);
         b.Entity<IngredienteReceita>().HasQueryFilter(x => x.Receita.Ativo);
+        b.Entity<FavoritoConteudo>().HasQueryFilter(x => x.Conteudo.Ativo && x.Paciente.Ativo);
+        b.Entity<FavoritoReceita>().HasQueryFilter(x => x.Receita.Ativo && x.Paciente.Ativo);
         b.Entity<ResumoClinicoPaciente>().HasQueryFilter(x => x.Paciente.Ativo);
     }
 
@@ -426,8 +488,11 @@ public class GlicoNutriDbContext(DbContextOptions<GlicoNutriDbContext> options) 
             if (tabela is not null && tabela != ParaSnakeCase(tabela))
                 entidade.SetTableName(ParaSnakeCase(tabela));
 
-            var objeto = StoreObjectIdentifier.Table(
-                entidade.GetTableName()!, entidade.GetSchema());
+            // O resumo clínico é view, não tabela: para ele o identificador de
+            // armazenamento tem de ser o da view, senão GetTableName volta nulo.
+            var objeto = entidade.GetTableName() is { } nomeTabela
+                ? StoreObjectIdentifier.Table(nomeTabela, entidade.GetSchema())
+                : StoreObjectIdentifier.View(entidade.GetViewName()!, entidade.GetViewSchema());
 
             foreach (var propriedade in entidade.GetProperties())
             {
@@ -438,38 +503,17 @@ public class GlicoNutriDbContext(DbContextOptions<GlicoNutriDbContext> options) 
                     propriedade.SetColumnName(ParaSnakeCase(propriedade.Name));
             }
 
-            // As chaves primárias ficam com o nome padrão do EF: numa hierarquia TPT
-            // os quatro subtipos compartilham o mesmo objeto de chave, e renomeá-lo
-            // daria a todas as tabelas o mesmo nome de constraint. O DER V2.0 nomeia
+            // As chaves primárias ficam com o nome padrão do EF: o DER V2.0 nomeia
             // tabelas e colunas, não constraints.
+            // Quem é view não tem constraint nem índice físico, e aí os nomes vêm
+            // nulos — não há o que renomear.
             foreach (var fk in entidade.GetForeignKeys())
-                fk.SetConstraintName(ParaSnakeCase(fk.GetConstraintName()!));
+                if (fk.GetConstraintName() is { } nomeFk)
+                    fk.SetConstraintName(ParaSnakeCase(nomeFk));
 
             foreach (var indice in entidade.GetIndexes())
-                indice.SetDatabaseName(ParaSnakeCase(indice.GetDatabaseName()!));
-        }
-    }
-
-    /// <summary>
-    /// No DER V2.0 a PK da tabela base chama-se "id", e a dos subtipos "usuario_id"
-    /// (PK e FK ao mesmo tempo). Como em TPT os quatro tipos compartilham a mesma
-    /// propriedade Id, o nome precisa ser definido por tabela — HasColumnName no
-    /// subtipo renomearia a coluna da base junto.
-    /// </summary>
-    private static void RenomearPkDosSubtiposTpt(ModelBuilder b)
-    {
-        (Type Tipo, string Tabela)[] subtipos =
-        [
-            (typeof(Nutricionista), "nutricionistas"),
-            (typeof(Paciente), "pacientes"),
-            (typeof(Administrador), "administradores"),
-        ];
-
-        foreach (var (tipo, tabela) in subtipos)
-        {
-            var entidade = b.Model.FindEntityType(tipo)!;
-            var pk = entidade.FindPrimaryKey()!.Properties[0];
-            pk.SetColumnName("usuario_id", StoreObjectIdentifier.Table(tabela));
+                if (indice.GetDatabaseName() is { } nomeIndice)
+                    indice.SetDatabaseName(ParaSnakeCase(nomeIndice));
         }
     }
 

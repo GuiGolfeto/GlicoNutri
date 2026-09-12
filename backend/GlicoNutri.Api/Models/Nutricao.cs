@@ -16,6 +16,13 @@ public class Alimento
     public double? FibrasPor100g { get; set; }
     public int? IndiceGlicemico { get; set; }
 
+    /// <summary>
+    /// De onde veio o indice glicemico. Nulo quando o alimento nao tem o valor —
+    /// o caso dos 597 da TACO, que nao publica o dado.
+    /// </summary>
+    public long? FonteIndiceGlicemicoId { get; set; }
+    public FonteIndiceGlicemico? FonteIndiceGlicemico { get; set; }
+
     public long FonteId { get; set; }
     public FonteAlimento Fonte { get; set; } = null!;
 

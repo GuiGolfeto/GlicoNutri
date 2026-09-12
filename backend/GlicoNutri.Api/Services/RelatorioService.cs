@@ -142,11 +142,25 @@ public class RelatorioService(GlicoNutriDbContext db) : IRelatorioService
             });
         });
 
+    /// <summary>
+    /// Marca do projeto: gota com check. O mesmo desenho do favicon e das telas —
+    /// o relatório é o documento que sai do sistema e vai para a mão do paciente.
+    /// </summary>
+    private const string MarcaSvg = """
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
+          <path d="M20 38C27.732 38 34 31.732 34 24C34 16.268 20 2 20 2C20 2 6 16.268 6 24C6 31.732 12.268 38 20 38Z" fill="#00897B"/>
+          <path d="M15 24L18.5 27.5L25.5 20.5" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        """;
+
     private static void Cabecalho(IContainer e, Paciente paciente, string? responsavel, int dias) =>
         e.Column(col =>
         {
             col.Item().Row(linha =>
             {
+                linha.ConstantItem(30).PaddingTop(2).Height(26).Svg(MarcaSvg);
+                linha.ConstantItem(8);
+
                 linha.RelativeItem().Column(c =>
                 {
                     c.Item().Text("GlicoNutri").FontSize(17).Bold().FontColor(CorPrimaria);

@@ -44,6 +44,7 @@ public class AlimentoService(GlicoNutriDbContext db) : IAlimentoService
             LipidiosPor100g = pedido.LipidiosPor100g,
             FibrasPor100g = pedido.FibrasPor100g,
             IndiceGlicemico = pedido.IndiceGlicemico,
+            FonteIndiceGlicemicoId = pedido.IndiceGlicemico is null ? null : Codigos.IdFonteIg.Profissional,
             FonteId = manual.Id,
             Ativo = true,
         };
@@ -112,7 +113,14 @@ public class AlimentoService(GlicoNutriDbContext db) : IAlimentoService
         alimento.ProteinasPor100g = pedido.ProteinasPor100g;
         alimento.LipidiosPor100g = pedido.LipidiosPor100g;
         alimento.FibrasPor100g = pedido.FibrasPor100g;
-        alimento.IndiceGlicemico = pedido.IndiceGlicemico;
+        // Quem sobrescreve o índice glicêmico assume a autoria do número: o valor
+        // deixa de constar como vindo da tabela internacional.
+        if (alimento.IndiceGlicemico != pedido.IndiceGlicemico)
+        {
+            alimento.IndiceGlicemico = pedido.IndiceGlicemico;
+            alimento.FonteIndiceGlicemicoId =
+                pedido.IndiceGlicemico is null ? null : Codigos.IdFonteIg.Profissional;
+        }
 
         await db.SaveChangesAsync(ct);
         return Resultado<AlimentoResponse>.Ok((await ObterAsync(id, ct))!);
@@ -134,5 +142,6 @@ public class AlimentoService(GlicoNutriDbContext db) : IAlimentoService
             a.Id, a.Nome, a.GrupoAlimentar,
             a.CaloriasPor100g, a.CarboidratosPor100g, a.ProteinasPor100g,
             a.LipidiosPor100g, a.FibrasPor100g, a.IndiceGlicemico,
+            a.FonteIndiceGlicemico == null ? null : a.FonteIndiceGlicemico.Descricao,
             a.Fonte.Codigo, a.Ativo);
 }

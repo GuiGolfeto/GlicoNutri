@@ -31,6 +31,15 @@ public record ItemPlanoRequest(
     [Range(0.1, 5000)] double Quantidade,
     [StringLength(20)] string? Unidade);
 
+/// <param name="Padrao">Sugestão do sistema: o centro da faixa.</param>
+public record FaixaMacronutriente(double Minimo, double Maximo, double Padrao);
+
+public record FaixasMacronutrientesResponse(
+    FaixaMacronutriente Carboidratos,
+    FaixaMacronutriente Proteinas,
+    FaixaMacronutriente Lipidios,
+    string Referencia);
+
 public record DistribuicaoResponse(
     double CarboidratosPercentual,
     double ProteinasPercentual,

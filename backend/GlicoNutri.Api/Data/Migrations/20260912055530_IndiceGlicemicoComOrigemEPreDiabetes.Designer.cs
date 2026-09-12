@@ -3,6 +3,7 @@ using System;
 using GlicoNutri.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GlicoNutri.Api.Data.Migrations
 {
     [DbContext(typeof(GlicoNutriDbContext))]
-    partial class GlicoNutriDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260912055530_IndiceGlicemicoComOrigemEPreDiabetes")]
+    partial class IndiceGlicemicoComOrigemEPreDiabetes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -178,10 +181,6 @@ namespace GlicoNutri.Api.Data.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("titulo");
 
-                    b.Property<string>("UrlMidia")
-                        .HasColumnType("text")
-                        .HasColumnName("url_midia");
-
                     b.HasKey("Id");
 
                     b.HasIndex("AutorId")
@@ -241,54 +240,6 @@ namespace GlicoNutri.Api.Data.Migrations
                         .HasDatabaseName("ix_distribuicao_macronutrientes_plano_alimentar_id");
 
                     b.ToTable("distribuicao_macronutrientes", (string)null);
-                });
-
-            modelBuilder.Entity("GlicoNutri.Api.Models.FavoritoConteudo", b =>
-                {
-                    b.Property<long>("PacienteId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("paciente_id");
-
-                    b.Property<long>("ConteudoId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("conteudo_id");
-
-                    b.Property<DateTime>("DataFavoritado")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("data_favoritado")
-                        .HasDefaultValueSql("now()");
-
-                    b.HasKey("PacienteId", "ConteudoId");
-
-                    b.HasIndex("ConteudoId")
-                        .HasDatabaseName("ix_favoritos_conteudo_conteudo_id");
-
-                    b.ToTable("favoritos_conteudo", (string)null);
-                });
-
-            modelBuilder.Entity("GlicoNutri.Api.Models.FavoritoReceita", b =>
-                {
-                    b.Property<long>("PacienteId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("paciente_id");
-
-                    b.Property<long>("ReceitaId")
-                        .HasColumnType("bigint")
-                        .HasColumnName("receita_id");
-
-                    b.Property<DateTime>("DataFavoritado")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("data_favoritado")
-                        .HasDefaultValueSql("now()");
-
-                    b.HasKey("PacienteId", "ReceitaId");
-
-                    b.HasIndex("ReceitaId")
-                        .HasDatabaseName("ix_favoritos_receita_receita_id");
-
-                    b.ToTable("favoritos_receita", (string)null);
                 });
 
             modelBuilder.Entity("GlicoNutri.Api.Models.HistoricoAlerta", b =>
@@ -1858,48 +1809,6 @@ namespace GlicoNutri.Api.Data.Migrations
                         .HasConstraintName("fk_distribuicao_macronutrientes_planos_alimentares_plano_alime~");
 
                     b.Navigation("PlanoAlimentar");
-                });
-
-            modelBuilder.Entity("GlicoNutri.Api.Models.FavoritoConteudo", b =>
-                {
-                    b.HasOne("GlicoNutri.Api.Models.ConteudoEducativo", "Conteudo")
-                        .WithMany()
-                        .HasForeignKey("ConteudoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_favoritos_conteudo_conteudos_educativos_conteudo_id");
-
-                    b.HasOne("GlicoNutri.Api.Models.Paciente", "Paciente")
-                        .WithMany()
-                        .HasForeignKey("PacienteId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_favoritos_conteudo_usuarios_paciente_id");
-
-                    b.Navigation("Conteudo");
-
-                    b.Navigation("Paciente");
-                });
-
-            modelBuilder.Entity("GlicoNutri.Api.Models.FavoritoReceita", b =>
-                {
-                    b.HasOne("GlicoNutri.Api.Models.Paciente", "Paciente")
-                        .WithMany()
-                        .HasForeignKey("PacienteId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_favoritos_receita_usuarios_paciente_id");
-
-                    b.HasOne("GlicoNutri.Api.Models.Receita", "Receita")
-                        .WithMany()
-                        .HasForeignKey("ReceitaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_favoritos_receita_receitas_receita_id");
-
-                    b.Navigation("Paciente");
-
-                    b.Navigation("Receita");
                 });
 
             modelBuilder.Entity("GlicoNutri.Api.Models.HistoricoAlerta", b =>

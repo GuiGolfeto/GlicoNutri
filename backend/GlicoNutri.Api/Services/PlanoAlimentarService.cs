@@ -38,7 +38,6 @@ public class PlanoAlimentarService(GlicoNutriDbContext db) : IPlanoAlimentarServ
         long pacienteId, long nutricionistaId, CriarPlanoRequest pedido, CancellationToken ct = default)
     {
         var paciente = await db.Pacientes
-            .Include(p => p.Resumo)
             .FirstOrDefaultAsync(p => p.Id == pacienteId, ct);
 
         if (paciente is null)
@@ -161,13 +160,6 @@ public class PlanoAlimentarService(GlicoNutriDbContext db) : IPlanoAlimentarServ
         }
 
         db.PlanosAlimentares.Add(plano);
-
-        // Read model do dashboard, atualizado pela camada de serviço.
-        if (paciente.Resumo is { } resumo)
-        {
-            resumo.PlanoAtivo = true;
-            resumo.DataAtualizacao = DateTime.UtcNow;
-        }
 
         await db.SaveChangesAsync(ct);
         await transacao.CommitAsync(ct);
@@ -310,16 +302,6 @@ public class PlanoAlimentarService(GlicoNutriDbContext db) : IPlanoAlimentarServ
         if (plano is null) return Resultado<bool>.Erro("Plano não encontrado.");
 
         plano.Ativo = false;
-
-        var resumo = await db.ResumoClinicoPaciente
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(r => r.PacienteId == plano.PacienteId, ct);
-
-        if (resumo is not null)
-        {
-            resumo.PlanoAtivo = false;
-            resumo.DataAtualizacao = DateTime.UtcNow;
-        }
 
         await db.SaveChangesAsync(ct);
         return Resultado<bool>.Ok(true);

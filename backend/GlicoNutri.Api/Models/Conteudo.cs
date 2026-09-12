@@ -20,6 +20,16 @@ public class ConteudoEducativo
     public TipoConteudo Tipo { get; set; } = null!;
 
     public string? Corpo { get; set; }
+
+    /// <summary>
+    /// RF09.2 — midia do conteudo, por link externo. Hospedar arquivo exigiria um
+    /// servico de armazenamento que a arquitetura nao preve; o link nao abre frente
+    /// de infraestrutura e aproveita o material que a associacao ja publica.
+    /// Em troca, o conteudo depende de terceiro e pode sair do ar: a tela avisa
+    /// quando o link nao carrega. Decisao do Mateus em 11/09/2026.
+    /// </summary>
+    public string? UrlMidia { get; set; }
+
     public DateTime? DataPublicacao { get; set; }
 
     public bool Ativo { get; set; } = true;
@@ -64,4 +74,34 @@ public class IngredienteReceita
 
     public double Quantidade { get; set; }
     public string? Unidade { get; set; }
+}
+
+/// <summary>
+/// RF09.3 — conteudo marcado como favorito pelo paciente. O DER V2.0 nao previa
+/// a tabela, e o requisito ficava registrado como limitacao; o Mateus optou por
+/// implementar em 11/09/2026. Duas tabelas de vinculo, uma por tipo de material,
+/// porque conteudo e receita sao entidades distintas no DER e a chave estrangeira
+/// so garante integridade apontando para uma delas.
+/// </summary>
+public class FavoritoConteudo
+{
+    public long PacienteId { get; set; }
+    public Paciente Paciente { get; set; } = null!;
+
+    public long ConteudoId { get; set; }
+    public ConteudoEducativo Conteudo { get; set; } = null!;
+
+    public DateTime DataFavoritado { get; set; }
+}
+
+/// <summary>RF09.3 — receita marcada como favorita pelo paciente.</summary>
+public class FavoritoReceita
+{
+    public long PacienteId { get; set; }
+    public Paciente Paciente { get; set; } = null!;
+
+    public long ReceitaId { get; set; }
+    public Receita Receita { get; set; } = null!;
+
+    public DateTime DataFavoritado { get; set; }
 }

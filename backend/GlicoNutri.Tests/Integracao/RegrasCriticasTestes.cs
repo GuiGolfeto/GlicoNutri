@@ -312,6 +312,120 @@ public class RegrasCriticasTestes(ApiFixture api)
         Assert.DoesNotContain(lista!, p => p.Id == paciente);
     }
 
+    // ── UC008 — quem registra medida é o nutricionista ──────────────────────
+
+    [Fact]
+    public async Task UC008_PacienteLeAsProprias_MedidasMasNaoAsRegistra()
+    {
+        var admin = await api.ClienteAdminAsync();
+        var (nutri, _) = await api.CriarNutricionistaAsync(admin, "uc008@teste.local", "CRN-UC008");
+        var pacienteId = await api.CriarPacienteAsync(nutri, "p.uc008@teste.local", Cpf(108));
+        var paciente = await api.ClientePacienteAsync("p.uc008@teste.local");
+
+        // Peso e altura entram no cálculo energético e, por ele, no plano: o
+        // paciente não escreve esse dado.
+        var tentativa = await paciente.PostAsJsonAsync(
+            $"/api/pacientes/{pacienteId}/antropometria", new { peso = 70.0, altura = 170.0 });
+        Assert.Equal(HttpStatusCode.Forbidden, tentativa.StatusCode);
+
+        var doNutricionista = await nutri.PostAsJsonAsync(
+            $"/api/pacientes/{pacienteId}/antropometria", new { peso = 70.0, altura = 170.0 });
+        Assert.Equal(HttpStatusCode.Created, doNutricionista.StatusCode);
+
+        // Mas continua enxergando o histórico.
+        var leitura = await paciente.GetAsync($"/api/pacientes/{pacienteId}/antropometria");
+        Assert.Equal(HttpStatusCode.OK, leitura.StatusCode);
+
+        var registros = await leitura.Content.ReadFromJsonAsync<List<RegistroComId>>();
+        var remocao = await paciente.DeleteAsync(
+            $"/api/pacientes/{pacienteId}/antropometria/{registros![0].Id}");
+        Assert.Equal(HttpStatusCode.Forbidden, remocao.StatusCode);
+    }
+
+    // ── UC007 A2 — distribuição padrão pela diretriz da SBD ─────────────────
+
+    [Fact]
+    public async Task UC007_SemAjuste_AplicaADistribuicaoPadraoDaSbd()
+    {
+        var admin = await api.ClienteAdminAsync();
+        var (nutri, _) = await api.CriarNutricionistaAsync(admin, "uc007sbd@teste.local", "CRN-SBD");
+        var paciente = await api.CriarPacienteAsync(nutri, "p.sbd@teste.local", Cpf(107));
+        await DarVetAsync(nutri, paciente);
+
+        var criacao = await nutri.PostAsJsonAsync($"/api/pacientes/{paciente}/plano-alimentar", new
+        {
+            objetivo = "Plano sem ajuste de macros",
+            dataInicio = DateOnly.FromDateTime(DateTime.UtcNow),
+        });
+        criacao.EnsureSuccessStatusCode();
+
+        var plano = await criacao.Content.ReadFromJsonAsync<PlanoComDistribuicao>();
+        Assert.Equal(50, plano!.Distribuicao.CarboidratosPercentual);
+        Assert.Equal(20, plano.Distribuicao.ProteinasPercentual);
+        Assert.Equal(30, plano.Distribuicao.LipidiosPercentual);
+    }
+
+    // ── RF09.3 — favoritos do paciente ──────────────────────────────────────
+
+    [Fact]
+    public async Task RF09_3_FavoritoNaoDuplicaESaiDaListaQuandoOConteudoEDespublicado()
+    {
+        var admin = await api.ClienteAdminAsync();
+        var (nutri, _) = await api.CriarNutricionistaAsync(admin, "rf093@teste.local", "CRN-F093");
+        var pacienteId = await api.CriarPacienteAsync(nutri, "p.rf093@teste.local", Cpf(93));
+        var paciente = await api.ClientePacienteAsync("p.rf093@teste.local");
+
+        var conteudo = await nutri.PostAsJsonAsync("/api/conteudos", new
+        {
+            titulo = "Contagem de carboidratos",
+            tipoId = 1,
+            corpo = "Como contar carboidratos no dia a dia.",
+            urlMidia = "https://www.youtube.com/watch?v=exemplo",
+        });
+        conteudo.EnsureSuccessStatusCode();
+        var conteudoId = (await conteudo.Content.ReadFromJsonAsync<ApiFixture.RespostaId>())!.Id;
+
+        // Marcar duas vezes é a mesma coisa que marcar uma: a tela pode tratar o
+        // botão como interruptor sem consultar o estado antes.
+        await paciente.PutAsync($"/api/pacientes/{pacienteId}/favoritos/conteudos/{conteudoId}", null);
+        await paciente.PutAsync($"/api/pacientes/{pacienteId}/favoritos/conteudos/{conteudoId}", null);
+
+        var favoritos = await paciente.GetFromJsonAsync<Favoritos>(
+            $"/api/pacientes/{pacienteId}/favoritos");
+        Assert.Single(favoritos!.Conteudos);
+
+        // RN29 — despublicado pelo Administrador, o material some da lista de
+        // favoritos sem que a preferência do paciente seja apagada.
+        var despublicacao = await admin.DeleteAsync($"/api/conteudos/{conteudoId}");
+        despublicacao.EnsureSuccessStatusCode();
+
+        var depois = await paciente.GetFromJsonAsync<Favoritos>(
+            $"/api/pacientes/{pacienteId}/favoritos");
+        Assert.Empty(depois!.Conteudos);
+
+        await using var db = api.CriarContexto();
+        Assert.True(await db.FavoritosConteudo.IgnoreQueryFilters()
+            .AnyAsync(f => f.PacienteId == pacienteId && f.ConteudoId == conteudoId));
+    }
+
+    // ── Tabelas de referência — sem duplicata por caixa ou acento ───────────
+
+    [Fact]
+    public async Task Referencia_RecusaDescricaoQueSoDifereEmCaixaOuAcento()
+    {
+        await using var db = api.CriarContexto();
+
+        db.ContextosGlicemia.Add(new GlicoNutri.Api.Models.Referencia.ContextoGlicemia
+        {
+            Codigo = "JEJUM_DUPLICADO",
+            Descricao = "  JEJUM  ",   // já existe "Jejum"
+            Ativo = true,
+        });
+
+        var erro = await Assert.ThrowsAsync<DbUpdateException>(() => db.SaveChangesAsync());
+        Assert.Contains("descricao_normalizada", erro.InnerException!.Message);
+    }
+
     // ── Apoio ───────────────────────────────────────────────────────────────
 
     private static async Task DarVetAsync(HttpClient nutri, long paciente)
@@ -366,6 +480,15 @@ public class RegrasCriticasTestes(ApiFixture api)
 
         return string.Concat(digitos);
     }
+
+    private record RegistroComId(long Id);
+    private record DistribuicaoLida(
+        double CarboidratosPercentual, double ProteinasPercentual, double LipidiosPercentual);
+    private record PlanoComDistribuicao(DistribuicaoLida Distribuicao);
+    private record FavoritoConteudoLido(long ConteudoId, string Titulo);
+    private record FavoritoReceitaLida(long ReceitaId, string Nome);
+    private record Favoritos(
+        List<FavoritoConteudoLido> Conteudos, List<FavoritoReceitaLida> Receitas);
 
     private record FalhaLogin(string Mensagem, bool Bloqueado, int? SegundosRestantes);
     private record ResumoGlicemico(double? PercentualNoAlvo);
