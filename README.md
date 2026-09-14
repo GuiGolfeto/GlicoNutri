@@ -50,6 +50,7 @@ para ele.
 | [`docs/DOCUMENTACAO-TECNICA.md`](docs/DOCUMENTACAO-TECNICA.md) | Referencia completa: arquitetura, modelo de dados, regras implementadas, calculos clinicos, API, web, testes e divergencias |
 | `docs/GlicoNutri-Backend.pdf` | Inventario do back-end, gerado a partir do codigo e do banco |
 | `docs/GlicoNutri-Relatorio-Desenvolvimento.pdf` | Relatorio de entrega, com telas |
+| `docs/GlicoNutri-Roteiro-de-Gravacao.pdf` | Roteiro da gravacao da apresentacao, cena a cena |
 
 ## Testes
 

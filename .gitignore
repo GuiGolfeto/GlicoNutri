@@ -32,3 +32,5 @@ docs/gerador-backend/*.psv
 docs/gerador-backend/*.json
 docs/gerador-backend/*.html
 docs/gerador-backend/__pycache__/
+docs/gerador-roteiro/roteiro-impressao.html
+docs/gerador-roteiro/node_modules/

@@ -1,0 +1,974 @@
+<title>Gravação do GlicoNutri</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+
+<style>
+  :root {
+    --teal:        #00685d;
+    --teal-forte:  #005048;
+    --teal-fundo:  #e0f2f1;
+    --tinta:       #0f172a;
+    --tinta-media: #475569;
+    --tinta-fraca: #7c8ba1;
+    --papel:       #ffffff;
+    --fundo:       #f6f8fa;
+    --borda:       #e2e8f0;
+    --borda-forte: #cbd5e1;
+    --ambar:       #b45309;
+    --ambar-fundo: #fef6e7;
+    --rubro:       #be1f1f;
+    --rubro-fundo: #fdeded;
+
+    --serifada: "Source Serif 4", Georgia, "Times New Roman", serif;
+    --sem:      Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --mono:     "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --teal:        #5ecfc0;
+      --teal-forte:  #8ce0d4;
+      --teal-fundo:  #0d2b28;
+      --tinta:       #e8edf4;
+      --tinta-media: #a3b2c7;
+      --tinta-fraca: #71809a;
+      --papel:       #111a2b;
+      --fundo:       #0a1120;
+      --borda:       #223049;
+      --borda-forte: #32425f;
+      --ambar:       #f0b357;
+      --ambar-fundo: #2b2113;
+      --rubro:       #f08a8a;
+      --rubro-fundo: #2d1618;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --teal:        #5ecfc0;
+    --teal-forte:  #8ce0d4;
+    --teal-fundo:  #0d2b28;
+    --tinta:       #e8edf4;
+    --tinta-media: #a3b2c7;
+    --tinta-fraca: #71809a;
+    --papel:       #111a2b;
+    --fundo:       #0a1120;
+    --borda:       #223049;
+    --borda-forte: #32425f;
+    --ambar:       #f0b357;
+    --ambar-fundo: #2b2113;
+    --rubro:       #f08a8a;
+    --rubro-fundo: #2d1618;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--fundo);
+    color: var(--tinta);
+    font-family: var(--sem);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .folha { max-width: 940px; margin-inline: auto; padding: 56px 24px 96px; }
+
+  /* ── Cabeçalho ─────────────────────────────────────────────────────── */
+  .capa { border-bottom: 2px solid var(--tinta); padding-bottom: 28px; margin-bottom: 40px; }
+  .etiqueta {
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--teal);
+    margin: 0 0 14px;
+  }
+  h1 {
+    font-family: var(--serifada); font-weight: 700; font-size: clamp(34px, 6vw, 52px);
+    line-height: 1.08; letter-spacing: -0.015em; margin: 0 0 14px; text-wrap: balance;
+  }
+  .linha-fina {
+    font-family: var(--serifada); font-size: clamp(17px, 2.4vw, 20px); line-height: 1.5;
+    color: var(--tinta-media); margin: 0; max-width: 60ch;
+  }
+  .ficha {
+    display: flex; flex-wrap: wrap; gap: 8px 32px; margin-top: 26px;
+    font-family: var(--mono); font-size: 12px; color: var(--tinta-fraca);
+  }
+  .ficha b { color: var(--tinta-media); font-weight: 500; }
+
+  /* ── Blocos de destaque ────────────────────────────────────────────── */
+  .caixa {
+    border: 1px solid var(--borda); border-left: 3px solid var(--borda-forte);
+    background: var(--papel); border-radius: 4px; padding: 20px 22px; margin: 26px 0;
+  }
+  .caixa.bloqueio { border-left-color: var(--rubro); background: var(--rubro-fundo); }
+  .caixa.atencao  { border-left-color: var(--ambar); background: var(--ambar-fundo); }
+  .caixa h3 {
+    font-family: var(--sem); font-size: 14px; font-weight: 600; margin: 0 0 10px;
+    letter-spacing: 0.01em;
+  }
+  .caixa.bloqueio h3 { color: var(--rubro); }
+  .caixa.atencao h3  { color: var(--ambar); }
+  .caixa p:last-child, .caixa ul:last-child { margin-bottom: 0; }
+
+  h2 {
+    font-family: var(--serifada); font-weight: 600; font-size: 28px; line-height: 1.2;
+    margin: 56px 0 6px; letter-spacing: -0.01em;
+  }
+  h2 + .apoio { color: var(--tinta-media); margin: 0 0 24px; max-width: 62ch; }
+
+  p { margin: 0 0 14px; max-width: 68ch; }
+  ul, ol { margin: 0 0 14px; padding-left: 20px; max-width: 68ch; }
+  li { margin-bottom: 6px; }
+  li::marker { color: var(--tinta-fraca); }
+  strong { font-weight: 600; }
+  a { color: var(--teal); text-underline-offset: 2px; }
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--teal); outline-offset: 3px; border-radius: 2px;
+  }
+
+  code {
+    font-family: var(--mono); font-size: 0.86em;
+    background: var(--teal-fundo); color: var(--teal-forte);
+    padding: 1px 5px; border-radius: 3px;
+  }
+  pre {
+    font-family: var(--mono); font-size: 12.5px; line-height: 1.65;
+    background: var(--papel); border: 1px solid var(--borda); border-radius: 4px;
+    padding: 14px 16px; overflow-x: auto; margin: 0 0 16px;
+  }
+  pre code { background: none; color: var(--tinta); padding: 0; }
+
+  /* ── Linha do tempo / índice ───────────────────────────────────────── */
+  .tempo { width: 100%; border-collapse: collapse; margin: 0 0 8px; font-size: 14.5px; }
+  .tempo th {
+    text-align: left; font-family: var(--mono); font-size: 10.5px; font-weight: 500;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--tinta-fraca);
+    padding: 0 12px 8px 0; border-bottom: 1px solid var(--borda);
+  }
+  .tempo td { padding: 9px 12px 9px 0; border-bottom: 1px solid var(--borda); vertical-align: baseline; }
+  .tempo td:first-child {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    color: var(--teal); white-space: nowrap; font-size: 13px;
+  }
+  .tempo td:last-child {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    color: var(--tinta-fraca); text-align: right; white-space: nowrap; font-size: 13px;
+  }
+  .tempo a { text-decoration: none; }
+  .tempo a:hover { text-decoration: underline; }
+  .rolagem { overflow-x: auto; }
+
+  /* ── Cenas ─────────────────────────────────────────────────────────── */
+  .cena {
+    display: grid; grid-template-columns: 116px 1fr; gap: 28px;
+    padding: 32px 0; border-top: 1px solid var(--borda);
+  }
+  .cena:first-of-type { border-top: 2px solid var(--tinta); }
+  .trilho { position: sticky; top: 24px; align-self: start; }
+  .num {
+    font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    color: var(--papel); background: var(--teal); display: inline-block;
+    padding: 3px 8px; border-radius: 3px; margin-bottom: 10px;
+  }
+  .tc {
+    font-family: var(--mono); font-variant-numeric: tabular-nums;
+    font-size: 20px; font-weight: 500; color: var(--tinta); display: block; line-height: 1.2;
+  }
+  .dur { font-family: var(--mono); font-size: 11.5px; color: var(--tinta-fraca); }
+
+  .cena h3 {
+    font-family: var(--serifada); font-size: 23px; font-weight: 600; line-height: 1.25;
+    margin: 0 0 16px; letter-spacing: -0.01em; text-wrap: balance;
+  }
+
+  .rotulo {
+    font-family: var(--mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--tinta-fraca); margin: 20px 0 8px;
+  }
+  .rotulo:first-of-type { margin-top: 0; }
+
+  .fala {
+    font-family: var(--serifada); font-size: 17.5px; line-height: 1.55; color: var(--tinta);
+    border-left: 2px solid var(--teal); padding: 2px 0 2px 18px; margin: 0 0 14px; max-width: 62ch;
+  }
+  .fala + .fala { margin-top: 14px; }
+
+  .acoes { list-style: none; padding: 0; margin: 0 0 4px; max-width: 66ch; }
+  .acoes li {
+    position: relative; padding-left: 22px; margin-bottom: 7px; font-size: 15.5px;
+    color: var(--tinta-media);
+  }
+  .acoes li::before {
+    content: ""; position: absolute; left: 4px; top: 10px;
+    width: 6px; height: 6px; border: 1.5px solid var(--teal); border-radius: 1px;
+  }
+  .acoes li strong { color: var(--tinta); }
+
+  .nota {
+    font-size: 14px; color: var(--tinta-media); border-top: 1px dashed var(--borda);
+    padding-top: 12px; margin-top: 18px; max-width: 66ch;
+  }
+  .nota b { color: var(--ambar); font-weight: 600; }
+
+  details {
+    border: 1px solid var(--borda); border-radius: 4px; background: var(--papel);
+    padding: 14px 18px; margin-bottom: 10px;
+  }
+  details[open] { border-color: var(--borda-forte); }
+  summary {
+    cursor: pointer; font-weight: 600; font-size: 15.5px; list-style: none;
+    display: flex; align-items: baseline; gap: 10px;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::before {
+    content: "▸"; color: var(--teal); font-size: 12px; transition: transform 0.15s;
+  }
+  details[open] summary::before { transform: rotate(90deg); }
+  details p { margin: 12px 0 0; font-size: 15px; color: var(--tinta-media); }
+  details p:first-of-type { margin-top: 12px; }
+
+  .rodape {
+    margin-top: 72px; padding-top: 22px; border-top: 2px solid var(--tinta);
+    font-family: var(--mono); font-size: 11.5px; color: var(--tinta-fraca);
+    display: flex; flex-wrap: wrap; gap: 6px 28px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+
+  @media (max-width: 720px) {
+    .folha { padding: 36px 18px 64px; }
+    .cena { grid-template-columns: 1fr; gap: 14px; padding: 26px 0; }
+    .trilho { position: static; display: flex; align-items: baseline; gap: 12px; }
+    .num { margin-bottom: 0; }
+  }
+</style>
+
+<div class="folha">
+
+  <header class="capa">
+    <p class="etiqueta">Roteiro de gravação · GlicoNutri</p>
+    <h1>Gravação do GlicoNutri</h1>
+    <p class="linha-fina">
+      Quinze minutos mostrando o sistema inteiro, do acesso à prescrição, com o que
+      dizer em cada tela e o que evitar na frente da câmera.
+    </p>
+    <div class="ficha">
+      <span><b>Para</b> Mateus Rossini Marques Pêgo</span>
+      <span><b>Duração</b> ~15 min</span>
+      <span><b>Ambiente</b> Supabase</span>
+      <span><b>Versão</b> 14 de setembro de 2026</span>
+    </div>
+  </header>
+
+  <div class="caixa bloqueio">
+    <h3>Grave contra o Supabase — ele já está atualizado</h3>
+    <p>
+      O banco recebeu hoje as quatro migrations pendentes: herança em tabela única,
+      resumo clínico como view, índice glicêmico com origem e favoritos. Os dados que
+      já estavam lá foram preservados — os dois pacientes, o plano ativo e os 597
+      alimentos da TACO continuam no lugar.
+    </p>
+    <p style="margin-bottom:0">
+      Basta <code>./dev.sh up</code>, que já aponta para o Supabase. Não use
+      <code>--local</code>: o banco em Docker é outro, com outros dados.
+    </p>
+  </div>
+
+  <h2>Antes de apertar o rec</h2>
+  <p class="apoio">Cinco minutos aqui evitam uma regravação inteira.</p>
+
+  <ul>
+    <li><strong>Suba o ambiente e confira</strong> — <code>./dev.sh up</code>, abra
+      <code>localhost:5173</code> e entre com o administrador para ver se o painel carrega.</li>
+    <li><strong>Deixe o terminal numa segunda janela</strong>, já com
+      <code>./dev.sh logs api</code> rodando. Você vai precisar dele para mostrar a
+      senha provisória.</li>
+    <li><strong>Janela limpa</strong> — navegador sem abas pessoais, sem barra de
+      favoritos, zoom em 100%, notificações do sistema silenciadas.</li>
+    <li><strong>Grave em 1920×1080.</strong> As telas têm tabelas largas; abaixo disso
+      o texto fica ilegível depois da compressão do vídeo.</li>
+    <li><strong>Tenha uma conta descartável</strong> para a cena do bloqueio. Errar a
+      senha cinco vezes trava a conta por cinco minutos de verdade — não faça isso com
+      a conta que você vai usar no resto da gravação.</li>
+    <li><strong>Decida o vídeo do conteúdo educativo antes.</strong> Vídeo com
+      incorporação restrita mostra o erro do YouTube dentro do quadro. Teste o link na
+      tela do paciente antes de gravar.</li>
+  </ul>
+
+  <div class="caixa atencao">
+    <h3>Três coisas que não vão funcionar — e como falar delas</h3>
+    <ul style="margin-bottom:0">
+      <li><strong>E-mail não sai.</strong> A conta existe, mas o Gmail exige senha de
+        aplicativo, que ainda não foi gerada. A senha provisória aparece no log da API.
+        Mostre o log: é honesto e ainda demonstra a regra de troca obrigatória.</li>
+      <li><strong>Botão do Google não aparece.</strong> Falta o identificador de
+        cliente no Google Cloud Console. Mencione que o login federado está
+        implementado dos dois lados e aguarda a credencial.</li>
+      <li><strong>Índice glicêmico vazio</strong> nos alimentos da TACO. A coluna e a
+        origem do valor existem; a carga a partir das tabelas internacionais de 2021
+        ainda não foi feita. Diga isso quando abrir o banco de alimentos.</li>
+    </ul>
+  </div>
+
+  <h2>Linha do tempo</h2>
+  <p class="apoio">Os tempos são alvo, não cronômetro. Se uma cena esticar, corte da 11 ou da 12.</p>
+
+  <div class="rolagem">
+    <table class="tempo">
+      <thead>
+        <tr><th>Entra</th><th>Cena</th><th>Duração</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>0:00</td><td><a href="#c1">Abertura</a></td><td>0:40</td></tr>
+        <tr><td>0:40</td><td><a href="#c2">As páginas públicas</a></td><td>1:00</td></tr>
+        <tr><td>1:40</td><td><a href="#c3">Entrar no sistema</a></td><td>1:50</td></tr>
+        <tr><td>3:30</td><td><a href="#c4">O administrador cadastra a nutricionista</a></td><td>1:00</td></tr>
+        <tr><td>4:30</td><td><a href="#c5">A nutricionista cadastra o paciente</a></td><td>1:00</td></tr>
+        <tr><td>5:30</td><td><a href="#c6">Medidas e IMC</a></td><td>1:00</td></tr>
+        <tr><td>6:30</td><td><a href="#c7">Necessidade energética</a></td><td>1:00</td></tr>
+        <tr><td>7:30</td><td><a href="#c8">Plano alimentar</a></td><td>1:30</td></tr>
+        <tr><td>9:00</td><td><a href="#c9">Glicemia e histórico</a></td><td>1:00</td></tr>
+        <tr><td>10:00</td><td><a href="#c10">O painel — e a decisão técnica mais importante</a></td><td>1:10</td></tr>
+        <tr><td>11:10</td><td><a href="#c11">Alertas</a></td><td>0:40</td></tr>
+        <tr><td>11:50</td><td><a href="#c12">Repositório educativo</a></td><td>0:40</td></tr>
+        <tr><td>12:30</td><td><a href="#c13">Relatórios em PDF</a></td><td>0:40</td></tr>
+        <tr><td>13:10</td><td><a href="#c14">A área do paciente</a></td><td>1:00</td></tr>
+        <tr><td>14:10</td><td><a href="#c15">Fechamento</a></td><td>0:50</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+
+  <section class="cena" id="c1">
+    <div class="trilho">
+      <span class="num">CENA 1</span>
+      <span class="tc">0:00</span>
+      <span class="dur">40 s</span>
+    </div>
+    <div>
+      <h3>Abertura</h3>
+
+      <p class="rotulo">Ação</p>
+      <ul class="acoes">
+        <li>Tela da <strong>página principal</strong> já aberta, sem se apresentar por cima de tela preta.</li>
+      </ul>
+
+      <p class="rotulo">Fala</p>
+      <p class="fala">
+        Este é o GlicoNutri, um sistema de apoio ao controle nutricional do diabetes,
+        desenvolvido em parceria com a ADJ, a Associação de Diabetes Juvenil de Birigui.
+      </p>
+      <p class="fala">
+        O problema que ele resolve é simples de enunciar e difícil de resolver na
+        prática: quem convive com diabetes mede, anota e esquece; quem prescreve precisa
+        desse registro na hora da consulta. O sistema liga as duas pontas.
+      </p>
+      <p class="fala">
+        São dois ambientes sobre a mesma API — o web, que eu vou mostrar agora por
+        inteiro, e o aplicativo do paciente, em Flutter, que está em desenvolvimento.
+      </p>
+
+      <p class="nota">
+        Diga o nome do orientador e do curso aqui se o formato da entrega exigir.
+        Não gaste mais de 40 segundos: quem assiste quer ver o sistema.
+      </p>
+    </div>
+  </section>
+
+  <section class="cena" id="c2">
+    <div class="trilho">
+      <span class="num">CENA 2</span>
+      <span class="tc">0:40</span>
+      <span class="dur">1 min</span>
+    </div>
+    <div>
+      <h3>As páginas públicas</h3>
+
+      <p class="rotulo">Ação</p>
+      <ul class="acoes">
+        <li>Rolar a <strong>página principal</strong> até o bloco da ADJ e os preços.</li>
+        <li>Passar por <strong>Funcionalidades</strong> e <strong>Sobre Nós</strong>, sem ler tudo.</li>
+        <li>Terminar clicando em <strong>Entrar</strong>.</li>
+      </ul>
+
+      <p class="rotulo">Fala</p>
+      <p class="fala">
+        Antes do login existem três páginas de divulgação. Elas explicam o sistema para
+        quem chega, e cada afirmação aqui corresponde a algo que o sistema faz de verdade.
+      </p>
+      <p class="fala">
+        Repare que não existe botão de cadastro. Isso é regra de negócio, não esquecimento:
+        o sistema não permite autocadastro. Nutricionista é cadastrado pelo administrador,
+        e paciente pelo nutricionista que vai acompanhá-lo. Quem se interessa chega pelo contato.
+      </p>
+      <p class="fala">
+        O rodapé traz preços porque o projeto foi preparado para escalonamento. A ADJ é o
+        primeiro serviço atendido, não o limite do produto.
+      </p>
+    </div>
+  </section>
+
+  <section class="cena" id="c3">
+    <div class="trilho">
+      <span class="num">CENA 3</span>
+      <span class="tc">1:40</span>
+      <span class="dur">1 min 50 s</span>
+    </div>
+    <div>
+      <h3>Entrar no sistema</h3>
+
+      <p class="rotulo">Ação</p>
+      <ul class="acoes">
+        <li>Na tela de login, errar a senha <strong>de uma conta descartável</strong> cinco vezes seguidas.</li>
+        <li>Mostrar a mensagem de bloqueio com o contador regressivo.</li>
+        <li>Entrar como <strong>administrador</strong> com a conta boa.</li>
+      </ul>
+
+      <p class="rotulo">Fala</p>
+      <p class="fala">
+        A tela de entrada aplica três regras que valem a pena mostrar.
+      </p>
+      <p class="fala">
+        A primeira é o bloqueio progressivo. Cinco tentativas inválidas travam a conta —
+        e o tempo cresce a cada bloqueio: cinco minutos, depois trinta, depois vinte e
+        quatro horas. Repare que a tela informa quanto falta, porque deixar o usuário no
+        escuro é o que gera chamado de suporte.
+      </p>
+      <p class="fala">
+        A segunda é que o sistema responde exatamente a mesma coisa para senha errada,
+        e-mail inexistente e conta desativada. Ele não confirma quem está cadastrado.
+      </p>
+      <p class="fala">
+        E a terceira: as senhas existem só como hash bcrypt. Não há como o sistema
+        devolver a senha de ninguém, nem para o administrador.
+      </p>
+
+      <p class="nota">
+        <b>Cuidado:</b> o bloqueio é real e dura cinco minutos. Use uma conta que você
+        não vai precisar depois — ou grave esta cena por último.
+      </p>
+    </div>
+  </section>
+
+  <section class="cena" id="c4">
+    <div class="trilho">
+      <span class="num">CENA 4</span>
+      <span class="tc">3:30</span>
+      <span class="dur">1 min</span>
+    </div>
+    <div>
+      <h3>O administrador cadastra a nutricionista</h3>
+
+      <p class="rotulo">Ação</p>
+      <ul class="acoes">
+        <li>Menu <strong>Nutricionistas</strong> → <strong>Novo</strong>. Preencher nome, e-mail e CRN.</li>
+        <li>Salvar e <strong>alternar para o terminal</strong>, mostrando a senha provisória no log.</li>
+        <li>Entrar com a conta nova e cair direto na <strong>troca de senha obrigatória</strong>.</li>
+      </ul>
+
+      <p class="rotulo">Fala</p>
+      <p class="fala">
+        O administrador é o único perfil que cadastra nutricionistas. Ele não digita
+        senha: o sistema gera uma provisória e envia por e-mail.
+      </p>
+      <p class="fala">
+        Neste ambiente o envio ainda não está ligado — a conta de e-mail já existe, mas
+        falta a senha de aplicativo que o Google exige. Enquanto isso, a senha provisória
+        fica registrada no log da aplicação, que é o que estou mostrando aqui.
+      </p>
+      <p class="fala">
+        E aqui está a regra: com a senha provisória, a única tela que abre é a de troca.
+        Não dá para navegar, nem chamando a API direto — a verificação está no meio do
+        caminho de toda requisição, não na tela.
+      </p>
+    </div>
+  </section>
+
+  <section class="cena" id="c5">
+    <div class="trilho">
+      <span class="num">CENA 5</span>
+      <span class="tc">4:30</span>
+      <span class="dur">1 min</span>
+    </div>
+    <div>
+      <h3>A nutricionista cadastra o paciente</h3>
+
+      <p class="rotulo">Ação</p>
+      <ul class="acoes">
+        <li><strong>Pacientes</strong> → <strong>Novo</strong>. Digitar um CPF inválido e mostrar a recusa.</li>
+        <li>Corrigir, abrir o seletor de <strong>tipo de diabetes</strong> e mostrar as cinco opções.</li>
+        <li>Salvar.</li>
+      </ul>
+
+      <p class="rotulo">Fala</p>
+      <p class="fala">
+        O CPF é validado pelo dígito verificador, não só pelo formato. E é único: o mesmo
+        CPF não entra duas vezes, nem se o cadastro anterior tiver sido desativado.
+      </p>
+      <p class="fala">
+        Nos tipos de diabetes estão tipo 1, tipo 2, gestacional, MODY e pré-diabetes. O
+        pré-diabetes entrou porque a associação acompanha essa condição e ela muda a
+        conduta nutricional.
+      </p>
+      <p class="fala">
+        Ao salvar, o paciente já nasce vinculado a mim, que sou a nutricionista que o
+        cadastrou. Esse vínculo é obrigatório e é o que define quem enxerga quem: cada
+        nutricionista alcança apenas os próprios pacientes.
+      </p>
+    </div>
+  </section>
+
+  <section class="cena" id="c6">
+    <div class="trilho">
+      <span class="num">CENA 6</span>
+      <span class="tc">5:30</span>
+      <span class="dur">1 min</span>
+    </div>
+    <div>
+      <h3>Medidas e IMC</h3>
+
+      <p class="rotulo">Ação</p>
+      <ul class="acoes">
+        <li>Abrir um paciente <strong>com histórico</strong> (Maria Silva Andrade) na aba Acompanhamento.</li>
+        <li>Registrar uma nova medição e mostrar o <strong>IMC calculado antes de salvar</strong>.</li>
+        <li>Apontar a coluna de variação em relação à medição anterior.</li>
+      </ul>
+
+      <p class="rotulo">Fala</p>
+      <p class="fala">
+        O IMC nunca é digitado — é sempre calculado pelo sistema, a partir do peso e da
+        altura, com a classificação da faixa. O mesmo vale para a relação
+        cintura-quadril, quando as duas medidas existem.
+      </p>
+      <p class="fala">
+        Quem registra medida é o nutricionista, e só ele. O paciente vê as próprias
+        medidas, mas não edita. A razão é clínica: peso e altura entram no cálculo
+        energético e, por ele, no plano alimentar. Um número errado digitado pelo
+        paciente contaminaria a prescrição inteira.
+      </p>
+      <p class="fala">
+        E nada é apagado de verdade. Remover um registro é inativação lógica — o
+        histórico que sustenta uma prescrição antiga continua no banco.
+      </p>
+    </div>
+  </section>
+
+  <section class="cena" id="c7">
+    <div class="trilho">
+      <span class="num">CENA 7</span>
+      <span class="tc">6:30</span>
+      <span class="dur">1 min</span>
+    </div>
+    <div>
+      <h3>Necessidade energética</h3>
+
+      <p class="rotulo">Ação</p>
+      <ul class="acoes">
+        <li>Abrir o seletor de <strong>fórmula</strong> e mostrar as duas opções.</li>
+        <li>Escolher o nível de atividade, calcular e mostrar o <strong>VET</strong>.</li>
+        <li>Mostrar no histórico que <strong>a fórmula usada fica gravada</strong> em cada cálculo.</li>
+      </ul>
+
+      <p class="rotulo">Fala</p>
+      <p class="fala">
+        São duas fórmulas: Harris-Benedict, na revisão de Roza e Shizgal de 1984, e
+        Mifflin-St Jeor. A escolha é do nutricionista, em cada cálculo — o sistema sugere,
+        mas nunca decide por ele.
+      </p>
+      <p class="fala">
+        Isso importa porque as duas dão resultados diferentes para o mesmo paciente, e a
+        escolha é conduta clínica. Por isso a fórmula aplicada fica registrada junto do
+        resultado: olhando o histórico, dá para saber por qual critério cada valor saiu.
+      </p>
+      <p class="fala">
+        O valor energético total é a taxa metabólica basal multiplicada pelo fator de
+        atividade.
+      </p>
+    </div>
+  </section>
+
+  <section class="cena" id="c8">
+    <div class="trilho">
+      <span class="num">CENA 8</span>
+      <span class="tc">7:30</span>
+      <span class="dur">1 min 30 s</span>
+    </div>
+    <div>
+      <h3>Plano alimentar</h3>
+
+      <p class="rotulo">Ação</p>
+      <ul class="acoes">
+        <li>Aba <strong>Plano alimentar</strong> → <strong>Novo plano</strong>.</li>
+        <li>Mostrar os padrões <strong>50 / 20 / 30</strong> e as faixas embaixo de cada campo.</li>
+        <li>Digitar <strong>70 / 15 / 15</strong>: os campos fora da faixa acendem e o aviso aparece —
+          mas o plano continua salvável.</li>
+        <li>Voltar ao padrão, buscar um alimento da TACO e adicionar a uma refeição.</li>
+        <li>Salvar e mostrar que o <strong>plano anterior foi para o histórico</strong>.</li>
+      </ul>
+
+      <p class="rotulo">Fala</p>
+      <p class="fala">
+        A distribuição de macronutrientes segue a Diretriz da Sociedade Brasileira de
+        Diabetes para diabetes tipo 2: carboidrato de 45 a 60 por cento, proteína de 15 a
+        20, lipídio de 25 a 35. O padrão que o sistema sugere é o centro de cada faixa.
+      </p>
+      <p class="fala">
+        Se eu sair da faixa, o sistema avisa — mas não bloqueia. A conduta é do
+        profissional; o sistema orienta. A única trava é a soma fechar em cem por cento,
+        porque distribuição que não soma cem não é distribuição.
+      </p>
+      <p class="fala">
+        Os alimentos vêm da Tabela TACO, quarta edição, com 597 itens, e os totais são
+        calculados por refeição a partir da quantidade em gramas.
+      </p>
+      <p class="fala">
+        Ao salvar, o plano anterior é inativado automaticamente. Existe no máximo um plano
+        ativo por paciente, e isso é garantido por um índice único no banco — não só pela
+        aplicação. Foi justamente essa restrição que revelou um defeito de ordem de
+        gravação durante o desenvolvimento.
+      </p>
+    </div>
+  </section>
+
+  <section class="cena" id="c9">
+    <div class="trilho">
+      <span class="num">CENA 9</span>
+      <span class="tc">9:00</span>
+      <span class="dur">1 min</span>
+    </div>
+    <div>
+      <h3>Glicemia e histórico</h3>
+
+      <p class="rotulo">Ação</p>
+      <ul class="acoes">
+        <li>Registrar uma glicemia escolhendo o <strong>contexto</strong>.</li>
+        <li>Mostrar o gráfico com a <strong>faixa alvo sombreada</strong> e a tabela classificada.</li>
+        <li>Abrir o cadastro e <strong>mudar a faixa alvo</strong> do paciente; voltar e mostrar o
+          histórico reclassificado.</li>
+      </ul>
+
+      <p class="rotulo">Fala</p>
+      <p class="fala">
+        Toda medição entra com o contexto — jejum, pré-refeição, pós-refeição, ao deitar.
+        Sem contexto, comparar duas medições não diz nada.
+      </p>
+      <p class="fala">
+        A classificação é feita contra a faixa alvo daquele paciente, definida
+        individualmente pelo nutricionista. Enquanto não personalizada, o sistema aplica
+        70 a 180 e sinaliza que é o padrão, não uma decisão clínica.
+      </p>
+      <p class="fala">
+        E quando eu mudo a faixa, o histórico inteiro é reclassificado. Sem isso,
+        sobrariam medições antigas julgadas por um critério que não vale mais — e o
+        percentual no alvo, que é o indicador que o nutricionista olha, ficaria mentindo.
+      </p>
+    </div>
+  </section>
+
+  <section class="cena" id="c10">
+    <div class="trilho">
+      <span class="num">CENA 10</span>
+      <span class="tc">10:00</span>
+      <span class="dur">1 min 10 s</span>
+    </div>
+    <div>
+      <h3>O painel — e a decisão técnica mais importante</h3>
+
+      <p class="rotulo">Ação</p>
+      <ul class="acoes">
+        <li>Abrir o <strong>Dashboard</strong>: indicadores, pendências, controle glicêmico, IMC.</li>
+        <li>Mostrar que o card de pendências aponta para o paciente certo.</li>
+      </ul>
+
+      <p class="rotulo">Fala</p>
+      <p class="fala">
+        Este é o painel do nutricionista: total de pacientes, quem registrou hoje, quem
+        está com pendência, distribuição do controle glicêmico e das classificações de IMC.
+      </p>
+      <p class="fala">
+        Aqui vale explicar uma decisão de projeto. Na modelagem original existia uma
+        tabela que guardava esses indicadores já calculados — média dos sete dias, último
+        IMC, percentual no alvo. O professor orientador apontou que isso viola a Terceira
+        Forma Normal, porque é dado derivado de outras tabelas.
+      </p>
+      <p class="fala">
+        A correção foi transformar essa tabela em uma view. Cada número que você está
+        vendo é calculado na hora da consulta, direto das tabelas transacionais. Não
+        existe versão desatualizada para corrigir, porque não existe versão guardada.
+      </p>
+      <p class="fala">
+        Uma trigger também resolveria a atualização — mas não resolveria a Terceira Forma
+        Normal, porque o dado redundante continuaria armazenado. A view elimina o
+        armazenamento.
+      </p>
+
+      <p class="nota">
+        Esta é a cena que mais rende pergunta de banca. Se você tiver que escolher uma
+        para ensaiar em voz alta, escolha esta.
+      </p>
+    </div>
+  </section>
+
+  <section class="cena" id="c11">
+    <div class="trilho">
+      <span class="num">CENA 11</span>
+      <span class="tc">11:10</span>
+      <span class="dur">40 s</span>
+    </div>
+    <div>
+      <h3>Alertas</h3>
+
+      <p class="rotulo">Ação</p>
+      <ul class="acoes">
+        <li>Aba <strong>Alertas</strong> do paciente: criar um lembrete com horário e dias da semana.</li>
+        <li>Mostrar o histórico de disparos com os status.</li>
+      </ul>
+
+      <p class="rotulo">Fala</p>
+      <p class="fala">
+        O nutricionista configura lembretes de medição, medicação e refeição, com até dois
+        horários e os dias da semana.
+      </p>
+      <p class="fala">
+        O ciclo é este: o disparo nasce pendente na API; o aplicativo busca os pendentes
+        quando o paciente abre o app; quando ele registra a glicemia correspondente, o
+        disparo é concluído. Passadas duas horas sem resposta, ele expira como falha.
+      </p>
+      <p class="fala">
+        Toda tentativa fica registrada com data e status — é por isso que a remoção de um
+        alerta também é lógica, para não apagar esse histórico.
+      </p>
+    </div>
+  </section>
+
+  <section class="cena" id="c12">
+    <div class="trilho">
+      <span class="num">CENA 12</span>
+      <span class="tc">11:50</span>
+      <span class="dur">40 s</span>
+    </div>
+    <div>
+      <h3>Repositório educativo</h3>
+
+      <p class="rotulo">Ação</p>
+      <ul class="acoes">
+        <li>Menu <strong>Repositório Educativo</strong>, alternando entre <strong>Receitas</strong> e <strong>Conteúdos</strong>.</li>
+        <li>Abrir uma receita e mostrar a informação nutricional calculada dos ingredientes.</li>
+        <li>Mostrar o campo de <strong>vídeo ou matéria relacionada</strong> no formulário de conteúdo.</li>
+      </ul>
+
+      <p class="rotulo">Fala</p>
+      <p class="fala">
+        O repositório tem conteúdos e receitas, publicados pela equipe e visíveis ao
+        paciente. A receita tem ingredientes ligados a alimentos cadastrados, então a
+        informação nutricional é calculada, não digitada.
+      </p>
+      <p class="fala">
+        O conteúdo aceita mídia por link externo. Hospedar arquivo exigiria um serviço de
+        armazenamento que a arquitetura não prevê — o link não abre essa frente e aproveita
+        o material que a associação já publica. Em compensação, ele depende de terceiros,
+        então a tela avisa quando o conteúdo externo não carrega.
+      </p>
+    </div>
+  </section>
+
+  <section class="cena" id="c13">
+    <div class="trilho">
+      <span class="num">CENA 13</span>
+      <span class="tc">12:30</span>
+      <span class="dur">40 s</span>
+    </div>
+    <div>
+      <h3>Relatórios em PDF</h3>
+
+      <p class="rotulo">Ação</p>
+      <ul class="acoes">
+        <li>No fim da aba Acompanhamento, clicar em <strong>Completo</strong>.</li>
+        <li>Abrir o PDF baixado e rolar as duas seções.</li>
+      </ul>
+
+      <p class="rotulo">Fala</p>
+      <p class="fala">
+        São três relatórios: glicêmico, antropométrico e completo. É o documento que sai
+        do sistema e vai para a mão do paciente ou para o prontuário.
+      </p>
+      <p class="fala">
+        Uma diferença técnica que vale citar: o relatório lê das tabelas transacionais,
+        não do painel. Ele precisa do histórico completo, e não de indicadores
+        consolidados — são dois caminhos de leitura com propósitos diferentes.
+      </p>
+    </div>
+  </section>
+
+  <section class="cena" id="c14">
+    <div class="trilho">
+      <span class="num">CENA 14</span>
+      <span class="tc">13:10</span>
+      <span class="dur">1 min</span>
+    </div>
+    <div>
+      <h3>A área do paciente</h3>
+
+      <p class="rotulo">Ação</p>
+      <ul class="acoes">
+        <li>Sair e entrar com a conta do <strong>paciente</strong>.</li>
+        <li>Registrar uma glicemia e uma emoção.</li>
+        <li>Mostrar o plano vigente, favoritar uma receita e abrir <strong>Meus favoritos</strong>.</li>
+        <li>Apontar que <strong>não há botão de registrar medida</strong> nesta área.</li>
+      </ul>
+
+      <p class="rotulo">Fala</p>
+      <p class="fala">
+        Esta é a área do paciente. Ela existe na web e vai existir também no aplicativo —
+        não é uma etapa temporária até o Flutter ficar pronto.
+      </p>
+      <p class="fala">
+        O paciente registra glicemia e como se sente. O diário de emoções é cruzado com as
+        glicemias do mesmo período, e serve para a conversa da consulta — não é diagnóstico.
+      </p>
+      <p class="fala">
+        Ele vê o plano alimentar vigente, organizado por refeição, e o material do
+        repositório, que pode guardar nos favoritos.
+      </p>
+      <p class="fala">
+        E repare no que não tem aqui: não existe botão para registrar peso ou altura. É a
+        mesma regra da tela de medidas, aplicada do outro lado — e ela vale na API, não só
+        na interface.
+      </p>
+    </div>
+  </section>
+
+  <section class="cena" id="c15">
+    <div class="trilho">
+      <span class="num">CENA 15</span>
+      <span class="tc">14:10</span>
+      <span class="dur">50 s</span>
+    </div>
+    <div>
+      <h3>Fechamento</h3>
+
+      <p class="rotulo">Ação</p>
+      <ul class="acoes">
+        <li>Voltar ao <strong>dashboard</strong> ou à página principal para encerrar.</li>
+      </ul>
+
+      <p class="rotulo">Fala</p>
+      <p class="fala">
+        Recapitulando: o sistema cobre o ciclo inteiro do acompanhamento — cadastro,
+        medidas, cálculo energético, plano alimentar, registro glicêmico, alertas,
+        conteúdo educativo e relatórios — com controle de acesso por perfil e as regras
+        clínicas aplicadas tanto na aplicação quanto no banco.
+      </p>
+      <p class="fala">
+        O que ainda está em andamento: o aplicativo em Flutter, a carga dos valores de
+        índice glicêmico a partir das tabelas internacionais, e a publicação com HTTPS,
+        que depende de definir a hospedagem. O envio de e-mail e o login com Google estão
+        implementados e aguardando credencial.
+      </p>
+      <p class="fala">
+        A base está pronta para receber essas peças sem reescrita.
+      </p>
+
+      <p class="nota">
+        Terminar dizendo o que falta, com naturalidade, é mais forte do que fingir que
+        está tudo pronto. Banca pergunta sobre limite; é melhor você trazer o assunto.
+      </p>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+
+  <h2>Se a banca perguntar</h2>
+  <p class="apoio">Respostas curtas para o que provavelmente vem depois do vídeo.</p>
+
+  <details>
+    <summary>Por que uma tabela só de usuários em vez de uma por tipo?</summary>
+    <p>
+      Porque toda consulta que misturava dado de usuário e de subtipo exigia JOIN. Com
+      herança em tabela única, a coluna de perfil diz o que cada linha é, e essa coluna já
+      existia como chave estrangeira obrigatória — não foi preciso criar uma segunda para
+      marcar o tipo. O custo é que o que era obrigatório só em um subtipo não pode mais ser
+      NOT NULL, porque a coluna fica nula nas linhas dos outros perfis. Isso virou
+      verificação condicionada ao perfil, declarada no banco.
+    </p>
+  </details>
+
+  <details>
+    <summary>Por que view e não trigger, se a trigger também atualizaria?</summary>
+    <p>
+      Porque a objeção era de Terceira Forma Normal, não de atualização. A trigger mantém o
+      dado derivado armazenado — só automatiza a escrita. A view elimina o armazenamento: o
+      indicador passa a ser calculado na leitura. Como efeito colateral, a camada de serviço
+      perdeu cerca de 150 linhas que existiam apenas para manter o resumo em dia, e deixou
+      de existir a classe de bug em que alguém esquece de atualizar o painel depois de gravar.
+    </p>
+  </details>
+
+  <details>
+    <summary>Onde ficam as regras de negócio?</summary>
+    <p>
+      Nos serviços, com o número da regra citado em comentário no ponto exato em que ela é
+      aplicada. As regras cuja violação corrompe dado clínico ficam também no banco, como
+      restrição — unicidade de plano ativo, faixa de valor de glicemia, obrigatoriedade por
+      perfil. A documentação técnica é gerada a partir dessas citações, então o mapa de
+      rastreabilidade reflete o código, não uma planilha à parte.
+    </p>
+  </details>
+
+  <details>
+    <summary>Por que autenticação própria se o Supabase já oferece?</summary>
+    <p>
+      Porque o Supabase entra como PostgreSQL gerenciado, não como plataforma. A API é dona
+      da autenticação e do controle de acesso, como descreve o diagrama de containers.
+      Nenhum cliente fala com o banco: web e aplicativo consomem a mesma API, e a troca do
+      provedor de banco não mexeria em uma linha da regra de acesso.
+    </p>
+  </details>
+
+  <details>
+    <summary>O sistema atende só a ADJ?</summary>
+    <p>
+      Não. A ADJ é o caso de uso inicial e o primeiro serviço atendido. O modelo suporta
+      vários nutricionistas com carteiras separadas de pacientes, e o isolamento entre eles
+      é verificado por teste automatizado. Adicionar outra clínica é cadastro, não
+      desenvolvimento.
+    </p>
+  </details>
+
+  <details>
+    <summary>Como vocês sabem que as regras clínicas estão corretas?</summary>
+    <p>
+      São 138 testes automatizados. Os unitários cobrem os cálculos — IMC, as duas fórmulas
+      de gasto energético, macronutrientes, classificação glicêmica — com os valores
+      esperados. Os de integração sobem a aplicação inteira contra um PostgreSQL real e
+      exercitam as regras cuja violação corromperia dado clínico, como a de um único plano
+      ativo por paciente e o isolamento entre nutricionistas.
+    </p>
+  </details>
+
+  <h2>Se algo der errado na gravação</h2>
+
+  <ul>
+    <li><strong>Tela em branco depois do login</strong> — o token expirou ou a API caiu.
+      <code>./dev.sh status</code>, e se preciso <code>./dev.sh down &amp;&amp; ./dev.sh up</code>.</li>
+    <li><strong>Conta travada por engano</strong> — espere os cinco minutos ou use
+      "Esqueci minha senha", que encerra o bloqueio. O link sai no log da API.</li>
+    <li><strong>Busca de alimento sem resultado</strong> — confirme que está gravando
+      contra o Supabase, onde a TACO está carregada. No banco local em Docker ela não está.</li>
+    <li><strong>O vídeo do conteúdo mostra erro do YouTube</strong> — é vídeo com
+      incorporação restrita. Troque o link antes de gravar por um que permita incorporação.</li>
+    <li><strong>Gráfico achatado ou sem forma</strong> — as medições estão todas no mesmo
+      instante. Registre algumas com datas distribuídas antes de gravar.</li>
+  </ul>
+
+  <footer class="rodape">
+    <span>GlicoNutri · roteiro de gravação</span>
+    <span>14 de setembro de 2026</span>
+    <span>github.com/GuiGolfeto/GlicoNutri</span>
+  </footer>
+
+</div>
