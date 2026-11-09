@@ -16,27 +16,15 @@ deveria funcionar assim), anote do mesmo jeito: isso também é resultado.
 **Acesso.** O sistema não é publicado na internet: você o roda no seu
 computador, a partir do repositório no GitHub.
 
-Precisa ter instalados: Git, .NET 10 SDK, Node.js 20 ou mais novo e a
-ferramenta do Entity Framework (`dotnet tool install --global dotnet-ef`).
-
-```bash
-git clone git@github.com:GuiGolfeto/GlicoNutri.git
-cd GlicoNutri/backend/GlicoNutri.Api
-dotnet user-secrets set "ConnectionStrings:Supabase" "<connection string do Supabase>"
-```
-
-A connection string fica no painel do Supabase, em **Connect**. Use a do
-**pooler, na porta 5432**: a conexão direta (`db.<ref>.supabase.co`) costuma não
-funcionar. Se o Supabase estiver pausado por inatividade, reative pelo painel.
-
-No macOS ou no Linux, `./dev.sh up` (na raiz do projeto) sobe tudo. No Windows,
-ou se preferir fazer à mão, use dois terminais:
+O passo a passo completo, da instalação das ferramentas até o sistema aberto no
+navegador, está em **`docs/INSTALACAO-WEB.md`**. Em resumo, com dois terminais
+abertos:
 
 ```bash
 # terminal 1 — API em http://localhost:5080
 cd backend/GlicoNutri.Api
 dotnet ef database update
-dotnet run --environment Development --urls http://localhost:5080
+dotnet run --launch-profile http -- --urls http://localhost:5080
 
 # terminal 2 — sistema web em http://localhost:5173
 cd web
@@ -44,7 +32,8 @@ npm install
 npm run dev
 ```
 
-Abra `http://localhost:5173` no navegador.
+Abra `http://localhost:5173` no navegador. Se o Supabase estiver pausado por
+inatividade, reative pelo painel.
 
 **Senhas provisórias.** O envio de e-mail ainda não está configurado: falta a
 senha de aplicativo do Gmail (ver a seção 9). Quando você cadastrar um
