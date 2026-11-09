@@ -84,7 +84,7 @@ public class PlanoAlimentarController(
         if (autor is null) return Unauthorized();
 
         var resultado = await servico.DuplicarAsync(
-            planoId, autor.Value, dataInicio ?? DateOnly.FromDateTime(DateTime.UtcNow), ct);
+            pacienteId, planoId, autor.Value, dataInicio ?? DateOnly.FromDateTime(DateTime.UtcNow), ct);
 
         return resultado.Sucesso ? Ok(resultado.Dados) : BadRequest(new { mensagem = resultado.Mensagem });
     }
@@ -96,7 +96,7 @@ public class PlanoAlimentarController(
     {
         if (!await acesso.PodeAcessarAsync(User, pacienteId, ct)) return Forbid();
 
-        var resultado = await servico.ReativarAsync(planoId, ct);
+        var resultado = await servico.ReativarAsync(pacienteId, planoId, ct);
         return resultado.Sucesso ? Ok(resultado.Dados) : BadRequest(new { mensagem = resultado.Mensagem });
     }
 
@@ -106,7 +106,7 @@ public class PlanoAlimentarController(
     {
         if (!await acesso.PodeAcessarAsync(User, pacienteId, ct)) return Forbid();
 
-        var resultado = await servico.InativarAsync(planoId, ct);
+        var resultado = await servico.InativarAsync(pacienteId, planoId, ct);
         return resultado.Sucesso ? NoContent() : BadRequest(new { mensagem = resultado.Mensagem });
     }
 }

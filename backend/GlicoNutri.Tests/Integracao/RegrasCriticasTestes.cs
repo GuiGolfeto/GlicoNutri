@@ -341,6 +341,70 @@ public class RegrasCriticasTestes(ApiFixture api)
         Assert.Equal(HttpStatusCode.NoContent, (await cliente.DeleteAsync($"/api/pacientes/{paciente}/alertas/{alertas![0].Id}")).StatusCode);
     }
 
+    [Fact]
+    public async Task RN33_NutricionistaNaoAlteraRegistroDePacienteDeOutroPelaPropriaRota()
+    {
+        var admin = await api.ClienteAdminAsync();
+        var (nutriA, _) = await api.CriarNutricionistaAsync(admin, "rn33nutria@teste.local", "CRN-RN33NA");
+        var (nutriB, _) = await api.CriarNutricionistaAsync(admin, "rn33nutrib@teste.local", "CRN-RN33NB");
+        var maria = await api.CriarPacienteAsync(nutriA, "p.rn33nmaria@teste.local", Cpf(206));
+        var joao = await api.CriarPacienteAsync(nutriB, "p.rn33njoao@teste.local", Cpf(207));
+        await DarVetAsync(nutriA, maria);
+
+        var antropometria = await nutriA.GetFromJsonAsync<List<RegistroComId>>($"/api/pacientes/{maria}/antropometria");
+        var idMedida = antropometria![0].Id;
+
+        var ids = new List<long>();
+        for (var i = 1; i <= 2; i++)
+        {
+            var criado = await nutriA.PostAsJsonAsync($"/api/pacientes/{maria}/plano-alimentar",
+                new { objetivo = $"Plano {i}", dataInicio = "2026-09-07" });
+            criado.EnsureSuccessStatusCode();
+            ids.Add((await criado.Content.ReadFromJsonAsync<ApiFixture.RespostaId>())!.Id);
+        }
+        var (planoAntigo, planoVigente) = (ids[0], ids[1]);
+
+        // Um alerta ativo e um desativado, para cobrir a edição e a reativação.
+        var alertas = await nutriA.GetFromJsonAsync<List<RegistroComId>>($"/api/pacientes/{maria}/alertas");
+        var idAlertaAtivo = alertas![0].Id;
+        var outro = await nutriA.PostAsJsonAsync($"/api/pacientes/{maria}/alertas",
+            new { tipoId = 2, horario1 = "13:00:00", diasSemana = "1111111" });
+        var idAlertaInativo = (await outro.Content.ReadFromJsonAsync<RegistroComId>())!.Id;
+        await nutriA.DeleteAsync($"/api/pacientes/{maria}/alertas/{idAlertaInativo}");
+
+        // O nutricionista B só passa no controle de acesso pela rota do próprio paciente;
+        // com ids da Maria, cada operação precisa recusar.
+        var rotaJoao = $"/api/pacientes/{joao}";
+        var tentativas = new[]
+        {
+            await nutriB.PutAsJsonAsync($"{rotaJoao}/alertas/{idAlertaAtivo}",
+                new { tipoId = 1, mensagem = "alterado", horario1 = "03:00:00", diasSemana = "1111111" }),
+            await nutriB.PostAsJsonAsync($"{rotaJoao}/alertas/{idAlertaInativo}/reativar", new { }),
+            await nutriB.DeleteAsync($"{rotaJoao}/antropometria/{idMedida}"),
+            await nutriB.PostAsJsonAsync($"{rotaJoao}/plano-alimentar/{planoVigente}/duplicar", new { }),
+            await nutriB.PostAsJsonAsync($"{rotaJoao}/plano-alimentar/{planoAntigo}/reativar", new { }),
+            await nutriB.DeleteAsync($"{rotaJoao}/plano-alimentar/{planoVigente}"),
+        };
+        foreach (var resposta in tentativas)
+            Assert.Equal(HttpStatusCode.BadRequest, resposta.StatusCode);
+
+        await using var db = api.CriarContexto();
+        var alertaAtivo = await db.Alertas.SingleAsync(a => a.Id == idAlertaAtivo);
+        Assert.NotEqual("alterado", alertaAtivo.Mensagem);
+        Assert.False((await db.Alertas.IgnoreQueryFilters().SingleAsync(a => a.Id == idAlertaInativo)).Ativo);
+        Assert.True((await db.RegistrosAntropometricos.SingleAsync(r => r.Id == idMedida)).Ativo);
+        await AssertUmUnicoPlanoAtivoAsync(maria, planoVigente);
+        // A duplicação recusada não pode ter deixado plano nenhum para o João.
+        Assert.False(await db.PlanosAlimentares.IgnoreQueryFilters().AnyAsync(p => p.PacienteId == joao));
+
+        // O responsável continua fazendo tudo pela rota certa.
+        var rotaMaria = $"/api/pacientes/{maria}";
+        Assert.True((await nutriA.PostAsJsonAsync($"{rotaMaria}/alertas/{idAlertaInativo}/reativar", new { })).IsSuccessStatusCode);
+        Assert.True((await nutriA.PostAsJsonAsync($"{rotaMaria}/plano-alimentar/{planoAntigo}/reativar", new { })).IsSuccessStatusCode);
+        Assert.True((await nutriA.PostAsJsonAsync($"{rotaMaria}/plano-alimentar/{planoAntigo}/duplicar", new { })).IsSuccessStatusCode);
+        Assert.True((await nutriA.DeleteAsync($"{rotaMaria}/antropometria/{idMedida}")).IsSuccessStatusCode);
+    }
+
     // ── RN19 e RN20 — classificação glicêmica ───────────────────────────────
 
     [Fact]

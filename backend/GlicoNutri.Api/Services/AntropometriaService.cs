@@ -13,7 +13,7 @@ public interface IAntropometriaService
     Task<IReadOnlyList<RegistroAntropometricoResponse>> HistoricoAsync(
         long pacienteId, CancellationToken ct = default);
 
-    Task<Resultado<bool>> RemoverAsync(long registroId, CancellationToken ct = default);
+    Task<Resultado<bool>> RemoverAsync(long pacienteId, long registroId, CancellationToken ct = default);
 
     /// <summary>RF08.2 — série de peso e IMC para o gráfico de evolução.</summary>
     Task<Resultado<SerieAntropometricaResponse>> SerieAsync(
@@ -115,10 +115,11 @@ public class AntropometriaService(GlicoNutriDbContext db) : IAntropometriaServic
     }
 
     /// <summary>RN05 e o soft delete do DER: remover é inativar, nunca apagar.</summary>
-    public async Task<Resultado<bool>> RemoverAsync(long registroId, CancellationToken ct = default)
+    public async Task<Resultado<bool>> RemoverAsync(long pacienteId, long registroId, CancellationToken ct = default)
     {
+        // RN33 — o registro precisa ser do paciente da rota, a única checada no acesso.
         var registro = await db.RegistrosAntropometricos
-            .FirstOrDefaultAsync(r => r.Id == registroId, ct);
+            .FirstOrDefaultAsync(r => r.Id == registroId && r.PacienteId == pacienteId, ct);
 
         if (registro is null) return Resultado<bool>.Erro("Registro não encontrado.");
 

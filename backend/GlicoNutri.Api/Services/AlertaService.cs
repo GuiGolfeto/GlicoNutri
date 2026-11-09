@@ -14,10 +14,10 @@ public interface IAlertaService
         long pacienteId, bool incluirInativos, CancellationToken ct = default);
 
     Task<Resultado<AlertaResponse>> AtualizarAsync(
-        long alertaId, CriarAlertaRequest pedido, CancellationToken ct = default);
+        long pacienteId, long alertaId, CriarAlertaRequest pedido, CancellationToken ct = default);
 
     Task<Resultado<bool>> DesativarAsync(long pacienteId, long alertaId, CancellationToken ct = default);
-    Task<Resultado<bool>> ReativarAsync(long alertaId, CancellationToken ct = default);
+    Task<Resultado<bool>> ReativarAsync(long pacienteId, long alertaId, CancellationToken ct = default);
 
     Task<Resultado<HistoricoAlertaResponse>> RegistrarDisparoAsync(
         long pacienteId, RegistrarDisparoRequest pedido, CancellationToken ct = default);
@@ -100,9 +100,12 @@ public class AlertaService(GlicoNutriDbContext db, ILogger<AlertaService> log) :
     }
 
     public async Task<Resultado<AlertaResponse>> AtualizarAsync(
-        long alertaId, CriarAlertaRequest pedido, CancellationToken ct = default)
+        long pacienteId, long alertaId, CriarAlertaRequest pedido, CancellationToken ct = default)
     {
-        var alerta = await db.Alertas.Include(a => a.Tipo).FirstOrDefaultAsync(a => a.Id == alertaId, ct);
+        // RN33 — o acesso foi decidido pelo paciente da rota; o alerta precisa ser dele,
+        // senão o nutricionista alcançaria o alerta de um paciente que não acompanha.
+        var alerta = await db.Alertas.Include(a => a.Tipo)
+            .FirstOrDefaultAsync(a => a.Id == alertaId && a.PacienteId == pacienteId, ct);
         if (alerta is null) return Resultado<AlertaResponse>.Erro("Alerta não encontrado.");
 
         var tipo = await db.TiposAlerta.FirstOrDefaultAsync(t => t.Id == pedido.TipoId && t.Ativo, ct);
@@ -144,9 +147,11 @@ public class AlertaService(GlicoNutriDbContext db, ILogger<AlertaService> log) :
         return Resultado<bool>.Ok(true);
     }
 
-    public async Task<Resultado<bool>> ReativarAsync(long alertaId, CancellationToken ct = default)
+    public async Task<Resultado<bool>> ReativarAsync(long pacienteId, long alertaId, CancellationToken ct = default)
     {
-        var alerta = await db.Alertas.IgnoreQueryFilters().FirstOrDefaultAsync(a => a.Id == alertaId, ct);
+        // RN33 — mesmo filtro da atualização: o alerta precisa ser do paciente da rota.
+        var alerta = await db.Alertas.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(a => a.Id == alertaId && a.PacienteId == pacienteId, ct);
         if (alerta is null) return Resultado<bool>.Erro("Alerta não encontrado.");
 
         var ativos = await db.Alertas.CountAsync(a => a.PacienteId == alerta.PacienteId, ct);

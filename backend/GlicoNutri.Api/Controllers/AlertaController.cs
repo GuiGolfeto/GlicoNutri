@@ -50,7 +50,7 @@ public class AlertaController(
     {
         if (!await acesso.PodeAcessarAsync(User, pacienteId, ct)) return Forbid();
 
-        var resultado = await servico.AtualizarAsync(alertaId, pedido, ct);
+        var resultado = await servico.AtualizarAsync(pacienteId, alertaId, pedido, ct);
         return resultado.Sucesso ? Ok(resultado.Dados) : BadRequest(new { mensagem = resultado.Mensagem });
     }
 
@@ -70,7 +70,7 @@ public class AlertaController(
     {
         if (!await acesso.PodeAcessarAsync(User, pacienteId, ct)) return Forbid();
 
-        var resultado = await servico.ReativarAsync(alertaId, ct);
+        var resultado = await servico.ReativarAsync(pacienteId, alertaId, ct);
         return resultado.Sucesso ? NoContent() : BadRequest(new { mensagem = resultado.Mensagem });
     }
 

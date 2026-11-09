@@ -18,10 +18,10 @@ public interface IPlanoAlimentarService
         long pacienteId, DistribuicaoRequest? ajuste, CancellationToken ct = default);
 
     Task<Resultado<PlanoAlimentarResponse>> DuplicarAsync(
-        long planoId, long nutricionistaId, DateOnly dataInicio, CancellationToken ct = default);
+        long pacienteId, long planoId, long nutricionistaId, DateOnly dataInicio, CancellationToken ct = default);
 
-    Task<Resultado<PlanoAlimentarResponse>> ReativarAsync(long planoId, CancellationToken ct = default);
-    Task<Resultado<bool>> InativarAsync(long planoId, CancellationToken ct = default);
+    Task<Resultado<PlanoAlimentarResponse>> ReativarAsync(long pacienteId, long planoId, CancellationToken ct = default);
+    Task<Resultado<bool>> InativarAsync(long pacienteId, long planoId, CancellationToken ct = default);
 }
 
 /// <summary>
@@ -232,14 +232,16 @@ public class PlanoAlimentarService(GlicoNutriDbContext db) : IPlanoAlimentarServ
     /// histórico; o novo nasce ativo e inativa o vigente pela regra da RN16.
     /// </summary>
     public async Task<Resultado<PlanoAlimentarResponse>> DuplicarAsync(
-        long planoId, long nutricionistaId, DateOnly dataInicio, CancellationToken ct = default)
+        long pacienteId, long planoId, long nutricionistaId, DateOnly dataInicio, CancellationToken ct = default)
     {
+        // RN33 — sem o filtro pelo paciente da rota, o plano de outro paciente seria
+        // copiado e gravado como plano ativo dele, inativando o que estava em vigor.
         var origem = await db.PlanosAlimentares
             .IgnoreQueryFilters()
             .Include(p => p.Distribuicao)
             .Include(p => p.Itens.Where(i => i.Ativo))
             .AsSplitQuery()
-            .FirstOrDefaultAsync(p => p.Id == planoId, ct);
+            .FirstOrDefaultAsync(p => p.Id == planoId && p.PacienteId == pacienteId, ct);
 
         if (origem is null) return Resultado<PlanoAlimentarResponse>.Erro("Plano de origem não encontrado.");
 
@@ -266,11 +268,12 @@ public class PlanoAlimentarService(GlicoNutriDbContext db) : IPlanoAlimentarServ
     /// inativar o vigente, para não violar a RN16.
     /// </summary>
     public async Task<Resultado<PlanoAlimentarResponse>> ReativarAsync(
-        long planoId, CancellationToken ct = default)
+        long pacienteId, long planoId, CancellationToken ct = default)
     {
+        // RN33 — o plano precisa ser do paciente da rota, a única checada no acesso.
         var plano = await db.PlanosAlimentares
             .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(p => p.Id == planoId, ct);
+            .FirstOrDefaultAsync(p => p.Id == planoId && p.PacienteId == pacienteId, ct);
 
         if (plano is null) return Resultado<PlanoAlimentarResponse>.Erro("Plano não encontrado.");
         if (plano.Ativo) return Resultado<PlanoAlimentarResponse>.Erro("Este plano já está ativo.");
@@ -296,9 +299,11 @@ public class PlanoAlimentarService(GlicoNutriDbContext db) : IPlanoAlimentarServ
         return Resultado<PlanoAlimentarResponse>.Ok((await ObterAsync(planoId, ct))!);
     }
 
-    public async Task<Resultado<bool>> InativarAsync(long planoId, CancellationToken ct = default)
+    public async Task<Resultado<bool>> InativarAsync(long pacienteId, long planoId, CancellationToken ct = default)
     {
-        var plano = await db.PlanosAlimentares.FirstOrDefaultAsync(p => p.Id == planoId, ct);
+        // RN33 — o plano precisa ser do paciente da rota, a única checada no acesso.
+        var plano = await db.PlanosAlimentares
+            .FirstOrDefaultAsync(p => p.Id == planoId && p.PacienteId == pacienteId, ct);
         if (plano is null) return Resultado<bool>.Erro("Plano não encontrado.");
 
         plano.Ativo = false;
