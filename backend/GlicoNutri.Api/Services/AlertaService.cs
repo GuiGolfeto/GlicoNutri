@@ -16,7 +16,7 @@ public interface IAlertaService
     Task<Resultado<AlertaResponse>> AtualizarAsync(
         long alertaId, CriarAlertaRequest pedido, CancellationToken ct = default);
 
-    Task<Resultado<bool>> DesativarAsync(long alertaId, CancellationToken ct = default);
+    Task<Resultado<bool>> DesativarAsync(long pacienteId, long alertaId, CancellationToken ct = default);
     Task<Resultado<bool>> ReativarAsync(long alertaId, CancellationToken ct = default);
 
     Task<Resultado<HistoricoAlertaResponse>> RegistrarDisparoAsync(
@@ -130,9 +130,11 @@ public class AlertaService(GlicoNutriDbContext db, ILogger<AlertaService> log) :
     /// RN23 — desativar é a única ação permitida ao paciente neste módulo.
     /// Soft delete, para preservar o histórico de disparos exigido pela RN27.
     /// </summary>
-    public async Task<Resultado<bool>> DesativarAsync(long alertaId, CancellationToken ct = default)
+    public async Task<Resultado<bool>> DesativarAsync(long pacienteId, long alertaId, CancellationToken ct = default)
     {
-        var alerta = await db.Alertas.FirstOrDefaultAsync(a => a.Id == alertaId, ct);
+        // RN33 — o controle de acesso olha o paciente da rota; sem este filtro, um
+        // paciente alcançaria o alerta de outro pela própria rota.
+        var alerta = await db.Alertas.FirstOrDefaultAsync(a => a.Id == alertaId && a.PacienteId == pacienteId, ct);
         if (alerta is null) return Resultado<bool>.Erro("Alerta não encontrado.");
 
         alerta.Ativo = false;

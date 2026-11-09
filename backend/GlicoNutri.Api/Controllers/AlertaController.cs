@@ -60,7 +60,7 @@ public class AlertaController(
     {
         if (!await acesso.PodeAcessarAsync(User, pacienteId, ct)) return Forbid();
 
-        var resultado = await servico.DesativarAsync(alertaId, ct);
+        var resultado = await servico.DesativarAsync(pacienteId, alertaId, ct);
         return resultado.Sucesso ? NoContent() : BadRequest(new { mensagem = resultado.Mensagem });
     }
 

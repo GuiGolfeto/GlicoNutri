@@ -14,7 +14,7 @@ construir o sistema.
 ./dev.sh status
 ./dev.sh logs api    # senhas provisórias aparecem aqui
 ./dev.sh down
-./dev.sh test        # 138 testes
+./dev.sh test        # 141 testes
 ```
 
 Login inicial: `admin@gliconutri.local` / `GlicoNutri@2026`.
@@ -25,7 +25,7 @@ autocadastro (RN08 e RN09).
 
 ```
 backend/GlicoNutri.Api     C# / ASP.NET (.NET 10) · 16 controllers · 25 services
-backend/GlicoNutri.Tests   xUnit · 138 testes
+backend/GlicoNutri.Tests   xUnit · 141 testes
 web                        Vue 3 + TypeScript · 3 páginas públicas + o sistema
 db/taco                    Tabela TACO 4ª edição em CSV, 597 alimentos
 db/fixtures                Amostra para testar o importador (NÃO é a tabela oficial)
@@ -118,19 +118,11 @@ Encontradas ao implementar. O sistema seguiu a opção indicada:
   carga a partir das tabelas internacionais de 2021 ainda não foi feita
 - **Seis alimentos sem macronutrientes**: leite líquido, sais, coco verde,
   iogurte de abacaxi — a 4ª edição traz `*` (não determinado)
-- **SMTP**: a conta existe (`gliconutrisuporte@gmail.com`), mas o Google recusa
-  a senha comum em SMTP. Precisa de **senha de aplicativo**, com verificação em
-  duas etapas ativa na conta
+- **E-mail pelo Gmail** (`gliconutrisuporte@gmail.com`, `smtp.gmail.com`:587), que
+  envia e recebe. O Google recusa a senha comum em SMTP: precisa de **senha de
+  aplicativo**, com verificação em duas etapas ativa na conta. O Resend foi
+  descartado porque exige domínio próprio, e o projeto não terá um
 - **Google OAuth**: implementado dos dois lados, aguardando o ClientId
-- **Publicação com HTTPS** (RN31): a API roda em container, então a hospedagem
-  precisa aceitar imagem Docker — o que descarta plataformas só de estático
-
-## Próximo passo
-
-O aplicativo **Flutter** para o paciente. Os endpoints que ele consome já
-existem e estão testados: registro de glicemia e de emoção pelo paciente,
-leitura das próprias medidas, plano vigente, favoritos do repositório, ciclo de
-disparo de alertas e a varredura de expiração da RN35.
-
-**A área do paciente fica nos dois ambientes**, web e Flutter — não é ponte
-temporária. O que for construído para ela vale para os dois.
+- **Sem publicação** (decidido em 09/11/2026): o sistema roda só localmente. A
+  RN31 (HTTPS) fica como divergência, e os links dos e-mails apontam para
+  `localhost`

@@ -254,6 +254,93 @@ public class RegrasCriticasTestes(ApiFixture api)
         });
     }
 
+    // ── RN03 — senha provisória ─────────────────────────────────────────────
+
+    [Fact]
+    public async Task RN03_NovoLoginComOTokenProvisorioFuncionaDepoisDaTroca()
+    {
+        var admin = await api.ClienteAdminAsync();
+        var (nutri, _) = await api.CriarNutricionistaAsync(admin, "rn03relogin@teste.local", "CRN-RN03R");
+        const string email = "p.rn03relogin@teste.local";
+        await api.CriarPacienteAsync(nutri, email, Cpf(204));
+
+        const string provisoria = "Provisoria@2026";
+        await using (var db = api.CriarContexto())
+        {
+            var usuario = await db.Usuarios.FirstAsync(u => u.Email == email);
+            usuario.SenhaHash = BCrypt.Net.BCrypt.HashPassword(provisoria, 4);
+            usuario.SenhaProvisoria = true;
+            await db.SaveChangesAsync();
+        }
+
+        var cliente = api.CreateClient();
+        var login = await cliente.PostAsJsonAsync("/api/auth/login", new { email, senha = provisoria });
+        login.EnsureSuccessStatusCode();
+        var token = (await login.Content.ReadFromJsonAsync<TokenLido>())!.Token;
+        cliente.DefaultRequestHeaders.Authorization = new("Bearer", token);
+
+        // A restrição continua valendo para o resto do sistema.
+        Assert.Equal(HttpStatusCode.Forbidden, (await cliente.GetAsync("/api/referencias/contextos-glicemia")).StatusCode);
+
+        const string nova = "Definitiva@2026";
+        var troca = await cliente.PostAsJsonAsync("/api/auth/alterar-senha", new { senhaAtual = provisoria, novaSenha = nova });
+        Assert.Equal(HttpStatusCode.NoContent, troca.StatusCode);
+
+        // Web e app refazem o login carregando o token antigo no cabeçalho.
+        var novoLogin = await cliente.PostAsJsonAsync("/api/auth/login", new { email, senha = nova });
+        Assert.Equal(HttpStatusCode.OK, novoLogin.StatusCode);
+    }
+
+    // ── RN33 — dado de um paciente não é alcançável pela rota de outro ─────
+
+    [Fact]
+    public async Task RN33_PacienteNaoAlteraRegistroDeOutroPelaPropriaRota()
+    {
+        var admin = await api.ClienteAdminAsync();
+        var (nutri, _) = await api.CriarNutricionistaAsync(admin, "rn33rota@teste.local", "CRN-RN33R");
+        var maria = await api.CriarPacienteAsync(nutri, "p.rn33maria@teste.local", Cpf(201));
+        var joao = await api.CriarPacienteAsync(nutri, "p.rn33joao@teste.local", Cpf(202));
+        var clienteJoao = await api.ClientePacienteAsync("p.rn33joao@teste.local");
+
+        var glicemia = await nutri.PostAsJsonAsync($"/api/pacientes/{maria}/glicemia", new { valor = 120, contextoId = 1 });
+        var idGlicemia = (await glicemia.Content.ReadFromJsonAsync<RegistroComId>())!.Id;
+
+        var emocao = await nutri.PostAsJsonAsync($"/api/pacientes/{maria}/emocoes",
+            new { estadosEmocionaisIds = new[] { 1 }, intensidade = 3 });
+        var idEmocao = (await emocao.Content.ReadFromJsonAsync<List<RegistroComId>>())![0].Id;
+
+        // RN24 — o cadastro já cria o alerta padrão da paciente.
+        var alertas = await nutri.GetFromJsonAsync<List<RegistroComId>>($"/api/pacientes/{maria}/alertas");
+        var idAlerta = alertas![0].Id;
+
+        foreach (var rota in new[] { $"glicemia/{idGlicemia}", $"emocoes/{idEmocao}", $"alertas/{idAlerta}" })
+        {
+            var resposta = await clienteJoao.DeleteAsync($"/api/pacientes/{joao}/{rota}");
+            Assert.Equal(HttpStatusCode.BadRequest, resposta.StatusCode);
+        }
+
+        await using var db = api.CriarContexto();
+        Assert.True((await db.RegistrosGlicemia.SingleAsync(r => r.Id == idGlicemia)).Ativo);
+        Assert.True((await db.RegistrosEmocionais.SingleAsync(r => r.Id == idEmocao)).Ativo);
+        Assert.True((await db.Alertas.SingleAsync(a => a.Id == idAlerta)).Ativo);
+    }
+
+    [Fact]
+    public async Task RN33_DonoAindaRemoveOProprioRegistro()
+    {
+        var admin = await api.ClienteAdminAsync();
+        var (nutri, _) = await api.CriarNutricionistaAsync(admin, "rn33dono@teste.local", "CRN-RN33D");
+        var paciente = await api.CriarPacienteAsync(nutri, "p.rn33dono@teste.local", Cpf(203));
+        var cliente = await api.ClientePacienteAsync("p.rn33dono@teste.local");
+
+        var glicemia = await cliente.PostAsJsonAsync($"/api/pacientes/{paciente}/glicemia", new { valor = 120, contextoId = 1 });
+        var idGlicemia = (await glicemia.Content.ReadFromJsonAsync<RegistroComId>())!.Id;
+        var alertas = await cliente.GetFromJsonAsync<List<RegistroComId>>($"/api/pacientes/{paciente}/alertas");
+
+        Assert.Equal(HttpStatusCode.NoContent, (await cliente.DeleteAsync($"/api/pacientes/{paciente}/glicemia/{idGlicemia}")).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await cliente.DeleteAsync($"/api/pacientes/{paciente}/alertas/{alertas![0].Id}")).StatusCode);
+    }
+
     // ── RN19 e RN20 — classificação glicêmica ───────────────────────────────
 
     [Fact]
@@ -482,6 +569,7 @@ public class RegrasCriticasTestes(ApiFixture api)
     }
 
     private record RegistroComId(long Id);
+    private record TokenLido(string Token);
     private record DistribuicaoLida(
         double CarboidratosPercentual, double ProteinasPercentual, double LipidiosPercentual);
     private record PlanoComDistribuicao(DistribuicaoLida Distribuicao);

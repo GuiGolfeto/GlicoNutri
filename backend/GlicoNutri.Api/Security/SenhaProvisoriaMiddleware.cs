@@ -16,6 +16,10 @@ public class SenhaProvisoriaMiddleware(RequestDelegate proximo)
     [
         "/api/auth/alterar-senha",
         "/api/auth/logout",
+        // Depois da troca, o cliente faz novo login para receber a credencial
+        // definitiva, e ainda envia o token antigo. Bloquear aqui prenderia o
+        // usuário na RN03 com a senha já trocada.
+        "/api/auth/login",
     ];
 
     public async Task InvokeAsync(HttpContext contexto)

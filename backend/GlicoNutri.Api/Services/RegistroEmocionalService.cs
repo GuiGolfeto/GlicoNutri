@@ -16,7 +16,7 @@ public interface IRegistroEmocionalService
     Task<Resultado<CorrelacaoEmocionalResponse>> CorrelacaoAsync(
         long pacienteId, int dias, CancellationToken ct = default);
 
-    Task<Resultado<bool>> RemoverAsync(long registroId, CancellationToken ct = default);
+    Task<Resultado<bool>> RemoverAsync(long pacienteId, long registroId, CancellationToken ct = default);
 }
 
 /// <summary>
@@ -170,9 +170,10 @@ public class RegistroEmocionalService(GlicoNutriDbContext db) : IRegistroEmocion
             porEmocao));
     }
 
-    public async Task<Resultado<bool>> RemoverAsync(long registroId, CancellationToken ct = default)
+    public async Task<Resultado<bool>> RemoverAsync(long pacienteId, long registroId, CancellationToken ct = default)
     {
-        var registro = await db.RegistrosEmocionais.FirstOrDefaultAsync(r => r.Id == registroId, ct);
+        // RN33 — o registro precisa ser do paciente da rota, a única checada no acesso.
+        var registro = await db.RegistrosEmocionais.FirstOrDefaultAsync(r => r.Id == registroId && r.PacienteId == pacienteId, ct);
         if (registro is null) return Resultado<bool>.Erro("Registro não encontrado.");
 
         registro.Ativo = false;

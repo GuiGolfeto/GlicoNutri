@@ -57,7 +57,7 @@ public class GlicemiaController(
     {
         if (!await acesso.PodeAcessarAsync(User, pacienteId, ct)) return Forbid();
 
-        var resultado = await servico.RemoverAsync(registroId, ct);
+        var resultado = await servico.RemoverAsync(pacienteId, registroId, ct);
         return resultado.Sucesso ? NoContent() : BadRequest(new { mensagem = resultado.Mensagem });
     }
 }

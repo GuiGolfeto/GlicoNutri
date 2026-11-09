@@ -16,7 +16,7 @@ public interface IGlicemiaService
     Task<Resultado<SerieGlicemicaResponse>> SerieAsync(
         long pacienteId, int dias, CancellationToken ct = default);
 
-    Task<Resultado<bool>> RemoverAsync(long registroId, CancellationToken ct = default);
+    Task<Resultado<bool>> RemoverAsync(long pacienteId, long registroId, CancellationToken ct = default);
 
     /// <summary>
     /// Reclassifica todos os registros do paciente contra a faixa alvo vigente.
@@ -152,9 +152,10 @@ public class GlicemiaService(GlicoNutriDbContext db) : IGlicemiaService
             pontos));
     }
 
-    public async Task<Resultado<bool>> RemoverAsync(long registroId, CancellationToken ct = default)
+    public async Task<Resultado<bool>> RemoverAsync(long pacienteId, long registroId, CancellationToken ct = default)
     {
-        var registro = await db.RegistrosGlicemia.FirstOrDefaultAsync(r => r.Id == registroId, ct);
+        // RN33 — o registro precisa ser do paciente da rota, a única checada no acesso.
+        var registro = await db.RegistrosGlicemia.FirstOrDefaultAsync(r => r.Id == registroId && r.PacienteId == pacienteId, ct);
         if (registro is null) return Resultado<bool>.Erro("Registro não encontrado.");
 
         registro.Ativo = false;
