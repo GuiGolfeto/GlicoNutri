@@ -111,8 +111,9 @@ case "${1:-up}" in
     ;;
 
   down)
-    pkill -f "GlicoNutri.Api" 2>/dev/null && verde "  API parada" || amarelo "  API ja estava parada"
-    pkill -f "vite" 2>/dev/null && verde "  Front parado" || amarelo "  Front ja estava parado"
+    pkill -f "GlicoNutri.Api" 2>/dev/null
+    pkill -f "vite" 2>/dev/null
+    verde "  Ambiente derrubado"
     ;;
 
   status)
