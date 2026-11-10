@@ -79,7 +79,7 @@ async function redefinir() {
         </form>
       </template>
 
-      <RouterLink class="btn btn-secundario largo" :to="{ name: 'login' }">Voltar ao login</RouterLink>
+      <RouterLink class="btn btn-secundario largo voltar" :to="{ name: 'login' }">Voltar ao login</RouterLink>
     </div>
   </div>
 </template>
@@ -91,4 +91,15 @@ async function redefinir() {
 .marca strong { font-size: 20px; }
 .subtitulo { margin: var(--xs) 0 var(--lg); font-size: 14px; color: var(--text-secondary); }
 .largo { width: 100%; margin-top: var(--xs); }
+
+/* RouterLink vira <a>, que é inline: sem display de bloco ele encosta no botão
+   de cima e o texto desalinha dentro da própria caixa. */
+.voltar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: var(--md);
+  text-decoration: none;
+}
+.voltar:hover { text-decoration: none; }
 </style>
