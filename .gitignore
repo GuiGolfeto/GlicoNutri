@@ -15,6 +15,9 @@ dist/
 .env
 .env.*
 !.env.example
+# Só valores públicos (URL local e ClientId do Google, que vai ao navegador de
+# qualquer forma). Sem ele o clone do Mateus sobe sem o botão de login Google.
+!web/.env.development
 
 # macOS
 .DS_Store
