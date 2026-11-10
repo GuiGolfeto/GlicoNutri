@@ -8,6 +8,9 @@
  * prometer na porta o que a banca não vai encontrar lá dentro custa caro.
  */
 import LogoGlicoNutri from '../components/LogoGlicoNutri.vue'
+// Captura real do monitoramento glicêmico (10/11/2026), com paciente e valores
+// fictícios criados só para a imagem — pedido do Mateus, no lugar do mockup em CSS.
+import painelGlicemico from '../assets/capturas/painel-glicemico.webp'
 </script>
 
 <template>
@@ -37,32 +40,9 @@ import LogoGlicoNutri from '../components/LogoGlicoNutri.vue'
         </p>
       </div>
 
-      <!-- Amostra do painel real: números de exemplo, leitura igual à do sistema. -->
+      <!-- Captura real da tela de monitoramento glicêmico (ver import acima). -->
       <div class="card painel-exemplo">
-        <div class="linha-painel">
-          <div class="avatar">MA</div>
-          <div>
-            <strong>Maria Almeida</strong>
-            <span class="apoio">Acompanhada desde março</span>
-          </div>
-          <span class="selo selo-ok">No alvo</span>
-        </div>
-
-        <div class="barras">
-          <span v-for="(h, i) in [38, 52, 71, 96, 64, 47, 58]" :key="i" :style="{ height: h + '%' }" />
-        </div>
-        <p class="legenda-barras">Glicemias dos últimos 7 dias</p>
-
-        <div class="metricas-exemplo">
-          <div>
-            <span class="apoio">Média glicêmica</span>
-            <strong class="numerico">104 mg/dL</strong>
-          </div>
-          <div>
-            <span class="apoio">No alvo</span>
-            <strong class="numerico verde">92%</strong>
-          </div>
-        </div>
+        <img :src="painelGlicemico" alt="Tela de monitoramento glicêmico do GlicoNutri, com o histórico de 7 dias" />
       </div>
     </div>
   </section>
@@ -173,25 +153,8 @@ import LogoGlicoNutri from '../components/LogoGlicoNutri.vue'
 .acoes-hero .btn:hover { text-decoration: none; }
 .nota-acesso { font-size: 13px; color: var(--text-muted); margin-top: var(--md); }
 
-.painel-exemplo { padding: var(--lg); }
-.linha-painel { display: flex; align-items: center; gap: var(--xs); margin-bottom: var(--md); }
-.linha-painel strong { display: block; font-size: 15px; }
-.avatar {
-  width: 38px; height: 38px; border-radius: 50%;
-  background: var(--teal-light); color: var(--primary);
-  display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px;
-}
-.linha-painel .selo { margin-left: auto; }
-
-.barras { display: flex; align-items: flex-end; gap: 6px; height: 110px; }
-.barras span { flex: 1; background: var(--primary); border-radius: 4px 4px 0 0; opacity: 0.85; }
-.barras span:nth-child(4) { background: var(--primary-container); opacity: 1; }
-.legenda-barras { font-size: 12px; color: var(--text-muted); margin: var(--xs) 0 var(--md); }
-
-.metricas-exemplo { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sm); }
-.metricas-exemplo > div { border: 1px solid var(--border); border-radius: var(--raio); padding: var(--sm); }
-.metricas-exemplo strong { display: block; font-size: 20px; margin-top: 2px; }
-.verde { color: var(--success); }
+.painel-exemplo { padding: var(--xs); }
+.painel-exemplo img { display: block; width: 100%; border-radius: var(--raio-card); }
 
 .blocos { padding: 48px 0; }
 .cabecalho-secao { text-align: center; max-width: 640px; margin: 0 auto var(--xl); }

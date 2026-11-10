@@ -8,6 +8,9 @@
  * glicêmico ainda nem está populado —, o backup automático, a conformidade com
  * o CFM e os botões das lojas, com o aplicativo ainda não publicado.
  */
+// Captura real da área do paciente (10/11/2026), com paciente e valores
+// fictícios criados só para a imagem — pedido do Mateus, no lugar do mockup em CSS.
+import areaPaciente from '../assets/capturas/area-paciente.webp'
 </script>
 
 <template>
@@ -86,22 +89,7 @@
     <div class="limite grade-app">
       <div class="moldura-celular">
         <div class="tela-celular">
-          <div class="topo-celular">
-            <span class="apoio-claro">Bom dia,</span>
-            <strong>Olá, Ricardo</strong>
-          </div>
-          <div class="cartao-glicemia">
-            <span class="apoio">Glicemia atual</span>
-            <strong class="numerico">112 mg/dL</strong>
-            <span class="selo selo-ok">Dentro do alvo</span>
-          </div>
-          <div class="atalhos">
-            <span>Diário</span>
-            <span>Plano</span>
-          </div>
-          <div class="mini-barras">
-            <span v-for="(h, i) in [45, 70, 55, 88, 62]" :key="i" :style="{ height: h + '%' }" />
-          </div>
+          <img :src="areaPaciente" alt="Tela da área do paciente no GlicoNutri, com a última glicemia registrada" />
         </div>
       </div>
 
@@ -194,21 +182,8 @@
   background: #0f172a; border-radius: 28px; padding: 10px; max-width: 260px;
   margin-inline: auto; box-shadow: 0 18px 40px rgba(15, 23, 42, 0.35);
 }
-.tela-celular { background: var(--surface); border-radius: 20px; padding: var(--md); color: var(--text-primary); }
-.topo-celular { margin-bottom: var(--md); }
-.apoio-claro { font-size: 12px; color: var(--text-muted); display: block; }
-.cartao-glicemia {
-  background: var(--teal-light); border-radius: var(--raio); padding: var(--sm); margin-bottom: var(--sm);
-}
-.cartao-glicemia strong { display: block; font-size: 22px; color: var(--primary); margin: 2px 0 6px; }
-.apoio { font-size: 12px; color: var(--text-secondary); }
-.atalhos { display: grid; grid-template-columns: 1fr 1fr; gap: var(--xs); margin-bottom: var(--sm); }
-.atalhos span {
-  border: 1px solid var(--border); border-radius: var(--raio); padding: var(--xs);
-  text-align: center; font-size: 13px; color: var(--text-secondary);
-}
-.mini-barras { display: flex; align-items: flex-end; gap: 4px; height: 56px; }
-.mini-barras span { flex: 1; background: var(--primary); opacity: 0.8; border-radius: 3px 3px 0 0; }
+.tela-celular { background: var(--surface); border-radius: 20px; overflow: hidden; }
+.tela-celular img { display: block; width: 100%; }
 
 @media (max-width: 900px) {
   .grade-2, .grade-3, .grade-app { grid-template-columns: 1fr; }
