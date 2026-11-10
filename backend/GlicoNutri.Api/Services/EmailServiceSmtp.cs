@@ -100,6 +100,10 @@ public class EmailServiceSmtp : IEmailService
         try
         {
             using var cliente = new SmtpClient();
+            // A consulta de revogação (CRL/OCSP) não completa no macOS e derrubava o
+            // envio com "incomplete certificate revocation check". Certificado e cadeia
+            // do Gmail continuam validados; só a lista de revogação não é consultada.
+            cliente.CheckCertificateRevocation = false;
 
             await cliente.ConnectAsync(
                 _host, _opcoes.Porta,
