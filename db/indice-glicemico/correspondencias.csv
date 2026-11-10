@@ -1,0 +1,32 @@
+nome_taco;item_tabela_internacional;ig;numero_item;pais;ano;n_sujeitos;observacao
+"Batata, inglesa, cozida";"Boiled potato";73;;;;;média de 29 estudos (agregado da fonte)
+"Batata, doce, cozida";"Boiled sweet potato";46;;;;;média de 13 estudos (agregado da fonte)
+"Cenoura, cozida";"Carrots, unpeeled, boiled / Carrots, diced, frozen";32;;;;;média de 2 estudos (agregado da fonte)
+"Pão, trigo, francês";"White wheat flour bread";73;;;;;média de 35 alimentos (agregado da fonte)
+"Pão, trigo, forma, integral";"Wholemeal wheat flour bread";75;;;;;média de 8 alimentos (agregado da fonte)
+"Leite, de vaca, integral";"Milk, full-fat";37;;;;;média de 3 estudos (agregado da fonte)
+"Leite, de vaca, desnatado, UHT";"Reduced-fat or low-fat milk";27;;;;;média de 6 estudos; TACO é desnatado (integral 0%), fonte agrupa como "reduzido/baixo teor de gordura" — categoria mais próxima disponível
+"Iogurte, natural";"All Yoghurts";33;;;;;média de 72 estudos (agregado da fonte, todos os tipos de iogurte)
+"Açúcar, refinado";"Sucrose";66;;;;;média de 7 estudos (agregado da fonte)
+"Açúcar, cristal";"Sucrose";66;;;;;mesmo valor do refinado — ambos são sacarose, diferem só na granulometria
+"Mel, de abelha";"Honey, mean of 17 types of honey";60;;;;;média de 17 tipos de mel (agregado da fonte)
+"Banana, nanica, crua";"Banana, raw";47;1088;Australia;2008;7;cultivar não distinguida pela fonte
+"Banana, prata, crua";"Banana, raw";47;1088;Australia;2008;7;cultivar não distinguida pela fonte
+"Banana, maçã, crua";"Banana, raw";47;1088;Australia;2008;7;cultivar não distinguida pela fonte
+"Banana, ouro, crua";"Banana, raw";47;1088;Australia;2008;7;cultivar não distinguida pela fonte
+"Banana, pacova, crua";"Banana, raw";47;1088;Australia;2008;7;cultivar não distinguida pela fonte
+"Banana, figo, crua";"Banana, raw";47;1088;Australia;2008;7;cultivar não distinguida pela fonte
+"Maçã, Argentina, com casca, crua";"Apples, raw";44;1078;Australia;2020;10;cultivar não distinguida pela fonte
+"Maçã, Fuji, com casca, crua";"Apples, raw";44;1078;Australia;2020;10;cultivar não distinguida pela fonte
+"Mamão, Formosa, cru";"Papaya/paw paw, raw";38;1153;Singapore;2017;19;cultivar não distinguida pela fonte
+"Mamão, Papaia, cru";"Papaya/paw paw, raw";38;1153;Singapore;2017;19;cultivar não distinguida pela fonte
+"Manga, Haden, crua";"Mango, raw (Chin-Hwang Mango)";48;1142;Taiwan;2010;7;cultivar não distinguida pela fonte
+"Manga, Palmer, crua";"Mango, raw (Chin-Hwang Mango)";48;1142;Taiwan;2010;7;cultivar não distinguida pela fonte
+"Manga, Tommy Atkins, crua";"Mango, raw (Chin-Hwang Mango)";48;1142;Taiwan;2010;7;cultivar não distinguida pela fonte
+"Abacaxi, cru";"Pineapple, raw (Ananas comosa)";82;1164;Malaysia;2008;12;
+"Melancia, crua";"Watermelon";50;;;;;média de 4 estudos (agregado da fonte)
+"Laranja, baía, suco";"Orange juice";48;;;;;média de 3 estudos (agregado da fonte); vale para o suco, não para a fruta crua
+"Laranja, da terra, suco";"Orange juice";48;;;;;média de 3 estudos (agregado da fonte); vale para o suco, não para a fruta crua
+"Laranja, lima, suco";"Orange juice";48;;;;;média de 3 estudos (agregado da fonte); vale para o suco, não para a fruta crua
+"Laranja, pêra, suco";"Orange juice";48;;;;;média de 3 estudos (agregado da fonte); vale para o suco, não para a fruta crua
+"Laranja, valência, suco";"Orange juice";48;;;;;média de 3 estudos (agregado da fonte); vale para o suco, não para a fruta crua

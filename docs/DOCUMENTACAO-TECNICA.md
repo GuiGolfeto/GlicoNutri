@@ -448,7 +448,19 @@ Nutrition*, v. 114, n. 5, p. 1625-1632).
 
 O alimento guarda **o valor e a origem dele**: tabela internacional ou
 informado pelo nutricionista. Quem sobrescreve o número assume a autoria, e a
-tela mostra isso. **Os valores ainda não foram carregados** — ver a seção 12.
+tela mostra isso.
+
+**Carga de 10/11/2026**: 31 dos 597 alimentos da TACO receberam o valor, pela
+migration `IndiceGlicemicoTabelaInternacional2021`. O critério foi estrito —
+só associar quando o alimento da TACO e o item da tabela internacional são
+claramente o mesmo, no mesmo preparo (cru, cozido etc.) — e a tabela
+internacional, com mais de 4.000 itens testados em metodologias variadas, não
+cobre boa parte do que a TACO lista (arroz, feijão, macarrão, mandioca e a
+maioria das frutas tropicais ficaram sem correspondência segura). A auditoria
+completa, item a item, com o número do estudo, país e ano de cada
+correspondência, está em `db/indice-glicemico/correspondencias.csv`. O
+restante segue sem valor, editável pelo nutricionista (origem
+`PROFISSIONAL`).
 
 ---
 
@@ -732,7 +744,7 @@ ficam registradas em vez de silenciadas.
 
 | Item | Custo | Situação |
 |---|---|---|
-| **Valores de índice glicêmico** | Carga de dados | A estrutura existe — valor e origem —, mas a carga a partir das tabelas internacionais de 2021 não foi feita. Os 597 alimentos da TACO seguem sem o dado |
+| **Valores de índice glicêmico** | Carga parcial | 31 dos 597 alimentos da TACO têm o valor, carregado em 10/11/2026 (seção 5.6). O restante não tem correspondência segura na tabela internacional — não é dado que falte carregar, é dado que a fonte não cobre |
 | **SMTP** | Credencial | A conta de envio existe. O Google recusa a senha comum da conta em SMTP: é preciso **senha de aplicativo**, com verificação em duas etapas ativa |
 | **Publicação com HTTPS (RN31)** | Decisão | Redirecionamento e HSTS já são aplicados fora do desenvolvimento; falta decidir onde publicar. A hospedagem precisa aceitar imagem Docker |
 | **Criptografia por coluna (RNF01)** | Interpretação | O Supabase criptografa em repouso no nível de disco. Criptografia por coluna quebraria busca, ordenação e as agregações do painel |

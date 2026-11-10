@@ -114,8 +114,11 @@ Encontradas ao implementar. O sistema seguiu a opção indicada:
 
 ## Limites conhecidos
 
-- **Índice glicêmico sem valores**: a estrutura existe (valor + origem), mas a
-  carga a partir das tabelas internacionais de 2021 ainda não foi feita
+- **Índice glicêmico com carga parcial**: 31 dos 597 alimentos da TACO têm o
+  valor da *International Tables... 2021*, carregado em 10/11/2026 pela
+  migration `IndiceGlicemicoTabelaInternacional2021`. Critério e fonte de cada
+  um em `db/indice-glicemico/correspondencias.csv` — o resto não tem
+  correspondência segura (arroz, feijão, macarrão, mandioca inclusive)
 - **Seis alimentos sem macronutrientes**: leite líquido, sais, coco verde,
   iogurte de abacaxi — a 4ª edição traz `*` (não determinado)
 - **E-mail pelo Gmail**: o sistema envia por `gliconutrismtp@gmail.com` (`smtp.gmail.com`:587,
