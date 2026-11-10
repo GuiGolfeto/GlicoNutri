@@ -719,7 +719,7 @@ ficam registradas em vez de silenciadas.
 | `resumo_clinico_paciente` como tabela | **View**, pelo mesmo motivo — e por view, não trigger |
 | Enums: DER V2 usa tipo do banco, Classes V5 usa tabela | Seguiu o V5, com índice único sobre a descrição normalizada |
 | V4.0 e V5.0 do diagrama de classes ambas marcadas "latest" | Seguiu a V5.0; corrigido na origem depois |
-| Campos nos casos de uso sem coluna no DER | Seguiu o DER; os campos não existem |
+| Campos nos casos de uso sem coluna no DER | Seguiu o DER, confirmado pelo Mateus em 10/11/2026. O que mudar em cada caso de uso está em `docs/AJUSTES-CASOS-DE-USO.md` |
 | Tipos de diabetes: UC002 diz pré-diabetes, DER diz MODY | Os dois |
 | Ator do registro antropométrico definido de três formas | Só o Nutricionista registra |
 | RF01 aceita CSV e JSON, RN10 diz só CSV | Só CSV |
@@ -734,7 +734,6 @@ ficam registradas em vez de silenciadas.
 |---|---|---|
 | **Valores de índice glicêmico** | Carga de dados | A estrutura existe — valor e origem —, mas a carga a partir das tabelas internacionais de 2021 não foi feita. Os 597 alimentos da TACO seguem sem o dado |
 | **SMTP** | Credencial | A conta de envio existe. O Google recusa a senha comum da conta em SMTP: é preciso **senha de aplicativo**, com verificação em duas etapas ativa |
-| **Google OAuth** | Credencial | Implementado dos dois lados; falta criar o projeto no Google Cloud Console e gerar o ClientId |
 | **Publicação com HTTPS (RN31)** | Decisão | Redirecionamento e HSTS já são aplicados fora do desenvolvimento; falta decidir onde publicar. A hospedagem precisa aceitar imagem Docker |
 | **Criptografia por coluna (RNF01)** | Interpretação | O Supabase criptografa em repouso no nível de disco. Criptografia por coluna quebraria busca, ordenação e as agregações do painel |
 | **Campos previstos nos casos de uso** | Colunas novas | CPF, nascimento e sexo do nutricionista; endereço do paciente; observações no registro antropométrico |

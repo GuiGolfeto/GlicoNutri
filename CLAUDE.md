@@ -107,7 +107,7 @@ Encontradas ao implementar. O sistema seguiu a opção indicada:
 |---|---|
 | Enums: DER V2 usa tipo do banco, Classes V5 usa tabela | Seguiu o V5. Índice único sobre a descrição normalizada impede "Glicose", "glicose" e "GLICOSE" conviverem |
 | V4.0 e V5.0 do diagrama de classes ambas marcadas "latest" | Seguiu a V5.0 |
-| Campos nos casos de uso sem coluna no DER | Seguiu o DER; os campos não existem |
+| Campos nos casos de uso sem coluna no DER | Seguiu o DER (confirmado em 10/11/2026). Ajustes a fazer nos UCs em `docs/AJUSTES-CASOS-DE-USO.md` |
 | Tipos de diabetes: UC002 diz pré-diabetes, DER diz MODY | Os dois. Pré-diabetes entrou como opção de cadastro |
 | Ator do registro antropométrico definido de 3 formas | **Só o nutricionista registra.** O paciente lê e não edita: peso e altura entram no cálculo energético e no plano |
 | RF01 aceita CSV e JSON, RN10 diz só CSV | Só CSV |
@@ -118,11 +118,13 @@ Encontradas ao implementar. O sistema seguiu a opção indicada:
   carga a partir das tabelas internacionais de 2021 ainda não foi feita
 - **Seis alimentos sem macronutrientes**: leite líquido, sais, coco verde,
   iogurte de abacaxi — a 4ª edição traz `*` (não determinado)
-- **E-mail pelo Gmail** (`gliconutrisuporte@gmail.com`, `smtp.gmail.com`:587), que
-  envia e recebe. O Google recusa a senha comum em SMTP: precisa de **senha de
+- **E-mail pelo Gmail**: o sistema envia por `gliconutrismtp@gmail.com` (`smtp.gmail.com`:587,
+  senha de aplicativo no user-secrets, envio confirmado em 10/11/2026). O contato público continua
+  `gliconutrisuporte@gmail.com`. O Google recusa a senha comum em SMTP: precisa de **senha de
   aplicativo**, com verificação em duas etapas ativa na conta. O Resend foi
   descartado porque exige domínio próprio, e o projeto não terá um
-- **Google OAuth**: implementado dos dois lados, aguardando o ClientId
+- **Google OAuth**: ClientId configurado em 10/11/2026 (`appsettings.json` e `web/.env.development`, que é público e versionado). No Google Cloud Console, `http://localhost:5173` precisa estar entre as origens JavaScript autorizadas
 - **Sem publicação** (decidido em 09/11/2026): o sistema roda só localmente. A
   RN31 (HTTPS) fica como divergência, e os links dos e-mails apontam para
   `localhost`
+
