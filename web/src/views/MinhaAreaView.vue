@@ -3,7 +3,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { api, mensagemDeErro } from '../api/client'
 import type {
   Alerta, ConteudoEducativo, Favoritos, HistoricoGlicemico, PlanoAlimentar,
-  Receita, Referencia, SerieGlicemica,
+  Receita, Referencia, RegistroGlicemia, SerieGlicemica,
 } from '../api/tipos'
 import GraficoLinha, { type PontoGrafico } from '../components/GraficoLinha.vue'
 import { useAuthStore } from '../stores/auth'
@@ -141,12 +141,26 @@ onMounted(async () => {
   await carregar()
 })
 
+/**
+ * UC004 A2 — o mesmo alerta do aplicativo. Orienta procurar a equipe de saúde e
+ * não prescreve conduta: decisão do Mateus em 10/11/2026, só o profissional prescreve.
+ */
+const alertaGlicemia = ref('')
+
+function textoAlertaGlicemia(r: RegistroGlicemia) {
+  if (r.classificacao === 'NORMAL') return ''
+  const baixa = r.classificacao === 'HIPOGLICEMIA'
+  return `${r.valor} mg/dL indica ${baixa ? 'hipoglicemia (abaixo de 70)' : 'hiperglicemia (acima de 180)'}. `
+    + 'Siga agora a orientação da sua equipe de saúde. Se tiver sintomas ou não melhorar, procure atendimento médico.'
+}
+
 async function registrar() {
   erro.value = ''
   sucesso.value = ''
+  alertaGlicemia.value = ''
   enviando.value = true
   try {
-    await api.post(`/pacientes/${id.value}/glicemia`, {
+    const { data: r } = await api.post<RegistroGlicemia>(`/pacientes/${id.value}/glicemia`, {
       valor: form.valor,
       contextoId: form.contextoId,
       observacao: form.observacao || null,
@@ -155,6 +169,7 @@ async function registrar() {
     form.observacao = ''
     registrando.value = false
     sucesso.value = 'Glicemia registrada.'
+    alertaGlicemia.value = textoAlertaGlicemia(r)
     await carregar()
   } catch (e) {
     erro.value = mensagemDeErro(e)
@@ -225,6 +240,7 @@ const primeiroNome = computed(() => auth.usuario?.nome.split(' ')[0] ?? '')
 
   <div v-if="erro" class="aviso aviso-erro">{{ erro }}</div>
   <div v-if="sucesso" class="aviso aviso-sucesso">{{ sucesso }}</div>
+  <div v-if="alertaGlicemia" class="aviso aviso-erro" role="alert"><strong>Atenção.</strong> {{ alertaGlicemia }}</div>
 
   <!-- UC004 — registro pelo próprio paciente -->
   <section v-if="registrando" class="card">
