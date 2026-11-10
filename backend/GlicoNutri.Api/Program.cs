@@ -29,6 +29,14 @@ builder.Services.AddDbContext<GlicoNutriDbContext>(opt => opt.UseNpgsql(conexao)
 builder.Services.AddOptions<GoogleOptions>()
     .Bind(builder.Configuration.GetSection(GoogleOptions.Secao));
 
+// RNF01 — sem as chaves a API nem sobe: todo CPF, telefone e observação
+// clínica passam por este serviço antes de tocar o banco.
+builder.Services.AddOptions<CriptografiaOptions>()
+    .Bind(builder.Configuration.GetSection(CriptografiaOptions.Secao))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+builder.Services.AddSingleton<CriptografiaService>();
+
 builder.Services.AddOptions<JwtOptions>()
     .Bind(builder.Configuration.GetSection(JwtOptions.Secao))
     .ValidateDataAnnotations()
@@ -113,6 +121,14 @@ builder.Services.AddCors(opt => opt.AddPolicy("web", p => p
 
 var app = builder.Build();
 
+// RNF01 — cifra o que ainda estiver em texto puro de uma versão anterior.
+// Antes do SeedDesenvolvimento: ele lê usuarios, e uma leitura pelo DbContext
+// já espera a cifra.
+await GlicoNutri.Api.Data.BackfillCriptografia.AplicarAsync(
+    conexao,
+    app.Services.GetRequiredService<GlicoNutri.Api.Security.CriptografiaService>(),
+    app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("BackfillCriptografia"));
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -124,6 +140,16 @@ else
     app.UseHttpsRedirection();
     app.UseHsts();
 }
+
+// RNF01 — cabeçalhos padrão contra sniffing de MIME, clickjacking e vazamento
+// de URL por Referer. Aplicados sempre, não só fora do desenvolvimento.
+app.Use(async (ctx, prox) =>
+{
+    ctx.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+    ctx.Response.Headers.Append("X-Frame-Options", "DENY");
+    ctx.Response.Headers.Append("Referrer-Policy", "same-origin");
+    await prox();
+});
 
 app.UseCors("web");
 

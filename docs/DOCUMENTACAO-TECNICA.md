@@ -340,6 +340,37 @@ contra audiência vazia.
 Mínimo de 8 caracteres, com ao menos uma letra e um número. O tamanho sozinho
 aceitaria `12345678`, que é o que a regra existe para barrar.
 
+### 4.8 Criptografia por coluna — RNF01
+
+O Supabase já cifra tudo em repouso, no disco (AES-256) — mas isso protege
+contra quem rouba o disco, não contra quem lê a tabela pela conexão da própria
+aplicação. **Carregado em 10/11/2026**: CPF, telefone (paciente e
+nutricionista), observações clínicas e medicação em uso são cifrados também
+pela aplicação, com AES-256-GCM e nonce aleatório a cada gravação — a cifra
+muda mesmo quando o texto é o mesmo, o que é o recomendado, mas por isso não
+dá pra comparar ciphertext no banco.
+
+**O caso do CPF.** É único e é buscado no cadastro (RN01), e a cifra com
+nonce aleatório quebra as duas coisas: duas gravações do mesmo CPF produzem
+textos diferentes, e um índice único sobre eles nunca pegaria duplicata. A
+saída é uma segunda coluna, `cpf_hash` — HMAC-SHA256 do CPF normalizado, que é
+determinístico (mesmo CPF, mesmo hash) mas não reversível. É ela que carrega o
+índice único (convenção do projeto: regra crítica também no banco) e a busca
+por duplicidade; o CPF em si fica só cifrado.
+
+**O que não é cifrado por coluna**: nome, e-mail, glicemias, plano alimentar,
+e os valores agregados do dashboard. Cifrar quebraria busca, ordenação e as
+agregações do painel — e já há defesa suficiente sem isso: a criptografia de
+disco do Supabase, a conexão exclusiva da API (seção 4, RN33) e, para o que
+está cifrado por coluna, chaves que só existem no user-secrets, fora do banco
+e fora do repositório.
+
+**Dado já existente.** A migration `CriptografiaPorColunaRnf01` só muda o
+schema (tipo da coluna, índice do hash); quem cifra os 12 usuários que já
+existiam é `BackfillCriptografia`, rodado uma vez no início da aplicação —
+reproduzir o mesmo AES-GCM em SQL puro seria arriscado, e assim é só código
+que já existe e já é testado.
+
 ---
 
 ## 5. Domínio clínico
@@ -747,7 +778,7 @@ ficam registradas em vez de silenciadas.
 | **Valores de índice glicêmico** | Carga parcial | 31 dos 597 alimentos da TACO têm o valor, carregado em 10/11/2026 (seção 5.6). O restante não tem correspondência segura na tabela internacional — não é dado que falte carregar, é dado que a fonte não cobre |
 | **SMTP** | Credencial | A conta de envio existe. O Google recusa a senha comum da conta em SMTP: é preciso **senha de aplicativo**, com verificação em duas etapas ativa |
 | **Publicação com HTTPS (RN31)** | Decisão | Redirecionamento e HSTS já são aplicados fora do desenvolvimento; falta decidir onde publicar. A hospedagem precisa aceitar imagem Docker |
-| **Criptografia por coluna (RNF01)** | Interpretação | O Supabase criptografa em repouso no nível de disco. Criptografia por coluna quebraria busca, ordenação e as agregações do painel |
+| **Criptografia por coluna (RNF01)** | Feito em 10/11/2026 | CPF, telefone, observações clínicas e medicação em uso cifrados (seção 4.8). O resto segue só com a criptografia de disco do Supabase — cifrar quebraria busca, ordenação e as agregações do painel |
 | **Campos previstos nos casos de uso** | Colunas novas | CPF, nascimento e sexo do nutricionista; endereço do paciente; observações no registro antropométrico |
 | **Cadastro das tabelas de referência** | Telas novas | As tabelas aceitam cadastro e o banco já recusa duplicata, mas não há tela nem endpoint de escrita — elas só nascem por seed |
 | **Cobertura de testes de serviço** | Ampliação | Repositório educativo e relatórios não têm teste automatizado próprio |

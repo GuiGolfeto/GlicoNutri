@@ -59,7 +59,15 @@ public class Nutricionista : Usuario
 
 public class Paciente : Usuario
 {
+    /// <summary>Cifrado em repouso (RNF01). Busca e duplicidade usam <see cref="CpfHash"/>.</summary>
     public string Cpf { get; set; } = null!;
+
+    /// <summary>
+    /// HMAC-SHA256 do CPF normalizado (RNF01): a cifra do Cpf usa nonce
+    /// aleatório, então não dá pra comparar no banco — é este hash
+    /// determinístico que carrega o índice único e a busca por duplicidade.
+    /// </summary>
+    public string CpfHash { get; set; } = null!;
 
     public long SexoId { get; set; }
     public SexoBiologico Sexo { get; set; } = null!;

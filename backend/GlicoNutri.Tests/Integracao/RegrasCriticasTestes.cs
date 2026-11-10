@@ -115,6 +115,49 @@ public class RegrasCriticasTestes(ApiFixture api)
         Assert.Equal(HttpStatusCode.NoContent, troca.StatusCode);
     }
 
+    // ── RN01 e RNF01 — CPF único e cifrado por coluna ───────────────────────
+
+    [Fact]
+    public async Task RN01_CpfDuplicado_EhRecusadoMesmoCifrado()
+    {
+        var admin = await api.ClienteAdminAsync();
+        var (nutri, _) = await api.CriarNutricionistaAsync(admin, "rnf01@teste.local", "CRN-RNF01");
+        var cpf = Cpf(401);
+        await api.CriarPacienteAsync(nutri, "p.rnf01a@teste.local", cpf);
+
+        var resposta = await nutri.PostAsJsonAsync("/api/pacientes", new
+        {
+            nome = "Outro Paciente",
+            email = "p.rnf01b@teste.local",
+            cpf,
+            dataNascimento = "2000-01-15",
+            sexoId = 2,
+            tipoDiabetesId = 1,
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, resposta.StatusCode);
+    }
+
+    [Fact]
+    public async Task RNF01_CpfFicaCifradoNoBanco()
+    {
+        var admin = await api.ClienteAdminAsync();
+        var (nutri, _) = await api.CriarNutricionistaAsync(admin, "rnf01b@teste.local", "CRN-RNF01B");
+        var cpf = Cpf(402);
+        var id = await api.CriarPacienteAsync(nutri, "p.rnf01c@teste.local", cpf);
+
+        await using var db = api.CriarContexto();
+        var cpfCru = await db.Database.SqlQuery<string>(
+            $"SELECT cpf AS \"Value\" FROM usuarios WHERE id = {id}").SingleAsync();
+
+        Assert.NotEqual(cpf, cpfCru);
+
+        // A API continua devolvendo o CPF em claro: a cifra é transparente pra quem lê pelo ORM.
+        var lido = await nutri.GetAsync($"/api/pacientes/{id}");
+        var corpo = await lido.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+        Assert.Equal(cpf, corpo.GetProperty("cpf").GetString());
+    }
+
     // ── RN06 — unicidade de e-mail ──────────────────────────────────────────
 
     [Fact]

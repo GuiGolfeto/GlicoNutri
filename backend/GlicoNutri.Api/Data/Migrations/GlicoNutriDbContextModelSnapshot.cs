@@ -1718,8 +1718,7 @@ namespace GlicoNutri.Api.Data.Migrations
 
                     b.Property<string>("Telefone")
                         .ValueGeneratedOnUpdateSometimes()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasColumnType("text")
                         .HasColumnName("telefone");
 
                     b.HasIndex("Crn")
@@ -1735,9 +1734,14 @@ namespace GlicoNutri.Api.Data.Migrations
 
                     b.Property<string>("Cpf")
                         .IsRequired()
-                        .HasMaxLength(14)
-                        .HasColumnType("character varying(14)")
+                        .HasColumnType("text")
                         .HasColumnName("cpf");
+
+                    b.Property<string>("CpfHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("cpf_hash");
 
                     b.Property<DateOnly>("DataNascimento")
                         .HasColumnType("date")
@@ -1765,17 +1769,16 @@ namespace GlicoNutri.Api.Data.Migrations
 
                     b.Property<string>("Telefone")
                         .ValueGeneratedOnUpdateSometimes()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasColumnType("text")
                         .HasColumnName("telefone");
 
                     b.Property<long>("TipoDiabetesId")
                         .HasColumnType("bigint")
                         .HasColumnName("tipo_diabetes_id");
 
-                    b.HasIndex("Cpf")
+                    b.HasIndex("CpfHash")
                         .IsUnique()
-                        .HasDatabaseName("ix_usuarios_cpf");
+                        .HasDatabaseName("ix_usuarios_cpf_hash");
 
                     b.HasIndex("SexoId")
                         .HasDatabaseName("ix_usuarios_sexo_id");

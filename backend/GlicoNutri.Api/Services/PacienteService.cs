@@ -36,7 +36,8 @@ public class PacienteService(
     IUsuarioRepository usuarios,
     ISenhaService senhas,
     IEmailService emails,
-    IGlicemiaService glicemias) : IPacienteService
+    IGlicemiaService glicemias,
+    GlicoNutri.Api.Security.CriptografiaService criptografia) : IPacienteService
 {
     /// <summary>RN24 — horários padrão pré-configurados no cadastro do paciente.</summary>
     private static readonly TimeOnly HorarioAlertaManha = new(8, 0);
@@ -62,12 +63,15 @@ public class PacienteService(
             return Resultado<PacienteResponse>.Erro("CPF inválido.");
 
         var cpf = ValidadorCpf.Normalizar(pedido.Cpf);
+        // RNF01 — o Cpf é cifrado com nonce aleatório, então a checagem de
+        // duplicidade (e o índice único) vai pelo hash determinístico, não pela cifra.
+        var cpfHash = criptografia.HashBusca(cpf);
 
         // UC002 A2 — duplicidade de e-mail (RN06) e de CPF.
         if (await usuarios.EmailEmUsoAsync(email, ct))
             return Resultado<PacienteResponse>.Erro("Já existe um usuário cadastrado com este e-mail.");
 
-        if (await db.Pacientes.IgnoreQueryFilters().AnyAsync(p => p.Cpf == cpf, ct))
+        if (await db.Pacientes.IgnoreQueryFilters().AnyAsync(p => p.CpfHash == cpfHash, ct))
             return Resultado<PacienteResponse>.Erro("Já existe um paciente cadastrado com este CPF.");
 
         // RN07 — o vínculo com um nutricionista responsável ativo é obrigatório.
@@ -108,6 +112,7 @@ public class PacienteService(
             Email = email,
             SenhaHash = senhas.Hash(senhaProvisoria),
             Cpf = cpf,
+            CpfHash = cpfHash,
             SexoId = pedido.SexoId,
             TipoDiabetesId = pedido.TipoDiabetesId,
             DataNascimento = pedido.DataNascimento,
@@ -202,6 +207,7 @@ public class PacienteService(
             return Resultado<PacienteResponse>.Erro("CPF inválido.");
 
         var cpf = ValidadorCpf.Normalizar(pedido.Cpf);
+        var cpfHash = criptografia.HashBusca(cpf);
         var email = pedido.Email.Trim().ToLowerInvariant();
 
         if (await db.Usuarios.IgnoreQueryFilters()
@@ -210,7 +216,7 @@ public class PacienteService(
                 "Já existe outro usuário cadastrado com este e-mail.");
 
         if (await db.Pacientes.IgnoreQueryFilters()
-                .AnyAsync(p => p.Id != id && p.Cpf == cpf, ct))
+                .AnyAsync(p => p.Id != id && p.CpfHash == cpfHash, ct))
             return Resultado<PacienteResponse>.Erro(
                 "Já existe outro paciente cadastrado com este CPF.");
 
@@ -223,6 +229,7 @@ public class PacienteService(
         paciente.Nome = pedido.Nome.Trim();
         paciente.Email = email;
         paciente.Cpf = cpf;
+        paciente.CpfHash = cpfHash;
         paciente.DataNascimento = pedido.DataNascimento;
         paciente.SexoId = pedido.SexoId;
         paciente.TipoDiabetesId = pedido.TipoDiabetesId;

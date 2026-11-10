@@ -1,10 +1,12 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using GlicoNutri.Api.Data;
+using GlicoNutri.Api.Security;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Npgsql;
 
 namespace GlicoNutri.Tests.Integracao;
@@ -113,7 +115,15 @@ public class ApiFixture : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting("Jwt:SigningKey", "chave-de-teste-com-mais-de-32-bytes-para-o-hmac");
         builder.UseSetting("Jwt:ExpiresHours", "24");
         builder.UseSetting("Email:Habilitado", "false");
+
+        // RNF01 — chaves fixas só para o teste poder cifrar/decifrar; não
+        // precisam ser segredo porque o banco é descartável.
+        builder.UseSetting("Criptografia:Chave", ChaveDeTeste);
+        builder.UseSetting("Criptografia:ChaveHash", ChaveHashDeTeste);
     }
+
+    private const string ChaveDeTeste = "VFjRC1lw5SBh9fOeeZ6o/7NBMSo+8B42U2LnVsiLdes=";
+    private const string ChaveHashDeTeste = "fpa6ILRQR5oyj3K30SK4WedOcZEO1cfNMqhx2o1O+kY=";
 
     public GlicoNutriDbContext CriarContexto()
     {
@@ -121,7 +131,13 @@ public class ApiFixture : WebApplicationFactory<Program>, IAsyncLifetime
             .UseNpgsql(ConexaoDoTeste)
             .Options;
 
-        return new GlicoNutriDbContext(opcoes);
+        var criptografia = new CriptografiaService(Options.Create(new CriptografiaOptions
+        {
+            Chave = ChaveDeTeste,
+            ChaveHash = ChaveHashDeTeste,
+        }));
+
+        return new GlicoNutriDbContext(opcoes, criptografia);
     }
 
     // ── Atalhos usados pelos testes ─────────────────────────────────────────

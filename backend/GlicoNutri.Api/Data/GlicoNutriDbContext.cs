@@ -7,7 +7,9 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace GlicoNutri.Api.Data;
 
-public class GlicoNutriDbContext(DbContextOptions<GlicoNutriDbContext> options) : DbContext(options)
+public class GlicoNutriDbContext(
+    DbContextOptions<GlicoNutriDbContext> options,
+    Security.CriptografiaService criptografia) : DbContext(options)
 {
     // --- Identidade (herança TPH) ---
     public DbSet<Usuario> Usuarios => Set<Usuario>();
@@ -56,6 +58,14 @@ public class GlicoNutriDbContext(DbContextOptions<GlicoNutriDbContext> options) 
     public DbSet<FonteAlimento> FontesAlimento => Set<FonteAlimento>();
     public DbSet<FonteIndiceGlicemico> FontesIndiceGlicemico => Set<FonteIndiceGlicemico>();
 
+    /// <summary>
+    /// RNF01 — criptografia por coluna. O conversor cifra ao gravar e decifra ao
+    /// ler; o resto do código continua lendo/escrevendo texto puro nessas
+    /// propriedades, sem saber que o banco guarda outra coisa.
+    /// </summary>
+    private Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<string?, string?> ConversorCifrado() =>
+        new(v => criptografia.Criptografar(v), v => criptografia.Descriptografar(v));
+
     protected override void OnModelCreating(ModelBuilder b)
     {
         // Busca de alimento sem sensibilidade a acento: um nutricionista digita
@@ -63,7 +73,7 @@ public class GlicoNutriDbContext(DbContextOptions<GlicoNutriDbContext> options) 
         // fica inalcançável pela busca.
         b.HasPostgresExtension("unaccent");
 
-        ConfigurarIdentidade(b);
+        ConfigurarIdentidade(b, ConversorCifrado());
         ConfigurarNutricao(b);
         ConfigurarClinico(b);
         ConfigurarAlertas(b);
@@ -79,7 +89,9 @@ public class GlicoNutriDbContext(DbContextOptions<GlicoNutriDbContext> options) 
     // ════════════════════════════════════════════════════════════════════
     //  IDENTIDADE
     // ════════════════════════════════════════════════════════════════════
-    private static void ConfigurarIdentidade(ModelBuilder b)
+    private static void ConfigurarIdentidade(
+        ModelBuilder b,
+        Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<string?, string?> cifrado)
     {
         b.Entity<Usuario>(e =>
         {
@@ -122,7 +134,9 @@ public class GlicoNutriDbContext(DbContextOptions<GlicoNutriDbContext> options) 
 
             // Nutricionista e Paciente dividem a coluna telefone. Sem dizer isso, o
             // EF criaria telefone e telefone1 para o mesmo dado.
-            e.Property(x => x.Telefone).HasMaxLength(20).HasColumnName("telefone");
+            // Sem HasMaxLength: cifrado (RNF01), o texto guardado é maior que o
+            // número de telefone em claro.
+            e.Property(x => x.Telefone).HasColumnName("telefone").HasConversion(cifrado);
 
             // Nulos não colidem entre si no Postgres, então o índice único continua
             // valendo só para as linhas que têm CRN — as de nutricionista.
@@ -131,9 +145,16 @@ public class GlicoNutriDbContext(DbContextOptions<GlicoNutriDbContext> options) 
 
         b.Entity<Paciente>(e =>
         {
-            e.Property(x => x.Cpf).HasMaxLength(14);
-            e.Property(x => x.Telefone).HasMaxLength(20).HasColumnName("telefone");
-            e.HasIndex(x => x.Cpf).IsUnique();
+            // Sem HasMaxLength: cifrado (RNF01). A unicidade não é mais sobre o
+            // Cpf — a cifra usa nonce aleatório, então o mesmo CPF gera textos
+            // diferentes a cada gravação, e um índice único nele não pegaria
+            // duplicata nenhuma. Quem carrega a RN01 agora é o CpfHash.
+            e.Property(x => x.Cpf).HasConversion(cifrado);
+            e.Property(x => x.CpfHash).HasMaxLength(64);
+            e.Property(x => x.Telefone).HasColumnName("telefone").HasConversion(cifrado);
+            e.Property(x => x.ObservacoesClinicas).HasConversion(cifrado);
+            e.Property(x => x.MedicacaoEmUso).HasConversion(cifrado);
+            e.HasIndex(x => x.CpfHash).IsUnique();
 
             e.HasOne(x => x.Sexo).WithMany()
              .HasForeignKey(x => x.SexoId).OnDelete(DeleteBehavior.Restrict);

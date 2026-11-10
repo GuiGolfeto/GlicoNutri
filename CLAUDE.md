@@ -114,6 +114,12 @@ Encontradas ao implementar. O sistema seguiu a opção indicada:
 
 ## Limites conhecidos
 
+- **Criptografia por coluna (RNF01)**: CPF, telefone, observações clínicas e
+  medicação em uso são cifrados pela aplicação desde 10/11/2026 (AES-256-GCM,
+  chaves em `Criptografia:Chave`/`ChaveHash` no user-secrets). O CPF também
+  grava um hash determinístico (`cpf_hash`) para busca e unicidade, porque a
+  cifra usa nonce aleatório e não dá pra comparar. Detalhes em
+  `docs/DOCUMENTACAO-TECNICA.md` seção 4.8
 - **Índice glicêmico com carga parcial**: 31 dos 597 alimentos da TACO têm o
   valor da *International Tables... 2021*, carregado em 10/11/2026 pela
   migration `IndiceGlicemicoTabelaInternacional2021`. Critério e fonte de cada
