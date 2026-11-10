@@ -51,6 +51,16 @@ function foraDaFaixa(valor: number, qual: 'carboidratos' | 'proteinas' | 'lipidi
   return valor < faixa.minimo || valor > faixa.maximo
 }
 
+const macrosForaDaFaixa = computed(() =>
+  ([
+    ['Carboidratos', form.carboidratosPercentual, 'carboidratos'],
+    ['Proteínas', form.proteinasPercentual, 'proteinas'],
+    ['Lipídios', form.lipidiosPercentual, 'lipidios'],
+  ] as const)
+    .filter(([, v, qual]) => foraDaFaixa(v, qual))
+    .map(([nome, v, qual]) =>
+      `${nome}: ${v}% (faixa ${faixas.value![qual].minimo}–${faixas.value![qual].maximo}%)`))
+
 const algumForaDaFaixa = computed(() =>
   foraDaFaixa(form.carboidratosPercentual, 'carboidratos')
   || foraDaFaixa(form.proteinasPercentual, 'proteinas')
@@ -295,10 +305,17 @@ const data = (iso: string) => new Date(iso + 'T12:00:00').toLocaleDateString('pt
         A soma dos percentuais deve ser exatamente 100%.
       </p>
 
-      <p v-else-if="algumForaDaFaixa" class="aviso aviso-atencao fora-faixa">
-        A distribuição está fora das faixas da diretriz. O plano pode ser salvo assim —
-        a conduta é sua.
-      </p>
+      <!-- Pedido do Mateus em 10/11/2026: aviso bem visível, mas sem bloquear -->
+      <div v-else-if="algumForaDaFaixa" class="aviso aviso-atencao fora-faixa" role="alert">
+        <span class="icone-aviso" aria-hidden="true">⚠</span>
+        <div>
+          <strong>Distribuição fora das faixas da diretriz</strong>
+          <ul>
+            <li v-for="m in macrosForaDaFaixa" :key="m">{{ m }}</li>
+          </ul>
+          <span>O plano pode ser salvo assim — a conduta é sua.</span>
+        </div>
+      </div>
 
       <div v-if="previa" class="previa">
         <span>VET <strong class="numerico">{{ previa.totalCaloriasPrescritas }}</strong> kcal/dia</span>
@@ -549,6 +566,12 @@ const data = (iso: string) => new Date(iso + 'T12:00:00').toLocaleDateString('pt
 
 .cabecalho-macros { align-items: baseline; }
 .fonte-faixa { font-size: 12px; color: var(--text-muted); }
-.macros input.atencao { border-color: var(--warning); }
-.fora-faixa { margin-top: var(--xs); font-size: 13px; }
+.macros input.atencao { border: 2px solid var(--warning); background: var(--warning-bg); }
+.fora-faixa {
+  display: flex; gap: var(--sm); align-items: flex-start;
+  margin-top: var(--sm); font-size: 14px;
+  border-left: 4px solid var(--warning);
+}
+.fora-faixa ul { margin: var(--xs) 0; padding-left: 18px; }
+.icone-aviso { font-size: 22px; line-height: 1; color: var(--warning); }
 </style>
