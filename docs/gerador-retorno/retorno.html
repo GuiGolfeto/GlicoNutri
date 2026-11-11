@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>GlicoNutri · Retorno à resposta de desenvolvimento</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm 18mm; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, "Segoe UI", Inter, sans-serif; color: #1f2933; font-size: 10.5pt; line-height: 1.5; margin: 0; }
+  h1 { color: #00695C; font-size: 22pt; margin: 0 0 2mm; }
+  h2 { color: #00695C; font-size: 13pt; margin: 9mm 0 2mm; border-bottom: 1.5px solid #00897B; padding-bottom: 1mm; break-after: avoid; }
+  h3 { font-size: 11pt; margin: 5mm 0 1mm; break-after: avoid; }
+  p { margin: 1.5mm 0; }
+  .sub { color: #52606d; margin-bottom: 6mm; }
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0 3mm; break-inside: auto; }
+  th { text-align: left; font-size: 8.5pt; text-transform: uppercase; letter-spacing: .04em; color: #52606d; border-bottom: 1px solid #cbd2d9; padding: 1.5mm 2mm; }
+  td { border-bottom: 1px solid #e4e7eb; padding: 2mm; vertical-align: top; }
+  tr { break-inside: avoid; }
+  .feito { color: #1b7f3b; font-weight: 600; white-space: nowrap; }
+  .afazer { color: #b45309; font-weight: 600; white-space: nowrap; }
+  .div { color: #b42318; font-weight: 600; white-space: nowrap; }
+  .caixa { border-left: 4px solid #00897B; background: #f0faf8; padding: 3mm 4mm; margin: 3mm 0; break-inside: avoid; }
+  .alerta { border-left-color: #d97706; background: #fffbeb; }
+  code { font-size: 9pt; background: #f1f5f9; padding: 0 1mm; border-radius: 2px; }
+  .anexo { break-before: page; }
+  .anexo img { display: block; max-width: 100%; border: 1px solid #e4e7eb; margin: 2mm auto 5mm; }
+  .duas { display: flex; gap: 4mm; } .duas img { width: 49%; }
+</style>
+</head>
+<body>
+
+<h1>Retorno à resposta de desenvolvimento</h1>
+<p class="sub">Resposta ponto a ponto ao documento de 11/09/2026 · situação em 10/11/2026</p>
+
+<h2>1 · Resumo</h2>
+<table>
+  <tr><th>Assunto</th><th>Situação</th><th>Onde</th></tr>
+  <tr><td>Revisão da equação de Harris-Benedict</td><td class="feito">Implementado</td><td>Seção 2</td></tr>
+  <tr><td>Distribuição padrão de macronutrientes</td><td class="feito">Implementado</td><td>Seção 2</td></tr>
+  <tr><td>Índice glicêmico dos alimentos</td><td class="feito">Implementado</td><td>Seção 2</td></tr>
+  <tr><td>Conta de e-mail do sistema</td><td class="feito">Funcionando</td><td>Seção 3</td></tr>
+  <tr><td>Credencial do Google e OAuth</td><td class="feito">Funcionando</td><td>Seção 3</td></tr>
+  <tr><td>Docker na documentação</td><td class="feito">Feito</td><td>Seção 3</td></tr>
+  <tr><td>Onde o sistema será publicado</td><td class="feito">Decidido</td><td>Seção 3</td></tr>
+  <tr><td>Especificações do orientador (cinco questões)</td><td class="feito">4 feitas · 1 é documento</td><td>Seção 4</td></tr>
+  <tr><td>Campos dos casos de uso sem coluna no DER</td><td class="feito">Decidido</td><td>Seção 5</td></tr>
+  <tr><td>Favoritos e mídia no conteúdo educativo</td><td class="feito">Implementado</td><td>Seção 6</td></tr>
+  <tr><td>Ajustes nas telas</td><td class="feito">Feito</td><td>Seção 7</td></tr>
+  <tr><td>Logo do projeto</td><td class="feito">Aplicada</td><td>Seção 8</td></tr>
+  <tr><td>Páginas públicas</td><td class="feito">Reescritas</td><td>Seção 9</td></tr>
+  <tr><td>Tela de conteúdos e templates dos relatórios</td><td class="feito">Anexos</td><td>Anexos A a D</td></tr>
+</table>
+
+<h2>2 · Definições clínicas</h2>
+<p><strong>Equação energética.</strong> Harris-Benedict na revisão de Roza e Shizgal (1984) ou Mifflin-St Jeor. A escolha é do nutricionista a cada cálculo, e a fórmula usada fica gravada junto do resultado. O valor que vem marcado na tela é só sugestão e pode ser trocado.</p>
+<p><strong>Macronutrientes.</strong> As faixas são as da SBD para diabetes tipo 2: carboidratos de 45 a 60% (padrão 50), proteínas de 15 a 20% (padrão 20) e lipídios de 25 a 35% (padrão 30). Fora da faixa, a tela mostra um aviso em destaque, com cada macronutriente, o valor e a faixa esperada, mas não impede salvar: a conduta é do profissional. O caso de uso UC007 A2 ainda traz as faixas antigas e precisa ser corrigido no documento.</p>
+<p><strong>Índice glicêmico.</strong> A fonte são as <em>International Tables of Glycemic Index and Glycemic Load Values 2021</em> (Atkinson et al., Am J Clin Nutr 2021;114:1625–1632). 31 dos 597 alimentos da TACO receberam o valor. Só entraram os casos em que alimento e preparo batem com clareza: batata cozida, pães, leite, iogurte, açúcar, mel, frutas e sucos de laranja. Arroz, feijão, macarrão e mandioca ficaram sem valor, porque a tabela não tem uma entrada equivalente segura. O nutricionista pode informar o valor desses alimentos, e o sistema registra a origem. A conferência item a item está em <code>db/indice-glicemico/correspondencias.csv</code>.</p>
+
+<h2>3 · Acessos e infraestrutura</h2>
+<p><strong>E-mail.</strong> O envio funciona pela conta <code>gliconutrismtp@gmail.com</code>, com senha de aplicativo. A senha provisória dos cadastros e o link de redefinição chegam por e-mail.</p>
+<p><strong>Login com Google.</strong> Funcionando com a credencial que você criou. Só entra quem já foi cadastrado pela ADJ; qualquer outra conta Google recebe a mensagem de acesso negado. Enquanto o app do Google Cloud estiver em modo de teste, cada e-mail usado precisa estar na lista de usuários de teste.</p>
+<p><strong>Docker.</strong> Entrou na documentação técnica, nas tecnologias e no ambiente de desenvolvimento: o Postgres local sobe por Docker Compose com <code>./dev.sh up --local</code>. Também está no PDF do back-end, em "Containerização".</p>
+<p><strong>Publicação.</strong> Decidido em 09/11/2026: o sistema roda localmente, na máquina da apresentação. Isso elimina o risco de hibernação de hospedagem gratuita na hora da defesa. A RN31 (HTTPS) fica registrada como divergência. O redirecionamento para HTTPS e o HSTS já estão implementados e passam a valer se houver publicação.</p>
+
+<h2>4 · Especificações do professor orientador</h2>
+<p>Coluna de situação preenchida, como você pediu.</p>
+<table>
+  <tr><th style="width:6%">Nº</th><th style="width:20%">Tema</th><th>O que o sistema precisa ter · como está</th><th style="width:14%">Situação</th></tr>
+  <tr><td>1</td><td>Herança de usuários</td><td>Tabela única <code>usuarios</code> com atributo de perfil (TPH). O TPT saiu. O próprio <code>perfil_id</code> é o discriminador, para não ter duas colunas dizendo a mesma coisa. Os campos obrigatórios de cada perfil viraram restrições CHECK condicionadas ao perfil.</td><td class="feito">[x] feito</td></tr>
+  <tr><td>2</td><td>Dados clínicos calculados</td><td>A tabela <code>resumo_clinico_paciente</code> deixou de existir como tabela física. O painel continua lendo o mesmo nome, mas agora é uma <strong>VIEW</strong>, calculada na hora da leitura a partir das tabelas de glicemia e antropometria. Ver a observação abaixo.</td><td class="div">[x] feito (view)</td></tr>
+  <tr><td>3</td><td>Ciclo de alertas e RN27</td><td>O disparo nasce PENDENTE na API e é reenviado até haver registro ou desativação. Depois de 2 horas sem resposta, expira como falha (RN35). Cada tentativa fica registrada em <code>historico_alertas</code>. O ciclo inteiro está na API, então qualquer cliente que a consuma segue o mesmo fluxo.</td><td class="feito">[x] feito</td></tr>
+  <tr><td>4</td><td>Diagrama de Casos de Uso</td><td>Retirar "Validar Token JWT" e "Registrar Tentativa de Envio". É uma mudança de documento, com o Ramon. No sistema, os dois já são requisitos técnicos, não casos de uso: o JWT é validado pelo framework e as tentativas são gravadas automaticamente. Não há nada a mudar no código.</td><td class="afazer">[ ] a fazer (doc.)</td></tr>
+  <tr><td>5</td><td>GeradorRelatorio</td><td>Não é entidade de domínio: virou a camada de serviço <code>RelatorioService</code>, que monta os três relatórios em PDF (glicêmico, antropométrico e completo) a partir dos dados do paciente. Os templates estão nos anexos B a D.</td><td class="feito">[x] feito</td></tr>
+</table>
+
+<div class="caixa alerta">
+  <strong>Questão 2: a resposta ao orientador fala em trigger, e a implementação é uma view.</strong>
+  <p>Uma trigger continuaria gravando a média e o último IMC numa tabela, ou seja, continuaria guardando dado calculado, que é justamente a violação da 3FN apontada pelo orientador. Só mudaria quem atualiza a tabela. A view não guarda nada: calcula na leitura, então nunca existe versão desatualizada. Ela resolve o problema que a sua resposta descreve ("não se atualizam sozinhos, gerando dados incoerentes") de forma mais completa.</p>
+  <p><strong>Sugestão:</strong> avisar o orientador antes da defesa. Por exemplo: "na implementação, optamos por uma view no lugar da trigger, porque a trigger ainda armazenaria dado derivado; a view calcula sempre a partir da fonte".</p>
+</div>
+
+<h2>5 · Divergências na documentação</h2>
+<p><strong>Campos dos casos de uso sem coluna no DER.</strong> Vale o DER, como você decidiu. O que muda em cada caso de uso:</p>
+<table>
+  <tr><th>Caso de uso</th><th>Trecho atual</th><th>Correção</th></tr>
+  <tr><td>UC002, passo 5</td><td>"preenche o contato e endereço"</td><td>"preenche o telefone de contato" (o DER não tem endereço)</td></tr>
+  <tr><td>UC003, passo 2</td><td>"Nome completo, CPF, Data de Nascimento, Sexo"</td><td>"Nome completo, CRN, especialidade e telefone"</td></tr>
+  <tr><td>UC003, fluxo A1</td><td>Validar CPF</td><td>Remover. A validação passa a ser a unicidade do CRN</td></tr>
+  <tr><td>UC008, passo 7</td><td>"adiciona observações clínicas opcionais"</td><td>Remover (o DER não tem esse campo)</td></tr>
+</table>
+<p>Antes de editar, vale conferir se algum desses campos foi esquecido na modelagem. Se algum precisar existir, o caminho é o contrário: ele entra no DER e no sistema.</p>
+<p><strong>Enumerações.</strong> São tabelas de cadastro, com índice único sobre a descrição normalizada: "Glicose", "glicose" e "GLICOSE" não convivem. <strong>Pré-diabetes</strong> entrou como opção no cadastro do paciente. <strong>Registro antropométrico:</strong> só o nutricionista registra; o paciente apenas visualiza.</p>
+
+<h2>6 · Pendências em aberto</h2>
+<p><strong>Favoritos.</strong> Implementados para conteúdos e receitas. Como você lembrou, o DER definitivo ainda precisa receber as duas tabelas de favoritos e a mudança para TPH, para a divergência não aparecer na banca.</p>
+<p><strong>Mídia no conteúdo educativo.</strong> Fomos pela opção 2, links externos: o conteúdo aceita link de vídeo ou matéria, sem infraestrutura de armazenamento nova. Os seis alimentos da TACO sem macronutrientes continuam sinalizados como lacuna, sem virar zero.</p>
+
+<h2>7 · Retorno sobre as telas</h2>
+<table>
+  <tr><th>Tela</th><th>O que foi feito</th></tr>
+  <tr><td>Login</td><td>Refeita em duas colunas: um painel de apresentação à esquerda e o formulário à direita, com login por senha e por Google.</td></tr>
+  <tr><td>Recuperar acesso</td><td>O botão "Voltar ao login" não sobrepõe mais o envio. O mesmo defeito existia na tela de definir nova senha, e foi corrigido lá também.</td></tr>
+  <tr><td>Novo paciente</td><td>Formulário centralizado.</td></tr>
+  <tr><td>Acompanhamento do paciente</td><td>Botões "remover" padronizados em minúscula. A tabela de dados antropométricos não sai mais do cartão: o peso não quebra linha e a coluna remover fica visível. O histórico de necessidade energética, que tinha o mesmo problema, também foi ajustado. Ver o anexo E.</td></tr>
+</table>
+<p><strong>Área do paciente na web:</strong> ela fica, não é só etapa de teste. Ela também ganhou o mesmo alerta de hipo e hiperglicemia ao registrar uma medição. O texto orienta seguir a conduta da equipe de saúde e procurar atendimento, sem prescrever nada. <strong>Esse texto precisa da sua revisão clínica.</strong></p>
+<p>O painel e a aba de acompanhamento mantiveram o mesmo visual depois da troca da tabela de resumo pela view.</p>
+
+<h2>8 · Identidade visual</h2>
+<p>A gota com check, na cor #00897B, está aplicada nas telas do sistema, nas páginas públicas, no cabeçalho dos relatórios clínicos em PDF e no favicon.</p>
+
+<h2>9 · Páginas públicas</h2>
+<p>O conteúdo foi reescrito para refletir só o que o sistema faz. Saíram a análise preditiva, a sugestão de ajuste de insulina, a contagem por índice e carga glicêmica, a integração hospitalar, a sincronização e o backup automático, a menção ao CFM, os botões das lojas e os números inflados. Os botões levam a um pedido de demonstração, não a um cadastro. A logo foi corrigida no cabeçalho e no rodapé, as imagens de outros sistemas foram trocadas por capturas reais do GlicoNutri (com dados fictícios) e o rodapé com Preços foi mantido.</p>
+
+<h2>O que depende de você</h2>
+<div class="caixa">
+  <p>1. Revisão clínica do texto do alerta de hipo e hiperglicemia (seção 7).</p>
+  <p>2. Corrigir os casos de uso: UC002, UC003, UC008 (seção 5) e as faixas do UC007 A2 (seção 2).</p>
+  <p>3. Atualizar o DER com as tabelas de favoritos e a herança TPH (seção 6).</p>
+  <p>4. Corrigir o diagrama de casos de uso com o Ramon (questão 4).</p>
+  <p>5. Avisar o orientador sobre a view no lugar da trigger (questão 2).</p>
+</div>
+
+<div class="anexo">
+  <h2>Anexo A · Tela de conteúdos do repositório educativo</h2>
+  <img src="anexos/conteudos.png" alt="Repositório educativo, aba Conteúdos">
+  <h2>Anexo E · Dados antropométricos depois do ajuste</h2>
+  <img src="anexos/antropo3.png" alt="Painel de dados antropométricos" style="max-width:60%">
+</div>
+<div class="anexo">
+  <h2>Anexos B a D · Templates dos relatórios clínicos</h2>
+  <p>Gerados pelo sistema para a paciente de demonstração. Da esquerda para a direita: glicêmico e antropométrico.</p>
+  <div class="duas"><img src="anexos/rel-glicemico.png" alt="Relatório glicêmico"><img src="anexos/rel-antropometrico.png" alt="Relatório antropométrico"></div>
+</div>
+<div class="anexo">
+  <h2>Anexo D · Relatório completo</h2>
+  <img src="anexos/rel-completo.png" alt="Relatório completo" style="max-width:80%">
+</div>
+
+</body>
+</html>
