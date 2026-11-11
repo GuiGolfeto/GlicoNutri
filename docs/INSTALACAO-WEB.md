@@ -107,6 +107,28 @@ dotnet user-secrets set "ConnectionStrings:Supabase" "COLE_AQUI_A_CONNECTION_STR
 Mantenha as aspas. Se a senha tiver `;` ou `"`, troque por uma sem esses
 caracteres: eles quebram a connection string.
 
+### 3.3 Chaves de criptografia e e-mail
+
+O CPF, o telefone e as observações clínicas ficam cifrados no banco (RNF01).
+Sem as chaves a API nem sobe, e elas precisam ser **as mesmas** usadas pelo
+desenvolvedor: com outras, os dados já gravados não podem ser lidos. Peça os
+valores a ele por um canal privado — nunca por e-mail aberto, nunca no repositório.
+
+```bash
+dotnet user-secrets set "Criptografia:Chave"     "VALOR_RECEBIDO"
+dotnet user-secrets set "Criptografia:ChaveHash" "VALOR_RECEBIDO"
+
+dotnet user-secrets set "Email:Habilitado" "true"
+dotnet user-secrets set "Email:Host"       "smtp.gmail.com"
+dotnet user-secrets set "Email:Porta"      "587"
+dotnet user-secrets set "Email:Usuario"    "gliconutrismtp@gmail.com"
+dotnet user-secrets set "Email:Remetente"  "gliconutrismtp@gmail.com"
+dotnet user-secrets set "Email:Senha"      "SENHA_DE_APLICATIVO"
+```
+
+Sem o bloco de e-mail o sistema funciona, mas as senhas provisórias só
+aparecem no log da API.
+
 ---
 
 ## 4. Atualizar o banco
@@ -225,6 +247,8 @@ novo.
 |---|---|---|
 | `tenant/user ... not found` | O Supabase pausou por falta de uso | Reative o projeto no painel do Supabase e espere um ou dois minutos. A credencial está certa |
 | `Connection string 'Supabase' não configurada` | O passo 3.2 não foi feito, ou foi feito em outra pasta | Rode o `user-secrets set` dentro de `backend/GlicoNutri.Api` |
+| `CriptografiaOptions` ... `Chave` / `ChaveHash` | O passo 3.3 não foi feito | Configure as duas chaves com os valores recebidos do desenvolvedor |
+| `The computed authentication tag did not match` | As chaves são diferentes das usadas para cifrar | Confira se copiou as duas chaves exatamente como recebidas |
 | `password authentication failed` | Senha ou usuário errado na connection string | Confira o `postgres.SEU_REF` e a senha do banco, e rode o 3.2 de novo |
 | `No such host is known` / `Name or service not known` | Host errado, ou a conexão direta em vez do pooler | Use o host do **Session pooler** |
 | Fica parado conectando e dá timeout | A rede bloqueia a porta 5432 (comum em redes de faculdade e empresa) | Teste em outra rede, como o roteador do celular |
