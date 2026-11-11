@@ -209,7 +209,7 @@ const data = (iso: string) => new Date(iso).toLocaleDateString('pt-BR')
             <span v-else class="primeiro">primeira</span>
           </td>
           <td class="acao">
-            <button class="remover" @click="remover(r)">Remover</button>
+            <button class="remover" @click="remover(r)">remover</button>
           </td>
         </tr>
       </tbody>
@@ -218,6 +218,12 @@ const data = (iso: string) => new Date(iso).toLocaleDateString('pt-BR')
 </template>
 
 <style scoped>
+/* O painel ocupa meia largura: com o espaçamento padrão da tabela, a última
+   coluna saía do cartão e o peso quebrava em duas linhas. */
+.tabela th, .tabela td { padding-inline: var(--xs); }
+.tabela td { font-size: 14px; }
+.tabela td:nth-child(2) { white-space: nowrap; }
+
 .topo { margin-bottom: var(--md); }
 .card h3 { font-size: 15px; color: var(--text-secondary); }
 .btn.pequeno { padding: 6px 14px; font-size: 14px; }

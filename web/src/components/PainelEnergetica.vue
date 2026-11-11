@@ -196,6 +196,11 @@ const sinal = (v: number | null) => (v === null ? '' : v > 0 ? `+${v}` : `${v}`)
 </template>
 
 <style scoped>
+/* O painel ocupa meia largura: com o espaçamento padrão da tabela, a última
+   coluna saía do cartão e o peso quebrava em duas linhas. */
+.tabela th, .tabela td { padding-inline: var(--xs); }
+.tabela td { font-size: 14px; }
+
 .card h3 { font-size: 15px; color: var(--text-secondary); margin-bottom: var(--md); }
 .btn.pequeno { padding: 6px 14px; font-size: 14px; }
 .rotulo { font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-muted); }
