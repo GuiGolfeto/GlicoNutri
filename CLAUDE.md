@@ -29,7 +29,7 @@ backend/GlicoNutri.Tests   xUnit · 142 testes
 web                        Vue 3 + TypeScript · 3 páginas públicas + o sistema
 db/taco                    Tabela TACO 4ª edição em CSV, 597 alimentos
 db/fixtures                Amostra para testar o importador (NÃO é a tabela oficial)
-docs                       Dois PDFs e seus geradores
+docs                       Três PDFs (back-end, relatório, roteiro de gravação) e seus geradores
 dev.sh                     Sobe, derruba e testa
 ```
 

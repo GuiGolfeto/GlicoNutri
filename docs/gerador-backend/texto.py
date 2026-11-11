@@ -213,6 +213,16 @@ SEGURANCA = {
          "audiência. Não cria conta: e-mail sem usuário ativo recebe mensagem informativa e acesso "
          "negado. O bloqueio por tentativas vale igualmente por essa via, para que trocar de forma "
          "de entrada não seja atalho."),
+        ("Criptografia por coluna",
+         "CPF, telefone, observações clínicas e medicação em uso são cifrados pela própria API antes "
+         "de gravar, com AES-256-GCM e nonce aleatório — além da criptografia de disco do Supabase. "
+         "Como a cifra muda a cada gravação, o CPF ganha uma segunda coluna com hash HMAC-SHA256, "
+         "determinístico e irreversível, que carrega o índice único e a busca por duplicidade. Nome, "
+         "glicemias e plano ficam sem cifra por coluna: cifrá-los quebraria busca, ordenação e as "
+         "agregações do painel. Requisito não funcional 01."),
+        ("Cabeçalhos de resposta",
+         "Toda resposta sai com X-Content-Type-Options, X-Frame-Options e Referrer-Policy, contra "
+         "interpretação indevida de conteúdo, embutimento em outra página e vazamento de endereço."),
         ("Segredos fora do repositório",
          "Connection string, chave de assinatura, credenciais de e-mail e identificador do Google "
          "ficam no armazenamento de segredos do .NET. O repositório traz apenas o arquivo de exemplo."),
@@ -307,8 +317,10 @@ TACO = {
          "com o número da linha, o conteúdo e o motivo, exibido na tela ao final."),
     ],
     "limites": [
-        ("Índice glicêmico", "A tabela não publica o dado em nenhum dos 597 alimentos. O campo existe "
-         "na modelagem e fica vazio nos importados."),
+        ("Índice glicêmico", "A tabela não publica o dado. 31 dos 597 alimentos receberam o valor das "
+         "International Tables of Glycemic Index and Glycemic Load Values 2021, só onde alimento e "
+         "preparo correspondem com clareza; arroz, feijão, macarrão e mandioca ficaram sem "
+         "correspondência segura. A auditoria item a item está em db/indice-glicemico."),
         ("Seis alimentos sem macronutrientes", "Leite de vaca integral e desnatado líquidos, sal "
          "grosso, sal dietético, coco verde e iogurte de abacaxi trazem valor não determinado em "
          "energia, proteína, lipídeos e carboidrato."),
@@ -390,19 +402,15 @@ DIVIDA = {
         ("Campos previstos nos casos de uso", "Exige colunas novas",
          "CPF, data de nascimento e sexo do nutricionista; endereço do paciente; observações no "
          "registro antropométrico; nome do plano alimentar, hoje gravado no campo de objetivo."),
-        ("Criptografia por coluna", "Depende de interpretação do requisito",
-         "O critério do requisito não funcional 01 pede dados de saúde criptografados no banco. O "
-         "Supabase criptografa em repouso no nível de disco. Criptografia por coluna quebraria busca, "
-         "ordenação e as agregações do painel."),
         ("Publicação com HTTPS", "Depende de decisão de hospedagem",
          "A regra 31 exige comunicação criptografada. O redirecionamento e o cabeçalho de segurança já "
          "são aplicados fora do ambiente de desenvolvimento; falta definir onde publicar. Como a API "
          "roda em container, a hospedagem precisa aceitar imagem Docker — critério que descarta "
          "plataformas restritas a aplicações estáticas ou a funções em JavaScript."),
-        ("Índice glicêmico sem valores", "Depende da tabela de referência",
-         "O alimento já guarda o índice e a origem do número, e o nutricionista pode informar o valor. "
-         "A carga a partir das tabelas internacionais de 2021 ainda não foi feita, então os alimentos "
-         "importados da tabela nutricional brasileira seguem sem o dado."),
+        ("Índice glicêmico parcial", "Limite da fonte",
+         "31 dos 597 alimentos têm o valor da tabela internacional de 2021. O restante não tem "
+         "correspondência segura nela — não é carga pendente, é dado que a fonte não cobre. O "
+         "nutricionista pode informar o valor, e a origem fica registrada."),
         ("Conta de e-mail sem senha de aplicativo", "Depende de credencial",
          "A conta de envio existe e o serviço de SMTP está implementado. O Google recusa a senha comum "
          "da conta em conexões SMTP: é preciso gerar uma senha de aplicativo, com a verificação em "
