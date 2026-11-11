@@ -105,8 +105,7 @@ TECNOLOGIAS = {
          "conforme a regra de negócio 01."),
         ("Containerização", "Docker · Docker Compose", "O Postgres de desenvolvimento sobe em "
          "container, o que dispensa instalar banco na máquina de quem for trabalhar no projeto. A "
-         "API também é publicada como imagem: é a containerização que define quais hospedagens "
-         "gratuitas conseguem receber o sistema."),
+         "API também pode ser empacotada como imagem, o que deixa aberta uma publicação futura."),
         ("Testes", "xUnit · Microsoft.AspNetCore.Mvc.Testing", "Testes unitários e de integração, "
          "estes últimos subindo a aplicação inteira contra um banco descartável."),
     ],
@@ -402,19 +401,15 @@ DIVIDA = {
         ("Campos previstos nos casos de uso", "Exige colunas novas",
          "CPF, data de nascimento e sexo do nutricionista; endereço do paciente; observações no "
          "registro antropométrico; nome do plano alimentar, hoje gravado no campo de objetivo."),
-        ("Publicação com HTTPS", "Depende de decisão de hospedagem",
-         "A regra 31 exige comunicação criptografada. O redirecionamento e o cabeçalho de segurança já "
-         "são aplicados fora do ambiente de desenvolvimento; falta definir onde publicar. Como a API "
-         "roda em container, a hospedagem precisa aceitar imagem Docker — critério que descarta "
-         "plataformas restritas a aplicações estáticas ou a funções em JavaScript."),
+        ("Sem publicação", "Decidido em 09/11/2026",
+         "O sistema roda só localmente, na máquina de quem o apresenta. A regra 31, que exige "
+         "comunicação criptografada, fica como divergência registrada: o redirecionamento para HTTPS e "
+         "o cabeçalho HSTS já são aplicados fora do ambiente de desenvolvimento, e passam a valer no "
+         "dia em que houver publicação. Os links dos e-mails apontam para o endereço local."),
         ("Índice glicêmico parcial", "Limite da fonte",
          "31 dos 597 alimentos têm o valor da tabela internacional de 2021. O restante não tem "
          "correspondência segura nela — não é carga pendente, é dado que a fonte não cobre. O "
          "nutricionista pode informar o valor, e a origem fica registrada."),
-        ("Conta de e-mail sem senha de aplicativo", "Depende de credencial",
-         "A conta de envio existe e o serviço de SMTP está implementado. O Google recusa a senha comum "
-         "da conta em conexões SMTP: é preciso gerar uma senha de aplicativo, com a verificação em "
-         "duas etapas ativa."),
         ("Conexão em modo transação", "Ajuste na string de conexão",
          "O acesso ao Supabase usa o modo sessão, exigido pelas migrations. Para produção, o modo "
          "transação é mais eficiente, mas precisa desabilitar prepared statements na string."),
