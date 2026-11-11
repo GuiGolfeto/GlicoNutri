@@ -35,10 +35,10 @@ npm run dev
 Abra `http://localhost:5173` no navegador. Se o Supabase estiver pausado por
 inatividade, reative pelo painel.
 
-**Senhas provisórias.** O envio de e-mail ainda não está configurado: falta a
-senha de aplicativo do Gmail (ver a seção 9). Quando você cadastrar um
-nutricionista ou um paciente, **a senha provisória não chega por e-mail**: ela
-aparece no terminal da API, ou em `./dev.sh logs api` se você subiu pelo script.
+**Senhas provisórias.** Ao cadastrar um nutricionista ou um paciente, a senha
+provisória chega por e-mail, enviado por `gliconutrismtp@gmail.com`. Use um
+e-mail que você consiga abrir; o link de redefinição só funciona no computador
+que roda o sistema.
 
 **Login inicial do administrador:** `admin@gliconutri.local` / `GlicoNutri@2026`
 
@@ -326,15 +326,14 @@ implementar, porque os documentos não dizem como devem ser:
 4. **Os campos das telas** batem com o que você espera? Onde um caso de uso pede
    um campo que não existe no DER, o sistema seguiu o DER e o campo não existe.
 
-O que ainda não dá para testar, porque depende de algo seu:
+Tudo o que o sistema faz já pode ser testado. Duas observações:
 
-- **E-mail** (senha provisória, recuperação de senha): falta a senha de
-  aplicativo do Gmail `gliconutrisuporte@gmail.com`. Ative a verificação em duas
-  etapas e gere a senha em Conta Google → Segurança → Senhas de app. Quando
-  funcionar, o link do e-mail só abre no computador que roda o sistema.
-- **Entrar com Google**: falta o ClientId do Google Cloud Console.
-- **Índice glicêmico dos alimentos**: a estrutura existe, mas os valores ainda
-  não foram carregados.
+- **Entrar com Google**: só funciona para e-mails já cadastrados, e, enquanto o
+  app do Google Cloud estiver em modo de teste, o e-mail também precisa estar na
+  lista de usuários de teste.
+- **Índice glicêmico**: 31 dos 597 alimentos da TACO têm o valor (por exemplo,
+  batata cozida, pão francês, banana). Os demais ficam sem valor, e o
+  nutricionista pode informar.
 
 ---
 

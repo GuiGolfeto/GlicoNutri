@@ -266,8 +266,8 @@ CALCULOS = {
         ("Distribuição de macronutrientes",
          "gramas = VET × percentual ÷ fator calórico",
          "Fatores de Atwater: 4 quilocalorias por grama de carboidrato e de proteína, 9 por grama de "
-         "lipídio. A distribuição padrão é 55, 20 e 25 por cento, que fica dentro das faixas do caso "
-         "de uso 007 e soma exatamente cem."),
+         "lipídio. O padrão é 50, 20 e 30 por cento, no centro das faixas da Sociedade Brasileira de "
+         "Diabetes para o tipo 2 (45–60, 15–20 e 25–35), que substituíram as do caso de uso 007."),
         ("Contribuição de um item do plano",
          "valor = valor por 100 g × quantidade ÷ 100",
          "A quantidade é registrada em gramas. Valor ausente na base não vira zero: a soma o ignora "
@@ -398,9 +398,10 @@ DEFEITOS = {
 DIVIDA = {
     "intro": "O que ficou pendente, com o custo de cada item. Nada aqui impede o sistema de funcionar.",
     "itens": [
-        ("Campos previstos nos casos de uso", "Exige colunas novas",
+        ("Campos previstos nos casos de uso", "Ajuste no documento",
          "CPF, data de nascimento e sexo do nutricionista; endereço do paciente; observações no "
-         "registro antropométrico; nome do plano alimentar, hoje gravado no campo de objetivo."),
+         "registro antropométrico. Vale o modelo de dados: são os casos de uso que mudam, "
+         "conforme a lista em docs/AJUSTES-CASOS-DE-USO.md."),
         ("Sem publicação", "Decidido em 09/11/2026",
          "O sistema roda só localmente, na máquina de quem o apresenta. A regra 31, que exige "
          "comunicação criptografada, fica como divergência registrada: o redirecionamento para HTTPS e "

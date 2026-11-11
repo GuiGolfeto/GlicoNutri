@@ -299,17 +299,14 @@
   </ul>
 
   <div class="caixa atencao">
-    <h3>Três coisas que não vão funcionar — e como falar delas</h3>
+    <h3>Antes de gravar</h3>
     <ul style="margin-bottom:0">
-      <li><strong>E-mail não sai.</strong> A conta existe, mas o Gmail exige senha de
-        aplicativo, que ainda não foi gerada. A senha provisória aparece no log da API.
-        Mostre o log: é honesto e ainda demonstra a regra de troca obrigatória.</li>
-      <li><strong>Botão do Google não aparece.</strong> Falta o identificador de
-        cliente no Google Cloud Console. Mencione que o login federado está
-        implementado dos dois lados e aguarda a credencial.</li>
-      <li><strong>Índice glicêmico vazio</strong> nos alimentos da TACO. A coluna e a
-        origem do valor existem; a carga a partir das tabelas internacionais de 2021
-        ainda não foi feita. Diga isso quando abrir o banco de alimentos.</li>
+      <li><strong>E-mail.</strong> Cadastre com um e-mail que você abre: a senha provisória
+        chega por lá. Deixe a caixa de entrada aberta numa aba.</li>
+      <li><strong>Botão do Google.</strong> Só entra quem já está cadastrado e na lista de
+        usuários de teste do Google Cloud. Teste uma vez antes de gravar.</li>
+      <li><strong>Índice glicêmico.</strong> Só 31 alimentos têm o valor. Para mostrar, busque
+        "batata, inglesa, cozida" ou "pão, trigo, francês".</li>
     </ul>
   </div>
 
@@ -476,9 +473,8 @@
         senha: o sistema gera uma provisória e envia por e-mail.
       </p>
       <p class="fala">
-        Neste ambiente o envio ainda não está ligado — a conta de e-mail já existe, mas
-        falta a senha de aplicativo que o Google exige. Enquanto isso, a senha provisória
-        fica registrada no log da aplicação, que é o que estou mostrando aqui.
+        O e-mail chega em segundos, com a senha provisória e o endereço do sistema —
+        é o que estou abrindo aqui.
       </p>
       <p class="fala">
         E aqui está a regra: com a senha provisória, a única tela que abre é a de troca.
@@ -864,10 +860,10 @@
         clínicas aplicadas tanto na aplicação quanto no banco.
       </p>
       <p class="fala">
-        O que ainda está em andamento: o aplicativo em Flutter, a carga dos valores de
-        índice glicêmico a partir das tabelas internacionais, e a publicação com HTTPS,
-        que depende de definir a hospedagem. O envio de e-mail e o login com Google estão
-        implementados e aguardando credencial.
+        O que ainda está em andamento: o aplicativo em Flutter. O índice glicêmico vem
+        das tabelas internacionais de 2021, nos alimentos com correspondência segura, e
+        os dados sensíveis do paciente são cifrados pela própria aplicação. O sistema
+        roda localmente; a publicação com HTTPS fica para quando houver hospedagem.
       </p>
       <p class="fala">
         A base está pronta para receber essas peças sem reescrita.

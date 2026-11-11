@@ -25,39 +25,36 @@ SITUACAO = {
         "Os 597 alimentos da tabela TACO importados e disponíveis para os planos",
     ],
     "decisoes": [
-        ("Qual equação de Harris-Benedict",
-         "O sistema usa a revisão de Roza e Shizgal, de 1984, que é a mais precisa e a de uso "
-         "corrente. A equação original, de 1919, ainda é ensinada em parte dos cursos e produz "
-         "resultado diferente em algumas dezenas de quilocalorias por dia. A escolha muda a "
-         "prescrição de todos os pacientes e precisa ser validada pela equipe de Nutrição, como o "
-         "próprio projeto de pesquisa prevê. Trocar são quatro coeficientes."),
-        ("Distribuição padrão de macronutrientes",
-         "O caso de uso define faixas — carboidratos de 50 a 60%, proteínas de 15 a 20% e "
-         "lipídios de 25 a 30% — mas não um valor. O sistema parte de 55, 20 e 25, que fica dentro "
-         "das três e soma exatamente 100%. Vale confirmar se é o padrão que a ADJ adota."),
+        ("Equação de gasto energético",
+         "Harris-Benedict na revisão de Roza e Shizgal (1984) ou Mifflin-St Jeor: a escolha é do "
+         "nutricionista, em cada cálculo, e a fórmula usada fica registrada junto do resultado."),
+        ("Distribuição de macronutrientes",
+         "Faixas da Sociedade Brasileira de Diabetes para o tipo 2: carboidratos 45 a 60% (padrão "
+         "50), proteínas 15 a 20% (padrão 20) e lipídios 25 a 35% (padrão 30). A tela avisa, em "
+         "destaque, quando a distribuição sai da faixa, mas não bloqueia: a conduta é do profissional."),
         ("Índice glicêmico dos alimentos",
-         "A tabela TACO não publica esse dado em nenhum dos 597 alimentos. Num sistema de apoio ao "
-         "diabetes é a informação mais relevante clinicamente. Precisa vir de outra fonte, como a "
-         "tabela internacional de Sydney, ou do preenchimento pelo nutricionista."),
-        ("Conta de e-mail para o sistema",
-         "O envio está implementado e é ativado ao configurar as credenciais. Sem ele, as senhas "
-         "provisórias dos cadastros só aparecem no log da aplicação, o que inviabiliza cadastrar "
-         "usuários de verdade."),
-        ("Credencial do Google",
-         "O login com conta Google, exigido pela regra de negócio 01 e desenhado no diagrama de "
-         "contexto, está implementado nos dois lados. Falta criar a credencial no Google Cloud "
-         "Console para ativá-lo."),
-        ("Onde o sistema será publicado",
-         "Hoje ele roda em ambiente de desenvolvimento. A regra de negócio 31 exige comunicação "
-         "criptografada, o que depende de definir a hospedagem. É preciso saber se a defesa será "
-         "com o sistema no ar ou com demonstração local."),
+         "Fonte: International Tables of Glycemic Index and Glycemic Load Values 2021. 31 dos 597 "
+         "alimentos da TACO receberam o valor, só onde alimento e preparo correspondem com clareza; "
+         "o restante fica para o nutricionista informar, com a origem registrada."),
+        ("Conta de e-mail do sistema",
+         "O envio sai pelo Gmail, com senha de aplicativo. Senhas provisórias e links de "
+         "redefinição chegam por e-mail, apontando para o endereço local."),
+        ("Login com Google",
+         "Credencial criada no Google Cloud Console e ativa. Só entra quem já foi cadastrado pela ADJ."),
+        ("Publicação",
+         "O sistema roda localmente, na máquina da apresentação. A exigência de HTTPS (regra 31) "
+         "fica registrada como divergência e passa a valer se houver publicação."),
+        ("Proteção dos dados de saúde",
+         "Além da criptografia de disco do banco, CPF, telefone, observações clínicas e medicação em "
+         "uso são cifrados pela própria aplicação. Os demais dados não, para não quebrar busca, "
+         "ordenação e os gráficos do painel."),
     ],
     "divergencias": [
         ("Campos previstos nos casos de uso sem coluna no modelo de dados",
          "Os casos de uso mencionam CPF, data de nascimento e sexo do nutricionista, endereço do "
          "paciente, observações no registro antropométrico e um nome para o plano alimentar. O "
          "diagrama entidade-relacionamento não define colunas para esses dados. O sistema seguiu a "
-         "modelagem, e esses campos não aparecem nas telas."),
+         "modelagem, como decidido; o que ajustar em cada caso de uso está listado à parte."),
         ("Enumerações como tabela ou como tipo do banco",
          "O diagrama de classes, versão 5.0, converteu as enumerações em entidades com cadastro "
          "próprio; o diagrama entidade-relacionamento, versão 2.0, as mantém como tipos do banco. "
@@ -167,7 +164,7 @@ SECOES = [
              "Permanece disponível mesmo com a conta bloqueada, e concluí-la libera o acesso."),
             ("Login federado com Google", "Implementado. O acesso só é concedido se o e-mail da conta "
              "Google corresponder a um usuário previamente cadastrado e ativo; o bloqueio por tentativas "
-             "vale igualmente por essa via. Depende de credencial no Google Cloud Console para ser ativado."),
+             "vale igualmente por essa via."),
             ("Controle de acesso por perfil", "Paciente, Nutricionista e Administrador. A verificação "
              "acontece na API, e a interface espelha as mesmas regras para não oferecer o que seria recusado."),
         ],

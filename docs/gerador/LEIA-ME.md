@@ -1,6 +1,6 @@
 # Gerador do documento de funcionalidades
 
-Produz `docs/GlicoNutri-Funcionalidades.pdf` a partir do sistema em execução:
+Produz `docs/GlicoNutri-Relatorio-Desenvolvimento.pdf` a partir do sistema em execução:
 as telas são capturadas do próprio Chrome, e o documento é impresso por ele.
 
 ## Como regerar

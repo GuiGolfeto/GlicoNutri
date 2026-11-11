@@ -14,7 +14,7 @@ construir o sistema.
 ./dev.sh status
 ./dev.sh logs api    # senhas provisórias aparecem aqui
 ./dev.sh down
-./dev.sh test        # 142 testes
+./dev.sh test        # 144 testes
 ```
 
 Login inicial: `admin@gliconutri.local` / `GlicoNutri@2026`.
@@ -25,7 +25,7 @@ autocadastro (RN08 e RN09).
 
 ```
 backend/GlicoNutri.Api     C# / ASP.NET (.NET 10) · 16 controllers · 25 services
-backend/GlicoNutri.Tests   xUnit · 142 testes
+backend/GlicoNutri.Tests   xUnit · 144 testes
 web                        Vue 3 + TypeScript · 3 páginas públicas + o sistema
 db/taco                    Tabela TACO 4ª edição em CSV, 597 alimentos
 db/fixtures                Amostra para testar o importador (NÃO é a tabela oficial)
@@ -96,8 +96,8 @@ documento.
    existirem dois lugares dizendo qual é o padrão.
 3. **Índice glicêmico**: a fonte padrão são as *International Tables of Glycemic
    Index and Glycemic Load Values 2021*. O alimento guarda **a origem** do
-   número — tabela internacional ou informado pelo nutricionista. Os valores em
-   si ainda não foram carregados.
+   número — tabela internacional ou informado pelo nutricionista. 31 dos 597
+   alimentos da TACO receberam o valor em 10/11/2026 (ver Limites conhecidos).
 
 ## Divergências entre os documentos
 

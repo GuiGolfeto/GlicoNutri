@@ -776,10 +776,9 @@ ficam registradas em vez de silenciadas.
 | Item | Custo | Situação |
 |---|---|---|
 | **Valores de índice glicêmico** | Carga parcial | 31 dos 597 alimentos da TACO têm o valor, carregado em 10/11/2026 (seção 5.6). O restante não tem correspondência segura na tabela internacional — não é dado que falte carregar, é dado que a fonte não cobre |
-| **SMTP** | Credencial | A conta de envio existe. O Google recusa a senha comum da conta em SMTP: é preciso **senha de aplicativo**, com verificação em duas etapas ativa |
-| **Publicação com HTTPS (RN31)** | Decisão | Redirecionamento e HSTS já são aplicados fora do desenvolvimento; falta decidir onde publicar. A hospedagem precisa aceitar imagem Docker |
+| **Sem publicação (RN31)** | Decidido em 09/11/2026 | O sistema roda só localmente; a RN31 fica como divergência. Redirecionamento e HSTS já valem fora do desenvolvimento, para o dia em que houver publicação |
 | **Criptografia por coluna (RNF01)** | Feito em 10/11/2026 | CPF, telefone, observações clínicas e medicação em uso cifrados (seção 4.8). O resto segue só com a criptografia de disco do Supabase — cifrar quebraria busca, ordenação e as agregações do painel |
-| **Campos previstos nos casos de uso** | Colunas novas | CPF, nascimento e sexo do nutricionista; endereço do paciente; observações no registro antropométrico |
+| **Campos previstos nos casos de uso** | Ajuste no documento | Vale o DER (decisão de 10/11/2026); o que mudar em cada caso de uso está em `docs/AJUSTES-CASOS-DE-USO.md` |
 | **Cadastro das tabelas de referência** | Telas novas | As tabelas aceitam cadastro e o banco já recusa duplicata, mas não há tela nem endpoint de escrita — elas só nascem por seed |
 | **Cobertura de testes de serviço** | Ampliação | Repositório educativo e relatórios não têm teste automatizado próprio |
 | **Modo transação no Supabase** | Ajuste de string | Usa modo sessão, exigido pelas migrations |
@@ -792,13 +791,8 @@ ficam registradas em vez de silenciadas.
 1. **View no lugar de trigger.** A resposta entregue ao orientador propunha
    trigger; a implementação foi view, pelo argumento da seção 3.2. Precisa de
    confirmação antes da defesa, porque contradiz o que já foi respondido.
-2. **Campos dos casos de uso sem coluna no DER.** Cada um precisa ser revisto
-   antes de assumir que a ausência é intencional — parte da documentação foi
-   produzida com apoio de IA e pode ter campo esquecido nas modelagens
-   seguintes.
-3. **Onde publicar**, dentro dos critérios: gratuito, HTTPS, suporte a
-   container, estabilidade durante a apresentação e sem período de teste que
-   expire antes da banca.
+2. **Revisão clínica do texto do alerta** de hipo e hiperglicemia (UC004 A2):
+   orienta seguir a equipe de saúde e procurar atendimento, sem prescrever.
 
 ---
 

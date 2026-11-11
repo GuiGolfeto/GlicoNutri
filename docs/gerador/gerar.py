@@ -81,7 +81,7 @@ partes.append(f"""
   <h3>Implementado</h3>
   <ul>{entregue}</ul>
 
-  <h3>Decisões que dependem de você</h3>
+  <h3>Decisões tomadas</h3>
   <p>Nenhuma delas impede o sistema de funcionar, mas todas precisam de resposta antes da
   entrega final. As duas primeiras são clínicas e mudam o resultado das prescrições.</p>
   <table><thead><tr><th style="width:30%">Assunto</th><th>Por quê</th></tr></thead>
