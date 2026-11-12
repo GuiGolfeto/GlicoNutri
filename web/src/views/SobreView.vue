@@ -116,7 +116,7 @@
       <div class="card"><strong>API</strong><span>C# · ASP.NET em .NET 10</span></div>
       <div class="card"><strong>Web</strong><span>Vue 3 com TypeScript</span></div>
       <div class="card"><strong>Banco</strong><span>PostgreSQL</span></div>
-      <div class="card"><strong>Aplicativo</strong><span>Flutter, em desenvolvimento</span></div>
+      <div class="card"><strong>Aplicativo</strong><span>Flutter, Android e iOS</span></div>
     </div>
     <p class="rodape-nota">
       A API é dona da autenticação e do controle de acesso, e é a mesma que o ambiente web e

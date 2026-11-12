@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- O nome do ícone de notificação é passado em tempo de execução: sem isto, o
+     encolhimento de recursos do pacote de produção o removeria. -->
+<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="@drawable/ic_notificacao" />

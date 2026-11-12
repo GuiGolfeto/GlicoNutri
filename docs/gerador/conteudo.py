@@ -9,7 +9,7 @@ CAPA = {
     "meta": [
         ("Preparado para", "Mateus Rossini Marques Pêgo"),
         ("Projeto", "GlicoNutri · TCC em parceria com a ADJ de Birigui"),
-        ("Etapa", "Sistema web e API concluídos; aplicativo mobile na sequência"),
+        ("Etapa", "API, sistema web e aplicativo do paciente concluídos"),
         ("Documento", "Entrega parcial de desenvolvimento"),
     ],
 }
@@ -21,7 +21,7 @@ SITUACAO = {
     "entregue": [
         "Os 36 requisitos funcionais da planilha de requisitos, versão 4.0",
         "As 35 regras de negócio, com as três exceções detalhadas ao final",
-        "Os 12 casos de uso, incluindo os que o aplicativo mobile vai consumir",
+        "Os 12 casos de uso, com a área do paciente na web e no aplicativo",
         "Os 597 alimentos da tabela TACO importados e disponíveis para os planos",
     ],
     "decisoes": [
@@ -96,13 +96,12 @@ SUMARIO = [
 
 VISAO_GERAL = {
     "intro": "O sistema é composto por uma API REST central, um sistema web para nutricionistas "
-             "e administradores, e um aplicativo mobile para os pacientes. A API e o sistema web "
-             "estão construídos; o aplicativo é a etapa seguinte, e os endpoints que ele vai "
-             "consumir já existem e estão testados.",
+             "e administradores, e um aplicativo mobile para os pacientes. As três partes estão "
+             "construídas, e web e aplicativo consomem a mesma API.",
     "indicadores": [
-        ("81", "endpoints"),
+        ("87", "endpoints"),
         ("31", "tabelas"),
-        ("134", "testes"),
+        ("144", "testes"),
         ("597", "alimentos"),
     ],
     "camadas": [
@@ -114,11 +113,10 @@ VISAO_GERAL = {
          "Interface de nutricionistas e administradores. Consome exclusivamente a API; "
          "não acessa o banco diretamente."),
         ("Banco de dados", "PostgreSQL (Supabase)",
-         "As 31 tabelas do DER V2.0, com herança Table-Per-Type na hierarquia de usuários e "
+         "As 31 tabelas do DER V2.0, com herança Table-Per-Hierarchy na hierarquia de usuários e "
          "exclusão lógica em toda entidade que guarda histórico clínico."),
         ("Aplicativo mobile", "Flutter",
-         "Etapa posterior. Os endpoints que ele consome — registro de glicemia, antropometria, "
-         "emoções e o ciclo de alertas — já estão implementados e testados."),
+         "App do paciente para Android e iOS, sobre a mesma API: login com troca obrigatória da senha provisória, desbloqueio por biometria, registro de glicemia e de emoção, histórico, medidas, plano vigente, conteúdos, receitas e favoritos. Os lembretes são notificações locais com alarme exato, reagendadas depois de reiniciar o aparelho; o desfecho de cada aviso é informado à API quando o app abre (RN27). Testado no emulador Android em 09/11/2026."),
     ],
     "decisoes": [
         ("Regras críticas no banco, não só no serviço",
@@ -416,8 +414,8 @@ SECOES = [
     },
     {
         "titulo": "Área do paciente",
-        "intro": "O aplicativo mobile é etapa posterior. Enquanto isso, o paciente acessa pela web uma "
-                 "área própria, com o que a API já lhe permite ler e registrar.",
+        "intro": "O paciente tem a mesma área na web e no aplicativo: não é etapa provisória. O que se "
+                 "registra em um aparece no outro, porque os dois consomem a mesma API.",
         "requisitos": ["RF04.1", "RF05.1", "RF06.1", "RF09.3"],
         "regras": ["RN22", "RN23", "RN33", "RN35"],
         "casos": ["UC004", "UC012"],
@@ -445,33 +443,19 @@ LIMITES = {
     "intro": "O que não está implementado, e a razão de cada caso. A lista existe para que nenhuma "
              "ausência seja descoberta durante a avaliação.",
     "itens": [
-        ("Aplicativo mobile em Flutter", "Etapa posterior do cronograma.",
-         "Os endpoints que o aplicativo consome já existem e estão testados: registro de glicemia, "
-         "antropometria e emoções pelo paciente, leitura do plano vigente, ciclo de disparo de alertas "
-         "e a varredura de expiração."),
-        ("Índice glicêmico dos alimentos", "A fonte oficial não publica o dado.",
-         "A tabela TACO não traz índice glicêmico em nenhum dos 597 alimentos. Num sistema de apoio ao "
-         "diabetes essa é a informação mais relevante clinicamente, e ela precisa vir de outra fonte ou "
-         "do preenchimento caso a caso. O campo existe na modelagem e aceita valor no cadastro manual."),
+        ("Notificação push", "Sem servidor de push.",
+         "Os lembretes do aplicativo são notificações locais, agendadas no aparelho. A API só fica sabendo "
+         "de um disparo quando o paciente abre o app, e a agenda cobre sete dias à frente."),
+        ("Índice glicêmico dos alimentos", "Cobertura da fonte.",
+         "31 dos 597 alimentos da TACO têm o valor das tabelas internacionais de 2021, só onde alimento e "
+         "preparo correspondem com clareza. Os demais ficam para o nutricionista informar."),
         ("Seis alimentos sem macronutrientes", "Limitação da 4ª edição da TACO.",
          "O leite de vaca líquido, o sal grosso, o sal dietético, o coco verde e o iogurte de abacaxi "
          "trazem valor não determinado em energia, proteína, lipídeos e carboidrato. Um plano que os use "
          "não soma calorias por eles, e o sistema sinaliza a lacuna em vez de assumir zero."),
-        ("Favoritos do paciente", "Sem lugar na modelagem de dados.",
-         "O requisito prevê marcar conteúdos como favoritos, mas o diagrama entidade-relacionamento não "
-         "define tabela para isso. Implementar exigiria alterar a modelagem documentada."),
-        ("Imagens no conteúdo educativo", "Depende de decisão sobre armazenamento de arquivos.",
-         "O corpo do conteúdo aceita texto formatado. Imagens exigiriam um serviço de armazenamento que "
-         "não está previsto na arquitetura documentada."),
-        ("Envio real de e-mail", "Depende de conta de envio.",
-         "O envio por SMTP está implementado e é ativado ao configurar as credenciais. Enquanto isso, as "
-         "mensagens — incluindo as senhas provisórias — são registradas no log da aplicação."),
-        ("Login com Google ativo", "Depende de credencial no Google Cloud Console.",
-         "O fluxo está implementado na API e na interface. Sem o identificador de cliente configurado, o "
-         "botão não é exibido e o login por senha segue como caminho único."),
-        ("Publicação em ambiente de produção", "Decisão de infraestrutura.",
-         "O sistema roda em ambiente de desenvolvimento. A regra de criptografia em trânsito exige HTTPS, "
-         "o que depende de definir onde a aplicação será hospedada."),
+        ("Publicação", "Decidido em 09/11/2026.",
+         "O sistema roda localmente. A exigência de HTTPS (regra 31) fica como divergência e passa a valer "
+         "se houver publicação."),
         ("Campos previstos nos casos de uso sem lugar no modelo de dados", "Divergência entre documentos.",
          "Os casos de uso mencionam CPF, data de nascimento e sexo do nutricionista, endereço do paciente "
          "e observações no registro antropométrico. O diagrama entidade-relacionamento não define colunas "
@@ -526,7 +510,7 @@ RASTREABILIDADE = {
         ("RF06.2", "Correlação emocional e glicemia", "Acompanhamento clínico", "Completo"),
         ("RF07", "Sistema de alertas e lembretes", "Alertas e lembretes", "Completo"),
         ("RF07.1", "Configuração pelo profissional", "Alertas e lembretes", "Completo"),
-        ("RF07.2", "Envio de notificação", "Alertas e lembretes", "API pronta; envio no aplicativo"),
+        ("RF07.2", "Envio de notificação", "Alertas e lembretes", "Completo (notificação local no aplicativo)"),
         ("RF08", "Visualização gráfica de dados", "Acompanhamento clínico e painel", "Completo"),
         ("RF08.1", "Gráfico de evolução glicêmica", "Acompanhamento clínico", "Completo"),
         ("RF08.2", "Gráfico de peso e IMC", "Acompanhamento clínico", "Completo"),

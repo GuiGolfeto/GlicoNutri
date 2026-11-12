@@ -27,6 +27,7 @@ autocadastro (RN08 e RN09).
 backend/GlicoNutri.Api     C# / ASP.NET (.NET 10) · 16 controllers · 25 services
 backend/GlicoNutri.Tests   xUnit · 144 testes
 web                        Vue 3 + TypeScript · 3 páginas públicas + o sistema
+mobile                     Flutter · aplicativo do paciente (ver mobile/README.md)
 db/taco                    Tabela TACO 4ª edição em CSV, 597 alimentos
 db/fixtures                Amostra para testar o importador (NÃO é a tabela oficial)
 docs                       Três PDFs (back-end, relatório, roteiro de gravação) e seus geradores
@@ -137,3 +138,34 @@ Encontradas ao implementar. O sistema seguiu a opção indicada:
   RN31 (HTTPS) fica como divergência, e os links dos e-mails apontam para
   `localhost`
 
+## Aplicativo Flutter
+
+Em `mobile/`, para Android e iOS. **A área do paciente fica nos dois ambientes**, web e
+Flutter — não é ponte temporária. O que for construído para ela vale para os dois.
+
+Decisões que os documentos não fixam, tomadas ao implementar. Reenvio e janela de 30 minutos
+confirmados pelo Mateus em 10/11/2026; o texto do alerta, confirmado como não prescritivo:
+
+- **Reenvio da RN26**: a cada 30 minutos, quatro avisos dentro da janela de 2 horas da RN35.
+- **Medição até 30 minutos antes do horário atende ao lembrete**, para não tocar quatro
+  avisos a quem acabou de medir.
+- **Só o alerta de glicemia persiste.** Refeição, medicamento e personalizado avisam uma
+  vez e são informados como ATENDIDO: não têm registro correspondente, e expirar como
+  falha do paciente na RN35 acusaria um descumprimento que não existe.
+- **Texto do alerta de hipo e hiperglicemia (UC004 A2)**: orienta seguir a conduta da equipe
+  de saúde e procurar atendimento, sem prescrever tratamento. Só o nutricionista prescreve (Mateus, 10/11/2026). A web mostra
+  o mesmo alerta ao registrar glicemia.
+
+Limite conhecido: sem push, a API só fica sabendo de um disparo quando o app abre.
+
+## Próximo passo
+
+O Android foi compilado e testado no emulador em 09/11/2026: todas as telas, avisos,
+biometria e reagendamento depois de reiniciar. Os avisos usam alarme exato
+(`USE_EXACT_ALARM`, válido porque o app é distribuído como APK, fora da loja).
+
+`mobile/` tem git próprio, com backup em `~/Backups/GlicoNutri/mobile.git`. Depois de mudar o
+app: commit dentro de `mobile/` e `git push backup main`.
+
+O Mateus vai rodar web, API e app no mesmo PC Windows, com o app no emulador Android em modo
+de desenvolvimento, que já aponta para `10.0.2.2:5080`.

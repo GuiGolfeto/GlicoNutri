@@ -257,3 +257,10 @@ novo.
 | A tela abre, mas o login não faz nada ou dá erro de rede | A API não está rodando, ou está em outra porta | Confira o terminal 1: precisa mostrar `localhost:5080` |
 | `E-mail ou senha inválidos.` com o administrador | A senha do administrador já foi trocada nesse banco | Peça a senha atual ao desenvolvedor |
 | Erro de versão no `npm install` ou no `npm run dev` | Node antigo | Instale o Node 22 LTS e rode `npm install` de novo |
+
+---
+
+## Aplicativo do paciente
+
+A API configurada aqui é a mesma que o aplicativo usa. Para instalar o Android
+Studio, o Flutter e rodar o app no emulador, siga `mobile/INSTALACAO-E-TESTES.md`.

@@ -96,6 +96,9 @@ TECNOLOGIAS = {
          "diagrama de containers verdadeiro."),
         ("Autenticação", "JWT Bearer · BCrypt.Net-Next", "Token próprio emitido pela API. O bcrypt "
          "atende à exigência de hash seguro."),
+        ("Aplicativo do paciente", "Flutter · Dart", "Android e iOS sobre a mesma API. Sessão em "
+         "armazenamento seguro do aparelho, desbloqueio por biometria e lembretes como notificação "
+         "local com alarme exato, sem servidor de push."),
         ("Leitura de CSV", "CsvHelper", "Biblioteca citada no relatório de atividades da semana 20 "
          "como caminho para importar a tabela nutricional."),
         ("Geração de PDF", "QuestPDF", "Licença Community, gratuita para este uso. Gera os relatórios "

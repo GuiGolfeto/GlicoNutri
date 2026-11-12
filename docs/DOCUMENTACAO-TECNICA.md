@@ -796,12 +796,36 @@ ficam registradas em vez de silenciadas.
 
 ---
 
-## 17. Próximo passo
+## 17. Aplicativo do paciente
 
-O aplicativo **Flutter** para o paciente. Os endpoints que ele consome já
-existem e estão testados: registro de glicemia e de emoção, leitura das
-próprias medidas, plano vigente, favoritos do repositório, ciclo de disparo de
-alertas e a varredura de expiração da RN35.
+Em `mobile/`, Flutter para Android e iOS. Consome a mesma API da web e nunca fala
+com o banco. Instalação no Windows e roteiro de testes em
+`mobile/INSTALACAO-E-TESTES.md`.
+
+**Telas:** login com troca obrigatória da senha provisória, desbloqueio por
+biometria, início, registro de glicemia (com o alerta do UC004 A2), histórico,
+diário emocional, medidas, plano alimentar, lembretes, conteúdos, receitas e
+favoritos.
+
+**Lembretes sem push.** São notificações locais, com alarme exato
+(`USE_EXACT_ALARM`, válido porque o app é distribuído como APK, fora da loja) e
+reagendadas quando o aparelho reinicia. O app não executa quando o aviso toca,
+então guarda o que programou e informa o desfecho à API (RN27) na próxima
+abertura. Decisões tomadas ao implementar:
+
+- O alerta de glicemia repete a cada 30 minutos, quatro vezes dentro da janela
+  de 2 horas da RN35 (RN26).
+- Uma medição até 30 minutos antes do horário atende ao lembrete.
+- Só o alerta de glicemia persiste. Refeição, medicamento e personalizado avisam
+  uma vez e são informados como ATENDIDO: não têm registro correspondente, e
+  expirar como falha acusaria um descumprimento que não existe.
+
+**Sessão.** O token fica no armazenamento seguro do aparelho, e a biometria só
+aparece se o aparelho tiver.
+
+**Limites.** A API só fica sabendo de um disparo quando o app abre, e a agenda
+cobre sete dias à frente. Fora de desenvolvimento, o endereço da API é
+obrigatório e precisa ser HTTPS (RN31).
 
 A área do paciente permanece **nos dois ambientes**, web e Flutter — não é
-ponte temporária até o aplicativo publicar.
+ponte temporária.

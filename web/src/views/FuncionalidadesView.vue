@@ -97,7 +97,7 @@ import areaPaciente from '../assets/capturas/area-paciente.webp'
         <p class="tarja">Área do paciente</p>
         <h2>O acompanhamento na mão de quem convive com a doença</h2>
         <p class="chamada-clara">
-          Disponível na web e, em breve, também em aplicativo. Os dois consomem a mesma API,
+          Disponível na web e no aplicativo Android e iOS. Os dois consomem a mesma API,
           então o registro feito em um aparece no outro.
         </p>
 

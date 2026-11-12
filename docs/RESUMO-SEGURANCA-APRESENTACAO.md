@@ -14,6 +14,8 @@
    clínicas e medicação em uso têm uma segunda cifra, feita pelo próprio
    sistema (AES-256-GCM) — protege mesmo quem lesse a tabela direto, sem
    passar pela API.
+6. **No aplicativo**: o token fica no armazenamento seguro do celular e o app
+   pode ser desbloqueado por biometria. Ele nunca fala com o banco, só com a API.
 
 ## A escolha de não cifrar tudo
 

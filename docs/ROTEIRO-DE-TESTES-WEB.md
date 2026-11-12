@@ -331,6 +331,8 @@ Tudo o que o sistema faz já pode ser testado. Duas observações:
 - **Entrar com Google**: só funciona para e-mails já cadastrados, e, enquanto o
   app do Google Cloud estiver em modo de teste, o e-mail também precisa estar na
   lista de usuários de teste.
+- **Aplicativo do paciente**: o roteiro de testes do app está em
+  `mobile/INSTALACAO-E-TESTES.md`.
 - **Índice glicêmico**: 31 dos 597 alimentos da TACO têm o valor (por exemplo,
   batata cozida, pão francês, banana). Os demais ficam sem valor, e o
   nutricionista pode informar.

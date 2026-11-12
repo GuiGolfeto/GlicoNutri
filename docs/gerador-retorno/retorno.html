@@ -48,6 +48,7 @@
   <tr><td>Ajustes nas telas</td><td class="feito">Feito</td><td>Seção 7</td></tr>
   <tr><td>Logo do projeto</td><td class="feito">Aplicada</td><td>Seção 8</td></tr>
   <tr><td>Páginas públicas</td><td class="feito">Reescritas</td><td>Seção 9</td></tr>
+  <tr><td>Aplicativo do paciente (Flutter)</td><td class="feito">Concluído</td><td>Seção 10</td></tr>
   <tr><td>Tela de conteúdos e templates dos relatórios</td><td class="feito">Anexos</td><td>Anexos A a D</td></tr>
 </table>
 
@@ -111,6 +112,10 @@
 
 <h2>9 · Páginas públicas</h2>
 <p>O conteúdo foi reescrito para refletir só o que o sistema faz. Saíram a análise preditiva, a sugestão de ajuste de insulina, a contagem por índice e carga glicêmica, a integração hospitalar, a sincronização e o backup automático, a menção ao CFM, os botões das lojas e os números inflados. Os botões levam a um pedido de demonstração, não a um cadastro. A logo foi corrigida no cabeçalho e no rodapé, as imagens de outros sistemas foram trocadas por capturas reais do GlicoNutri (com dados fictícios) e o rodapé com Preços foi mantido.</p>
+
+<h2>10 · Aplicativo do paciente</h2>
+<p>App do paciente para Android e iOS, sobre a mesma API: login com troca obrigatória da senha provisória, desbloqueio por biometria, registro de glicemia e de emoção, histórico, medidas, plano vigente, conteúdos, receitas e favoritos. Os lembretes são notificações locais com alarme exato, reagendadas depois de reiniciar o aparelho; o desfecho de cada aviso é informado à API quando o app abre (RN27). Testado no emulador Android em 09/11/2026.</p>
+<p>Ele roda no seu PC no emulador Android, apontando para a API local. A instalação e o roteiro de testes estão em <code>mobile/INSTALACAO-E-TESTES.md</code>. Ficaram decisões para você validar: o alerta de glicemia repete a cada 30 minutos, até quatro vezes dentro das 2 horas da RN35; uma medição até 30 minutos antes do horário já atende ao lembrete; e os lembretes de refeição, medicamento e personalizado avisam uma vez só.</p>
 
 <h2>O que depende de você</h2>
 <div class="caixa">
