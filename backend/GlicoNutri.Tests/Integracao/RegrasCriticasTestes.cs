@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using GlicoNutri.Api.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GlicoNutri.Tests.Integracao;
 
@@ -332,6 +333,43 @@ public class RegrasCriticasTestes(ApiFixture api)
         // Web e app refazem o login carregando o token antigo no cabeçalho.
         var novoLogin = await cliente.PostAsJsonAsync("/api/auth/login", new { email, senha = nova });
         Assert.Equal(HttpStatusCode.OK, novoLogin.StatusCode);
+    }
+
+    // ── UC001 A1 — redefinição pelo link do e-mail ─────────────────────────
+
+    [Fact]
+    public async Task UC001_A1_LoginFuncionaComASenhaRedefinidaPeloLink()
+    {
+        var admin = await api.ClienteAdminAsync();
+        var (nutri, _) = await api.CriarNutricionistaAsync(admin, "uc001a1@teste.local", "CRN-UC1A1");
+        const string email = "p.uc001a1@teste.local";
+        await api.CriarPacienteAsync(nutri, email, Cpf(205));
+
+        const string provisoria = "Provisoria@2026";
+        string link;
+        await using (var db = api.CriarContexto())
+        {
+            var usuario = await db.Usuarios.FirstAsync(u => u.Email == email);
+            usuario.SenhaHash = BCrypt.Net.BCrypt.HashPassword(provisoria, 4);
+            usuario.SenhaProvisoria = true;
+            await db.SaveChangesAsync();
+            using var escopo = api.Services.CreateScope();
+            link = escopo.ServiceProvider.GetRequiredService<GlicoNutri.Api.Services.ITokenService>()
+                .GerarTokenRecuperacao(usuario);
+        }
+
+        // O navegador ainda guarda o token da senha provisória e o envia em toda
+        // requisição. Era esse cabeçalho que fazia a RN03 recusar a redefinição.
+        var cliente = api.CreateClient();
+        var entrada = await cliente.PostAsJsonAsync("/api/auth/login", new { email, senha = provisoria });
+        cliente.DefaultRequestHeaders.Authorization =
+            new("Bearer", (await entrada.Content.ReadFromJsonAsync<TokenLido>())!.Token);
+        const string nova = "Redefinida@2026";
+        var redefinir = await cliente.PostAsJsonAsync("/api/auth/redefinir-senha", new { token = link, novaSenha = nova });
+        Assert.Equal(HttpStatusCode.NoContent, redefinir.StatusCode);
+
+        var login = await cliente.PostAsJsonAsync("/api/auth/login", new { email, senha = nova });
+        Assert.Equal(HttpStatusCode.OK, login.StatusCode);
     }
 
     // ── RN33 — dado de um paciente não é alcançável pela rota de outro ─────

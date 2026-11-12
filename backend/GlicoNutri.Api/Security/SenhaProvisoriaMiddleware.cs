@@ -20,6 +20,10 @@ public class SenhaProvisoriaMiddleware(RequestDelegate proximo)
         // definitiva, e ainda envia o token antigo. Bloquear aqui prenderia o
         // usuário na RN03 com a senha já trocada.
         "/api/auth/login",
+        // UC001 A1 — quem esqueceu a provisória pede o link no mesmo navegador,
+        // que ainda carrega o token dela. Bloquear aqui recusava a redefinição.
+        "/api/auth/recuperar-senha",
+        "/api/auth/redefinir-senha",
     ];
 
     public async Task InvokeAsync(HttpContext contexto)

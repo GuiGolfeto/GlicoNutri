@@ -14,7 +14,7 @@ construir o sistema.
 ./dev.sh status
 ./dev.sh logs api    # senhas provisórias aparecem aqui
 ./dev.sh down
-./dev.sh test        # 144 testes
+./dev.sh test        # 145 testes
 ```
 
 Login inicial: `admin@gliconutri.local` / `GlicoNutri@2026`.
@@ -25,7 +25,7 @@ autocadastro (RN08 e RN09).
 
 ```
 backend/GlicoNutri.Api     C# / ASP.NET (.NET 10) · 16 controllers · 25 services
-backend/GlicoNutri.Tests   xUnit · 144 testes
+backend/GlicoNutri.Tests   xUnit · 145 testes
 web                        Vue 3 + TypeScript · 3 páginas públicas + o sistema
 mobile                     Flutter · aplicativo do paciente (ver mobile/README.md)
 db/taco                    Tabela TACO 4ª edição em CSV, 597 alimentos
